@@ -113,8 +113,8 @@ The scripts and remote branches are ready for this flow. The first actual teamma
 
 ## 8. Preservation and Git rules
 
-- Normal changes use latest `origin/dev` → one approved feature branch → reviewed PR to `dev`.
+- Team-member changes use latest `origin/dev` → one assigned feature branch → PR to `dev`, with the `tmdwns0531` Master/Admin integration account as the approval and merge gate.
 - Repository changes remain separate and use the same Slice ID with cross-links.
-- No direct `dev/main` push except documented Owner bootstrap or emergency recovery.
+- Team members cannot directly push `dev/main`. The `tmdwns0531` Master/Admin account is the intentional Ruleset bypass actor and may directly update `dev/main`, merge its own validated governance changes without a teammate approval, and approve team-member PRs. Each bypass operation retains validation evidence and the resulting SHA; force-push remains prohibited.
 - Do not reset, clean, stash, overwrite existing non-empty folders, initialize databases, delete Volumes, reveal Secrets, or perform Prod/Cloud/SSH operations without matching authorization.
 - Natural-language CMS follows manual CMS completion; LLM DevOps follows real Coding and PathPolicy completion.

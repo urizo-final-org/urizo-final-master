@@ -39,6 +39,10 @@ feature/<내-github-id>_<동일-work-slug>_<version> 브랜치를 사용하라.
 
 완료 보고에는 변경 파일, 테스트 결과, Contract/Migration 영향,
 Repository별 commit/PR, merge 순서, 남은 blocker를 포함하라.
+Git gate: as a team member, push only the assigned feature branch and open a PR to dev.
+Never push directly to dev/main or force-push. Request approval and merge from the
+tmdwns0531 Master/Admin integration account; do not ask another teammate to create
+a duplicate PR or repeat the same validation unless the integration owner requests it.
 ```
 
 Initial coding window:

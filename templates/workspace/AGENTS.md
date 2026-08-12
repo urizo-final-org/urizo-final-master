@@ -32,5 +32,7 @@
 - No automatic reset, clean, stash, checkout, database initialization, or volume deletion.
 - No secret values or full secret digests in prompts, chat, commands, logs, commits, or PRs.
 - Network/login/admin/reboot/credential/Prod/Cloud/SSH actions require explicit approval.
-- Normal work uses latest `dev` → `feature/<confirmed-github-id>_<work-slug>_<version>` → reviewed PR to `dev`; no direct push, force push, auto-merge, or implicit merge.
+- Team-member work uses latest `dev` → `feature/<confirmed-github-id>_<work-slug>_<version>` → PR to `dev`, approved by the `tmdwns0531` Master/Admin integration account.
+- Team members never push directly to `dev`/`main`. The `tmdwns0531` Master/Admin account may use the intentional Repository Admin Ruleset bypass to update `dev`/`main`, merge its own validated governance changes, and approve team PRs; no additional teammate approval is required for those owner changes.
+- Never force-push. Record validation evidence and the resulting SHA for every owner bypass operation.
 - Shared contracts, Flyway, app shell, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master manifest/handoff are serialized through the Integration/Contract owner.

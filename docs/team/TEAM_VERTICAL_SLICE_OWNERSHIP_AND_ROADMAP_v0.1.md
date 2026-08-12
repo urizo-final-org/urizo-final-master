@@ -47,7 +47,7 @@ Do not infer handles for 정차윤, 민은지, or 윤서. Confirm them before cr
 | Master manifest/handoff | A/R | C | C | C | C |
 | Per-slice E2E | A for integration gate | R for owned slices | R for owned slices | R for owned slices | R for owned slices |
 
-Shared Contract, Migration, Auth/Security, Approval/Audit, and Compose changes require the author plus two reviewers. Feature-local changes require at least one reviewer.
+Every team-member PR is approved and merged by the `tmdwns0531` Master/Admin integration account. Domain peer review is optional unless the integration owner requests it for a shared Contract, Migration, Auth/Security, Approval/Audit, or Compose seam. Master/Admin-authored governance or integration changes may use the intentional Repository Admin Ruleset bypass after recorded validation and do not require an additional teammate approval.
 
 ## 4. Hot spots and collision control
 
@@ -318,7 +318,7 @@ Every Slice must satisfy:
 - no secret, credential, Prompt raw content, actual customer data, or build output committed;
 - compatible Backend-first merge that does not break current consumers;
 - same-origin Slice E2E plus Stage 3–5 regression proportional to impact;
-- author-external review and cross-repository PR links;
+- Master/Admin approval for team-member PRs, or recorded validation evidence for a Master/Admin-authored bypass, plus cross-repository PR links;
 - post-merge Master handoff/manifest update with exact verified state.
 
 Additional phase gates:

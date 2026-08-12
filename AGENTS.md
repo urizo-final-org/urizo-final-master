@@ -58,8 +58,9 @@ The Project Spec is not reduced to the currently implemented OpenAPI. A healthy 
 
 ## Git and team workflow
 
-- Normal work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a reviewed PR.
-- Do not push directly to `dev` or `main`, auto-merge, or force-push.
+- Team-member work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a PR approved by the `tmdwns0531` Master/Admin integration account.
+- Team members do not push directly to `dev` or `main`. The `tmdwns0531` Master/Admin account is the intentional Ruleset bypass actor and may directly update `dev`/`main`, merge its own validated governance changes, and approve team-member PRs. An additional teammate approval is not required for Master/Admin-authored changes.
+- Never force-push. Every Master/Admin bypass use must retain validation evidence and the resulting commit SHA in the handoff or PR record.
 - One vertical slice may span repositories, but it uses the same Slice ID/work slug and separate cross-linked PRs.
 - Shared contracts, Flyway revisions, app shell/router/navigation, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master handoff/manifest are serialized through the Integration/Contract owner.
 - Database work must reserve a UTC 14-digit Flyway revision before creating SQL and must pass empty-DB, previous-revision, repeated-migrate, single-history, and runtime-DDL-denial gates.
