@@ -2,14 +2,15 @@
 
 ## Current authority
 
-1. Product intent: preserved `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
-2. Spring/Flyway/LangGraph responsibility overlay: the v0.2 architecture documents preserved in the Backend documentation set
-3. Current implementation checkpoint: [implementation/team handoff v0.8](handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md)
-4. Current implementation gap: [feature traceability matrix](traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
-5. Team execution: [vertical-slice ownership and roadmap](team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
-6. Workspace reproduction: [Master repository and bootstrap specification](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
-7. Teammate setup: [LLM local setup prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
-8. Slice start: [LLM work-start prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
+1. Teammate entry point: [one-click administrator CMS start guide](onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
+2. Product intent: preserved `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+3. Spring/Flyway/LangGraph responsibility overlay: the v0.2 architecture documents preserved in the Backend documentation set
+4. Current implementation checkpoint: [implementation/team handoff v0.8](handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md)
+5. Current implementation gap: [feature traceability matrix](traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
+6. Team execution: [vertical-slice ownership and roadmap](team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
+7. Workspace reproduction: [Master repository and bootstrap specification](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+8. Teammate setup: [LLM local setup prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
+9. Slice start: [LLM work-start prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 
 If the current OpenAPI and the Product Spec differ, the difference is an implementation gap unless a later approved product decision explicitly removes the requirement. Infrastructure health and technical fixture E2E are evidence for their own scope only.
 

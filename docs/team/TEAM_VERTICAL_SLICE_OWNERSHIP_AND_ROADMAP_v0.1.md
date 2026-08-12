@@ -3,6 +3,8 @@
 > Baseline: 2026-08-12
 > Goal: minimize shared-file collisions while each owner completes user-visible Contract→Flyway→Spring→Frontend→E2E slices
 
+The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: production Auth/RBAC, member management, menu, content/page, board, site design/template, Approval/Site Release/Publish/Rollback, unified Audit, and the end-user Renderer. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied.
+
 ## 1. Operating model
 
 1. Work is divided by user-visible vertical slice, not by Frontend/Backend/DB horizontal layer.

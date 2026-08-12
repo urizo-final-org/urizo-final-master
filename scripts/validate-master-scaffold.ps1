@@ -18,6 +18,7 @@ $required = @(
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md',
+    'docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md',
     'templates/workspace/AGENTS.md',

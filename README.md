@@ -16,6 +16,7 @@ The latest checkpoint is [implementation/team handoff v0.8](docs/handoff/AX_Modu
 
 ## Entry points
 
+- [팀원 원클릭 전체관리자 CMS 시작 가이드](docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
 - [Document index](docs/README.md)
 - [Feature traceability matrix](docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
 - [Team ownership and roadmap](docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)

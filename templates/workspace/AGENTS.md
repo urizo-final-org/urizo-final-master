@@ -11,7 +11,8 @@
 
 ## Authority and ownership
 
-- Begin with `urizo-final-master/docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md` and the applicable repository `AGENTS.md`.
+- Begin with `urizo-final-master/docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md`, the latest implementation/team handoff, and the applicable repository `AGENTS.md`.
+- The first team product milestone is the complete manual administrator CMS: production Auth/RBAC, members, menus, content/pages, boards, site design/template, Approval/Site Release/Publish/Rollback, Audit, and the end-user Renderer.
 - Product requirements come from the approved Project Spec and are not reduced to the current OpenAPI.
 - Backend owns public/coding contracts, Flyway, Spring API/Batch, Tool Gateway, integrated Compose, and Dev bootstrap.
 - Orchestrator owns only the Python Coding graph/checkpoint runtime.
