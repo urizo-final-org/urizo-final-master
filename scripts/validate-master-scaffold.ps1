@@ -12,10 +12,14 @@ $required = @(
     'AX-Module-Studio.code-workspace',
     'docs/README.md',
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md',
+    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
     'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',
     'docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
+    'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md',
+    'docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md',
+    'docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md',
     'templates/workspace/AGENTS.md',
     'templates/workspace/CLAUDE.md',
     'templates/workspace/AX-Module-Studio.code-workspace',
@@ -45,6 +49,18 @@ $expectedRemotes = @(
 foreach ($remote in $expectedRemotes) {
     if ($remote -notin @($manifest.repositories.remote)) {
         throw "Canonical remote is missing from manifest: $remote"
+    }
+}
+
+if ($manifest.publishedBaseline.status -ne 'remote-published') {
+    throw 'Manifest published baseline must be marked remote-published.'
+}
+$sourceNames = @('urizo-final-frontend', 'urizo-final-backend', 'urizo-final-orchestrator')
+foreach ($sourceName in $sourceNames) {
+    $integrationSha = $manifest.publishedBaseline.sourceIntegrationRefs.$sourceName
+    $releaseSha = $manifest.publishedBaseline.sourceReleaseRefs.$sourceName
+    if ($integrationSha -notmatch '^[0-9a-f]{40}$' -or $releaseSha -notmatch '^[0-9a-f]{40}$') {
+        throw "Published baseline SHA is invalid for $sourceName."
     }
 }
 

@@ -11,7 +11,7 @@
 
 ## Authority and ownership
 
-- Begin with `urizo-final-master/docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md` and the applicable repository `AGENTS.md`.
+- Begin with `urizo-final-master/docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md` and the applicable repository `AGENTS.md`.
 - Product requirements come from the approved Project Spec and are not reduced to the current OpenAPI.
 - Backend owns public/coding contracts, Flyway, Spring API/Batch, Tool Gateway, integrated Compose, and Dev bootstrap.
 - Orchestrator owns only the Python Coding graph/checkpoint runtime.
@@ -24,6 +24,7 @@
 - Propose the exact network, local-runtime, authentication, installation, administrator, or reboot boundary and obtain explicit approval where required.
 - After approval, run the Master bootstrap wrapper with only the approved switches; stop for human Git/Docker login, MFA, administrator elevation, installation, reboot, or secret entry and resume verification afterward.
 - Use the generated `AX-Module-Studio.code-workspace` as the four-repository development view. Before work, report the assigned Slice ID, owner, dependencies, shared seams, and repository-specific PR order from the Master team roadmap.
+- Report `SETUP PASS` only after the v0.8 acceptance contract passes. Do not implement from a broad workstream request without one assigned Slice ID.
 
 ## Safety and Git
 

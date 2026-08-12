@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "workspace": {
     "directoryName": "AX-Module-Studio-Workspace",
     "mustNotBeGitRepository": true,
@@ -85,6 +85,20 @@
     "integration": "dev",
     "release": "main",
     "featurePattern": "feature/<confirmed-github-id>_<work-slug>_<version>"
+  },
+  "publishedBaseline": {
+    "observedAt": "2026-08-12T14:33:41+09:00",
+    "status": "remote-published",
+    "sourceIntegrationRefs": {
+      "urizo-final-frontend": "4579800b0319180f4c1cbe77a7435f57d9a71d6a",
+      "urizo-final-backend": "1687b3cce51532c2e54723383af2a50518a5fdd8",
+      "urizo-final-orchestrator": "eaeb3a380035e8ddb13e42fb1877baabd9f57549"
+    },
+    "sourceReleaseRefs": {
+      "urizo-final-frontend": "b503f2e7a4808c5776c36091a3d540ded0eb5b61",
+      "urizo-final-backend": "1687b3cce51532c2e54723383af2a50518a5fdd8",
+      "urizo-final-orchestrator": "a55e62a0d5be972dbaf8f44dee17652487dc7470"
+    }
   },
   "localRuntime": {
     "profile": "full",
