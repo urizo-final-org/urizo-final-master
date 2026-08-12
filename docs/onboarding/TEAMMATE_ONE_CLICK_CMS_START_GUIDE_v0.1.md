@@ -1,6 +1,6 @@
 # AX Module Studio 팀원 원클릭 시작 가이드 v0.1
 
-> 대상: AX Module Studio 5인 개발팀  
+> 대상: AX Module Studio 5인 개발팀
 > 1차 제품 목표: **수동으로 운영 가능한 전체관리자 CMS 제품을 다섯 명의 충돌 없는 vertical slice로 조립한다.**
 
 ## 1. 이번 1차 목표
