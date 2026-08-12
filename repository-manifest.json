@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "1.0",
+  "workspace": {
+    "directoryName": "AX-Module-Studio-Workspace",
+    "mustNotBeGitRepository": true,
+    "integrationRuntimeOwner": "urizo-final-backend"
+  },
+  "repositories": [
+    {
+      "name": "urizo-final-master",
+      "relativePath": "urizo-final-master",
+      "remote": "https://github.com/urizo-final-org/urizo-final-master.git",
+      "role": "workspace-control-handoff-governance",
+      "owns": [
+        "workspace manifest",
+        "latest handoff and traceability",
+        "team ownership and collision rules",
+        "safe workspace bootstrap and preflight wrappers",
+        "workspace editor template"
+      ],
+      "mustNotOwn": [
+        "product source",
+        "Flyway migrations",
+        "integrated Compose",
+        "runtime secrets",
+        "business or checkpoint data"
+      ]
+    },
+    {
+      "name": "urizo-final-frontend",
+      "relativePath": "urizo-final-frontend",
+      "remote": "https://github.com/urizo-final-org/urizo-final-frontend.git",
+      "role": "react-admin-and-user-ui",
+      "owns": [
+        "React application",
+        "public OpenAPI consumer",
+        "browser tests",
+        "frontend image"
+      ],
+      "mustNotOwn": [
+        "Core DB migrations",
+        "Provider secret authority",
+        "Coding tool execution"
+      ]
+    },
+    {
+      "name": "urizo-final-backend",
+      "relativePath": "urizo-final-backend",
+      "remote": "https://github.com/urizo-final-org/urizo-final-backend.git",
+      "role": "spring-platform-and-integration-root",
+      "owns": [
+        "public and coding contracts",
+        "Spring API and Batch",
+        "Spring AI Model Gateway",
+        "Spring Tool Gateway",
+        "Core DB Flyway",
+        "integrated Compose and Dev bootstrap"
+      ],
+      "mustNotOwn": [
+        "Python LangGraph node implementation",
+        "Python dependency lock"
+      ]
+    },
+    {
+      "name": "urizo-final-orchestrator",
+      "relativePath": "urizo-final-orchestrator",
+      "remote": "https://github.com/urizo-final-org/urizo-final-orchestrator.git",
+      "role": "python-langgraph-coding-runtime",
+      "owns": [
+        "fixed Coding graph",
+        "checkpoint interrupt and resume",
+        "Backend coding contract clients",
+        "Python image and dependency lock"
+      ],
+      "mustNotOwn": [
+        "public API",
+        "Core DB DDL",
+        "Provider keys",
+        "Git or Docker final credentials",
+        "final Tool authorization"
+      ]
+    }
+  ],
+  "branches": {
+    "integration": "dev",
+    "release": "main",
+    "featurePattern": "feature/<confirmed-github-id>_<work-slug>_<version>"
+  },
+  "localRuntime": {
+    "profile": "full",
+    "canonicalUrl": "http://127.0.0.1:18080/",
+    "readOnlyDatabaseGateway": "127.0.0.1:15432",
+    "requiredLongRunningServices": [
+      "nginx",
+      "frontend",
+      "spring-app",
+      "database",
+      "valkey",
+      "coding-runtime",
+      "checkpoint_database"
+    ],
+    "auxiliaryLongRunningServices": [
+      "database_gateway"
+    ],
+    "oneShotServices": [
+      "flyway-migration",
+      "coding_credential_registrar"
+    ]
+  }
+}

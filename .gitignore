@@ -1,0 +1,12 @@
+# Local workspace state and credentials
+.env
+.env.*
+!.env.example
+*.local
+*.log
+.idea/
+.vscode/settings.json
+
+# Generated reports
+artifacts/
+reports/local/

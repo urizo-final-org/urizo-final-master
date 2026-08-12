@@ -1,0 +1,15 @@
+{
+  "folders": [
+    { "name": "Master", "path": "urizo-final-master" },
+    { "name": "Frontend", "path": "urizo-final-frontend" },
+    { "name": "Backend", "path": "urizo-final-backend" },
+    { "name": "Orchestrator", "path": "urizo-final-orchestrator" }
+  ],
+  "settings": {
+    "git.autoRepositoryDetection": "subFolders",
+    "git.openRepositoryInParentFolders": "never",
+    "files.exclude": {
+      "**/.git": true
+    }
+  }
+}
