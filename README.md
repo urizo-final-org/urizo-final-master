@@ -12,16 +12,16 @@ AX-Module-Studio-Workspace/          # no .git
 
 ## Current checkpoint
 
-The latest local checkpoint is [implementation/team handoff v0.7](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md). The current implementation provides a healthy local-full technical foundation, a deterministic Project→Connector→Knowledge/RAG slice, and a Coding Harness foundation. It is not yet the planned product CMS: production RBAC, the five manual CMS domains, Site Release/Renderer, natural-language CMS, real repository tools, PathPolicy UI/versioning, and LLM DevOps remain incomplete.
-
-Important publication gap: at the 2026-08-12 preflight, this Master remote was empty and all three source implementations existed as uncommitted local changes on feature branches. Until those changes are intentionally reviewed and published through repository-specific PRs, a new teammate cannot reproduce the current local-full implementation from canonical remotes alone.
+The latest checkpoint is [implementation/team handoff v0.8](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md). All four canonical repositories now contain the reviewed baseline on protected `main` and `dev` branches, so teammate remote assembly can proceed through the Master bootstrap flow. The implementation remains a technical foundation rather than the planned product CMS: production RBAC, the five manual CMS domains, Site Release/Renderer, natural-language CMS, real repository tools, PathPolicy UI/versioning, and LLM DevOps remain incomplete.
 
 ## Entry points
 
 - [Document index](docs/README.md)
 - [Feature traceability matrix](docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
 - [Team ownership and roadmap](docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
-- [Master/bootstrap specification](docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md)
+- [Master/bootstrap specification](docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+- [Teammate LLM local setup prompt](docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
+- [Teammate LLM work-start prompt](docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 - [Repository manifest](repository-manifest.json)
 
 ## LLM-first teammate onboarding
@@ -42,7 +42,7 @@ Read-only checks:
 .\scripts\validate-master-scaffold.ps1
 ```
 
-Future one-command onboarding, after all four remotes contain the reviewed baseline:
+Agent-executed one-command onboarding:
 
 ```powershell
 .\scripts\bootstrap-workspace.ps1 -ApproveNetwork -RunLocalFull -ApproveLocalFullMutation

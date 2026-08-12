@@ -17,12 +17,13 @@
 
 ## Required reading
 
-1. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md`
+1. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md`
 2. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
 3. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-4. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md`
-5. The applicable sibling repository `AGENTS.md`
-6. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+4. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
+5. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
+6. The applicable sibling repository `AGENTS.md`
+7. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
 The Project Spec is not reduced to the currently implemented OpenAPI. A healthy container or a technical E2E does not prove completion of an unimplemented product feature.
 
@@ -36,6 +37,7 @@ The Project Spec is not reduced to the currently implemented OpenAPI. A healthy 
 - If Git/Docker login, MFA, administrator elevation, installation, or reboot requires human interaction, stop at that boundary, explain the shortest human action, and resume verification after the teammate completes it. Never bypass or solicit secrets in chat or command arguments.
 - After bootstrap, open or recommend the generated `AX-Module-Studio.code-workspace`, run `scripts/health-workspace.ps1`, and report service URLs, warnings, and any remaining blocker.
 - Before assigning or implementing work, read `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md` and state the Slice ID, E2E lead, reserved shared seams, repository paths, dependencies, and PR order.
+- Report `SETUP PASS` only when the v0.8 setup acceptance contract is satisfied. Do not begin implementation from a generic workstream description; require one assigned Slice ID.
 
 ## Ownership boundaries
 
@@ -56,8 +58,9 @@ The Project Spec is not reduced to the currently implemented OpenAPI. A healthy 
 
 ## Git and team workflow
 
-- Normal work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a reviewed PR.
-- Do not push directly to `dev` or `main`, auto-merge, or force-push.
+- Team-member work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a PR approved by the `tmdwns0531` Master/Admin integration account.
+- Team members do not push directly to `dev` or `main`. The `tmdwns0531` Master/Admin account is the intentional Ruleset bypass actor and may directly update `dev`/`main`, merge its own validated governance changes, and approve team-member PRs. An additional teammate approval is not required for Master/Admin-authored changes.
+- Never force-push. Every Master/Admin bypass use must retain validation evidence and the resulting commit SHA in the handoff or PR record.
 - One vertical slice may span repositories, but it uses the same Slice ID/work slug and separate cross-linked PRs.
 - Shared contracts, Flyway revisions, app shell/router/navigation, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master handoff/manifest are serialized through the Integration/Contract owner.
 - Database work must reserve a UTC 14-digit Flyway revision before creating SQL and must pass empty-DB, previous-revision, repeated-migrate, single-history, and runtime-DDL-denial gates.
