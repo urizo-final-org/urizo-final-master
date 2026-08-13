@@ -3,7 +3,7 @@
 > Baseline: 2026-08-12
 > Goal: minimize shared-file collisions while each owner completes user-visible Contract→Flyway→Spring→Frontend→E2E slices
 
-The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: production Auth/RBAC, member management, menu, content/page, board, site design/template, Approval/Site Release/Publish/Rollback, unified Audit, and the end-user Renderer. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied.
+The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: two-role production Auth/RBAC, member management, menu, content/page, board, site design/template, direct customer-admin Site Release/Publish/Rollback, and the end-user Renderer. General manual-CMS approval/rejection and a unified Audit product are not part of the initial MVP. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied. Autonomous coding remains the exception and requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals at every side-effect Gate under the [Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md).
 
 ## 1. Operating model
 
@@ -25,8 +25,8 @@ Do not infer handles for 정차윤, 민은지, or 윤서. Confirm them before cr
 
 | Member | Primary workstream | Cross-review responsibility | Must not own alone |
 |---|---|---|---|
-| 민승준 | Integration/Contract owner; public/coding contracts, Flyway lane, common Error/Approval/Audit, Compose/bootstrap, Master manifest/handoff | all shared seams and final integrated E2E | natural-language CMS whole; LLM DevOps whole |
-| 정차윤 | Production Auth/RBAC, members, Project membership, security/approval UX | role/project isolation and approval policy | shared contracts without lane; LLM DevOps whole |
+| 민승준 | Integration/Contract owner; public/coding contracts, Flyway lane, common Error, future Coding dual approval, Compose/bootstrap, Master manifest/handoff | all shared seams and final integrated E2E | natural-language CMS whole; LLM DevOps whole |
+| 정차윤 | Production Auth/RBAC, members, Project membership, security UX | role/project isolation and dual-approval consumer policy | shared contracts without lane; LLM DevOps whole |
 | 이재욱 | Frontend feature architecture, menu/site design, Renderer, coding Diff/PR UX | App shell and browser behavior | app shell as an unreviewed private hot spot; natural-language CMS whole |
 | 민은지 | real Connector, content/page, RAG/Model Mapping, test/build/preview evidence | data quality and execution evidence | RAG as one large feature; natural-language CMS whole |
 | 윤서 | Repository/PathPolicy, Coding Runtime/Orchestrator, RAG evaluation, selected board slice | coding safety and consumer contract parity | Coding/LLM DevOps whole |
@@ -40,7 +40,7 @@ Do not infer handles for 정차윤, 민은지, or 윤서. Confirm them before cr
 | Public/Coding OpenAPI and JSON Schema | A/R | C | C | C | C |
 | Flyway reservation, order, verification | A/R | C | I | C | C |
 | App shell/router/navigation | A | C | R | I | I |
-| Common Error/Auth/Approval/Audit contract | A/R | C | C | C | C |
+| Common Error/Auth and future Coding dual-approval contract | A/R | C | C | C | C |
 | Production Auth/RBAC/members | C | A/R | C | I | C |
 | Menu/SiteTemplate/Renderer | C | C | A/R | C | I |
 | Connector/content/page/RAG/Model Mapping | C | I | C | A/R | C |
@@ -49,7 +49,7 @@ Do not infer handles for 정차윤, 민은지, or 윤서. Confirm them before cr
 | Master manifest/handoff | A/R | C | C | C | C |
 | Per-slice E2E | A for integration gate | R for owned slices | R for owned slices | R for owned slices | R for owned slices |
 
-Every team-member PR is approved and merged by the `tmdwns0531` Master/Admin integration account. Domain peer review is optional unless the integration owner requests it for a shared Contract, Migration, Auth/Security, Approval/Audit, or Compose seam. Master/Admin-authored governance or integration changes may use the intentional Repository Admin Ruleset bypass after recorded validation and do not require an additional teammate approval.
+Every team-member PR is approved and merged by the `tmdwns0531` Master/Admin integration account. Domain peer review is optional unless the integration owner requests it for a shared Contract, Migration, Auth/Security, future Coding dual-approval, or Compose seam. Master/Admin-authored governance or integration changes may use the intentional Repository Admin Ruleset bypass after recorded validation and do not require an additional teammate approval.
 
 ## 4. Hot spots and collision control
 
@@ -76,7 +76,7 @@ Every team-member PR is approved and merged by the `tmdwns0531` Master/Admin int
 ```text
 Backend
 src/main/java/org/urizo/axmodulestudio/backend/
-├── common/{web,error,auth,approval,audit}/
+├── common/{web,error,auth}/
 ├── project/
 ├── connector/
 ├── knowledge/
@@ -120,21 +120,21 @@ Repository PR shorthand:
 | `AXMS-FND-00` Workspace governance | 민승준 | Master manifest, handoff, traceability, safe bootstrap | `M/**` | none; `M` |
 | `AXMS-FND-01` Backend characterization/seam | 민승준 | existing Project/Connector/Knowledge/RAG/Job behavior unchanged through domain delegates | Backend `project/connector/knowledge/rag/job`, current facade tests | current Stage 3 regression; `B` |
 | `AXMS-FND-02` Frontend app seam | 이재욱 | existing two console screens preserved under route/feature boundaries | Frontend `app`, `features/local-full`, `features/providers`, `shared/api` | may run parallel with FND-01; `F` |
-| `AXMS-FND-03` Production Auth/RBAC | 정차윤 | login, user/role, Project membership, server-injected actor/project scope | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | FND-01/02; `B→F` |
-| `AXMS-FND-04` Common Approval/Audit/Job primitive | 민승준 | target type/id/hash, actor, trace, version, idempotency, approval and audit history | public common schemas; Flyway; Backend `common/approval,audit,error`; shared UI | FND-03; `B→F` |
+| `AXMS-FND-03` Production Auth/RBAC | 정차윤 | fixed `SUPER_ADMIN`/`GENERAL_ADMIN`, login/session, Project membership, server-injected actor/project scope | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | FND-01/02; `B→F` |
+| `AXMS-FND-04` Broad Approval/Audit/Job primitive | 민승준 | **DEFERRED**: not an initial manual-CMS prerequisite; existing Product Job behavior stays unchanged and new primitives require a concrete consumer | N/A until re-scoped; Coding dual approval belongs to later DVO Slices | does not block CMS-01–04 |
 
-Only FND-01 and FND-02 are safely parallel at first. FND-03 and FND-04 both reserve Contract/Flyway seams and are serialized.
+Only FND-01 and FND-02 are safely parallel at first. FND-03 starts after both merge and reserves the Auth Contract/Flyway seam. FND-04 is deferred and does not block the manual-CMS phase.
 
 ### Phase 1 — Five manual CMS domains, Release, Renderer
 
 | Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
 |---|---|---|---|---|
-| `AXMS-CMS-01` Member management | 정차윤 | list/invite/status/Project Role; permission failure and Audit | Backend `cms/member`; Frontend `features/members` | FND-03/04; `B→F` |
-| `AXMS-CMS-02` Manual menu | 이재욱 | MenuSpec Draft/Version, duplicate-path validation, preview | Backend `cms/menu`; Frontend `features/menus` | FND-04; `B→F` |
-| `AXMS-CMS-03` Manual content/page | 민은지 | Content/PageSpec Draft/Version, component/data binding, preview | Backend `cms/content`; Frontend `features/content` | FND-04; `B→F` |
-| `AXMS-CMS-04` Manual board | 윤서 | Board/Post state, role enforcement, soft delete, Audit | Backend `cms/board`; Frontend `features/boards` | FND-03/04; `B→F` |
+| `AXMS-CMS-01` Member management | 정차윤 | list/invite/status/Project membership; permission failure | Backend `cms/member`; Frontend `features/members` | FND-03; `B→F` |
+| `AXMS-CMS-02` Manual menu | 이재욱 | `GENERAL_ADMIN` MenuSpec Draft/Version, duplicate-path validation, preview, direct publish | Backend `cms/menu`; Frontend `features/menus` | FND-03; `B→F` |
+| `AXMS-CMS-03` Manual content/page | 민은지 | `GENERAL_ADMIN` Content/PageSpec Draft/Version, component/data binding, preview, direct publish | Backend `cms/content`; Frontend `features/content` | FND-03; `B→F` |
+| `AXMS-CMS-04` Manual board | 윤서 | `GENERAL_ADMIN` Board/Post state, role enforcement, CRUD/publish, soft delete | Backend `cms/board`; Frontend `features/boards` | FND-03; `B→F` |
 | `AXMS-CMS-05` Site design/template | 이재욱 | registry-constrained Header/Footer/Layout/Token, SiteTemplateSpec Version, desktop/mobile preview | Backend `cms/site`; Frontend `features/site-design` | CMS-02/03 reference contracts; `B→F` |
-| `AXMS-CMS-06` Site Release | 민승준 | immutable Menu/Page/SiteTemplate versions approved and atomically published/rolled back | Backend `cms/release`, common approval/audit; Frontend `features/releases` | CMS-02/03/05; `B→F` |
+| `AXMS-CMS-06` Site Release | 민승준 | immutable Menu/Page/SiteTemplate versions atomically published/rolled back directly by assigned `GENERAL_ADMIN` | Backend `cms/release`; Frontend `features/releases` | CMS-02/03/05; `B→F` |
 | `AXMS-CMS-07` End-user Renderer | 정차윤 | public route reads active Site Release only; Draft is never exposed | Backend `site/runtime`; Frontend `site-runtime` | CMS-06; `B→F` |
 
 CMS-01–04 may prepare feature-local code and mocks in parallel after their contracts are reserved. Flyway creation and merge still use one lane. CMS-05→06→07 are sequential because of reference/publish invariants.
@@ -154,14 +154,14 @@ Deterministic retrieval metrics must work without an `EVALUATION_JUDGE`. Paid ju
 
 | Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
 |---|---|---|---|---|
-| `AXMS-COD-01` Repository registry/tree | 윤서 | Super Admin sees registered repository status and a read-only tree without credential disclosure | Backend `coding/repository`; Frontend `features/coding/repositories` | FND-03/04; `B→F` |
-| `AXMS-COD-02` PathPolicy Version | 정차윤 | tree-checkbox read/write rules, immutable version, approval/audit, fixed non-overridable denylist | public/coding schemas; Flyway; Backend `coding/pathpolicy`; Frontend coding policy | COD-01; `B-expand→O if context changes→F` |
+| `AXMS-COD-01` Repository registry/tree | 윤서 | Super Admin sees registered repository status and a read-only tree without credential disclosure | Backend `coding/repository`; Frontend `features/coding/repositories` | FND-03; `B→F` |
+| `AXMS-COD-02` PathPolicy Version | 정차윤 | tree-checkbox read/write rules, immutable version, technical evidence, fixed non-overridable denylist | public/coding schemas; Flyway; Backend `coding/pathpolicy`; Frontend coding policy | COD-01; `B-expand→O if context changes→F` |
 | `AXMS-COD-03` Real read Tools | 윤서 | `list_tree`, `search_code`, `read_file` with repository/project/policy/realpath enforcement | Backend Tool executors; Orchestrator tool client/graph; Frontend result UI | COD-02; `B-expand→O→F` |
 | `AXMS-COD-04` Mutation Tools | 이재욱 | isolated-worktree `write_file/apply_patch`; whole-patch rejection on one invalid path; traversal/symlink/escape blocked | Backend mutation executors; Orchestrator nodes; Frontend Diff UX | COD-03; `B-expand→O→F` |
 | `AXMS-COD-05` Diff/Test/Build/Preview | 민은지 | candidate-SHA diff and async allowlisted checks with timeout/retry/evidence hashes | Backend check/preview executors; Orchestrator nodes; Frontend evidence/preview | COD-04; `B-expand→O→F` |
 | `AXMS-COD-06` Coding graph integration | 윤서 | plan→patch→test→preview interrupt/resume with duplicate side effect zero | Backend coding lifecycle; Orchestrator fixed graph; Frontend job timeline | COD-03–05; `B-expand→O→F` |
 
-Repository tools are sliced in the order `tree/read → write/apply_patch/diff → test → build → preview`. Each Tool slice includes contract, persistence/audit, Spring authority, Orchestrator consumer, UI result, and E2E. The Orchestrator never receives Provider/Git/Docker credentials or final authorization.
+Repository tools are sliced in the order `tree/read → write/apply_patch/diff → test → build → preview`. Each Tool slice includes contract, required evidence persistence, Spring authority, Orchestrator consumer, UI result, and E2E. The Orchestrator never receives Provider/Git/Docker credentials or final authorization.
 
 ### Phase 4 — Natural-language CMS on manual CMS
 
@@ -171,7 +171,7 @@ Repository tools are sliced in the order `tree/read → write/apply_patch/diff �
 | `AXMS-NAT-02` Natural-language Menu | 이재욱 | MenuSpec Draft, validation, Diff, preview; no direct active-pointer mutation | Menu packages and feature route | NAT-01 + CMS-02; `B→F` |
 | `AXMS-NAT-03` Natural-language Content/Page | 민은지 | Content/PageSpec Draft, component/data/Knowledge binding, preview | content/page packages and feature route | NAT-01 + CMS-03; `B→F` |
 | `AXMS-NAT-04` Natural-language SiteTemplate | 윤서 | SiteTemplateSpec Draft constrained to Registry/Token; desktop/mobile preview | site packages and feature route | NAT-01 + CMS-05; `B→F`; no Orchestrator |
-| `AXMS-NAT-05` Combined approval/publish/rollback | 정차윤 | Reviewer/Super Admin evaluates Diffs and publishes one Site Release; rollback and Audit | common approval + release UI | NAT-02–04 + CMS-06/07; `B→F` |
+| `AXMS-NAT-05` Combined preview/publish/rollback | 정차윤 | assigned `GENERAL_ADMIN` evaluates Diffs and directly publishes or rolls back one Site Release | release UI | NAT-02–04 + CMS-06/07; `B→F` |
 
 After NAT-01 is merged, NAT-02–04 can run in parallel in disjoint feature packages. Identity/role changes are not natural-language actions. Raw HTML/CSS/JS remains prohibited.
 
@@ -179,12 +179,12 @@ After NAT-01 is merged, NAT-02–04 can run in parallel in disjoint feature pack
 
 | Slice | E2E lead | Outcome | Dependency and PR order |
 |---|---|---|---|
-| `AXMS-DVO-01` Scope/Context approval | 정차윤 | request→Context Pack→read/write scope→Super Admin range approval | COD-02/03/06; `B-expand→O→F` |
-| `AXMS-DVO-02` Patch/Diff approval | 윤서 | candidate SHA and policy hash bind Patch/Diff approval; change invalidates approval | COD-04/06 + DVO-01; `B-expand→O→F` |
-| `AXMS-DVO-03` Test/Build/Preview approval | 민은지 | allowlisted commands, evidence hash, separate approval, retry, expiry | COD-05 + DVO-02; `B-expand→O→F` |
-| `AXMS-DVO-04` PR creation only | 이재욱 | only approved candidate can push a feature branch/open PR; connected PR body; merge stays manual | DVO-03; `B-expand→O→F` |
-| `AXMS-DVO-05` CI/deploy manual gate | 민승준 | CI status readback, deploy approval record, staging adapter, keep previous image on failure | DVO-04; external Cloud/credentials require separate approval |
-| `AXMS-DVO-06` Unified timeline | 정차윤 | Scope/Patch/Test/Preview/PR/CI/Deploy actor, SHA, policy, evidence, approval and Audit history | DVO-01–05; `B-expand→O→F` |
+| `AXMS-DVO-01` Scope/Context dual approval | 정차윤 | request→Context Pack→read/write scope→distinct `GENERAL_ADMIN` business and `SUPER_ADMIN` technical approvals | COD-02/03/06; `B-expand→O→F` |
+| `AXMS-DVO-02` Patch/Diff dual approval | 윤서 | both roles approve the candidate SHA and policy hash; any change invalidates both approvals | COD-04/06 + DVO-01; `B-expand→O→F` |
+| `AXMS-DVO-03` Test/Build/Preview dual approval | 민은지 | allowlisted commands and evidence hash require both roles, with retry and expiry | COD-05 + DVO-02; `B-expand→O→F` |
+| `AXMS-DVO-04` PR creation dual approval | 이재욱 | only a candidate approved by both roles can push a feature branch/open PR; merge stays manual | DVO-03; `B-expand→O→F` |
+| `AXMS-DVO-05` CI/deploy dual manual gate | 민승준 | CI readback and deploy require both roles; staging adapter keeps the previous image on failure | DVO-04; external Cloud/credentials require separate approval |
+| `AXMS-DVO-06` Dual-approval evidence timeline | 정차윤 | Scope/Patch/Test/Preview/PR/CI/Deploy actors, SHA, policy, evidence, two approvals, rejection, and invalidation | DVO-01–05; `B-expand→O→F` |
 
 Automatic merge, unapproved deployment, free shell, operational source mutation, and Python-held Git credentials remain prohibited.
 
@@ -193,13 +193,13 @@ Automatic merge, unapproved deployment, free shell, operational source mutation,
 | Window | Parallel work allowed | Serialized seam |
 |---|---|---|
 | P0-A | FND-01 Backend seam + FND-02 Frontend seam | no contract/DB behavior change |
-| P1-A | CMS-01/02/03/04 feature-local work after FND-04 | Contract reservation and Flyway merge |
+| P1-A | CMS-01/02/03/04 feature-local work after FND-03 | Contract reservation and Flyway merge |
 | P2-A | RAG-01 UI mock + MAP-01 UI mock while DATA-01 Backend stabilizes | public contract and DB revisions |
 | P3-A | COD feature UI components and executor unit harnesses | coding schema, PathPolicy model, graph |
-| P4-A | NAT-02/03/04 after NAT-01 | shared ActionPlan/Draft contract and approval/release |
+| P4-A | NAT-02/03/04 after NAT-01 | shared ActionPlan/Draft contract and release |
 | P5-A | UI/evidence views for subsequent DevOps stages | Coding job state machine and coding contracts |
 
-No two owners edit public OpenAPI, Flyway directory, app shell/navigation, common Approval/Audit, Compose/bootstrap, or Master manifest concurrently.
+No two owners edit public OpenAPI, Flyway directory, app shell/navigation, common Auth/Error, future Coding dual-approval, Compose/bootstrap, or Master manifest concurrently.
 
 ## 7. Proposed CODEOWNERS model
 
@@ -222,8 +222,6 @@ Recommended patterns:
 /contracts/coding-agent/** @urizo-final-org/ax-integration-contract @urizo-final-org/ax-coding-runtime
 /src/main/resources/db/migration/** @urizo-final-org/ax-db-migrations @urizo-final-org/ax-integration-contract
 /src/main/java/org/urizo/axmodulestudio/backend/common/auth/** @urizo-final-org/ax-security-approval @urizo-final-org/ax-integration-contract
-/src/main/java/org/urizo/axmodulestudio/backend/common/approval/** @urizo-final-org/ax-security-approval @urizo-final-org/ax-integration-contract
-/src/main/java/org/urizo/axmodulestudio/backend/common/audit/** @urizo-final-org/ax-security-approval @urizo-final-org/ax-integration-contract
 /src/main/java/org/urizo/axmodulestudio/backend/coding/** @urizo-final-org/ax-coding-runtime @urizo-final-org/ax-security-approval
 /compose.dev.yaml @urizo-final-org/ax-integration-contract
 /scripts/** @urizo-final-org/ax-integration-contract
@@ -327,9 +325,9 @@ Additional phase gates:
 
 | Phase | Additional DoD |
 |---|---|
-| Manual CMS | Draft/version/preview/approval/publish/rollback; Draft never public. |
+| Manual CMS | `GENERAL_ADMIN` Draft/version/preview/direct publish/rollback; Draft never public; no `SUPER_ADMIN` approval Gate. |
 | RAG | Dataset/metric/threshold/compare history; Active pointer remains unchanged on failure. |
 | Model Mapping | fixed use cases only; capability mismatch blocked; mapping version snapshotted into Job. |
 | Coding | traversal/symlink/denylist/escape blocked; policy/candidate hashes bound; duplicate side effect zero. |
-| Natural-language CMS | ActionPlan→Draft→validation→Diff/Preview→approval→Release→rollback; raw HTML/CSS/JS blocked. |
-| LLM DevOps | separate manual gates; changed SHA invalidates prior approval; automatic merge and unapproved deploy zero. |
+| Natural-language CMS | ActionPlan→Draft→validation→Diff/Preview→`GENERAL_ADMIN` publish→Release→rollback; raw HTML/CSS/JS blocked. |
+| LLM DevOps | every side-effect Gate requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals; changed scope/SHA/policy/evidence invalidates both; automatic merge and unapproved deploy zero. |

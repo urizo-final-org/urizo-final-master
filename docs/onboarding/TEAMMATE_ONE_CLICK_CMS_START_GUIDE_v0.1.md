@@ -1,7 +1,7 @@
 # AX Module Studio 팀원 원클릭 시작 가이드 v0.1
 
 > 대상: AX Module Studio 5인 개발팀
-> 1차 제품 목표: **수동으로 운영 가능한 전체관리자 CMS 제품을 다섯 명의 충돌 없는 vertical slice로 조립한다.**
+> 1차 제품 목표: **납품사 최고관리자와 고객사 일반관리자가 수동으로 운영 가능한 CMS 제품을 다섯 명의 충돌 없는 vertical slice로 조립한다.**
 
 ## 1. 이번 1차 목표
 
@@ -9,15 +9,23 @@
 
 | 전체관리자 CMS 영역 | 완료 결과 |
 |---|---|
-| 로그인·권한·회원 | Production 로그인, 사용자/역할, Project RBAC, 회원 조회·초대·상태·역할 관리 |
+| 로그인·권한·회원 | Production 로그인, 고정 `SUPER_ADMIN`/`GENERAL_ADMIN`, Project 격리, 회원 조회·초대·상태 관리 |
 | 메뉴 | MenuSpec Draft/Version, 경로 검증, Preview |
 | 콘텐츠·페이지 | Content/PageSpec Draft/Version, 구성요소·데이터 연결, Preview |
-| 게시판 | Board/Post 상태, 역할 검증, soft delete, Audit |
+| 게시판 | Board/Post 상태, 역할 검증, CRUD·게시, soft delete |
 | 사이트 디자인 | SiteTemplateSpec Version, Header/Footer/Layout/Token, 반응형 Preview |
-| 게시·복구 | Approval, immutable Site Release, Publish, Rollback, 통합 Audit |
+| 게시·복구 | 일반관리자의 직접 Publish/Unpublish, immutable Site Release, Rollback; 일반 CMS 승인·Audit 제품 기능 없음 |
 | 실제 사용자 사이트 | 활성 Site Release만 읽는 Renderer; Draft 외부 노출 금지 |
 
 자연어 CMS, 실제 공공데이터 Connector, RAG 튜닝, PathPolicy/Coding, LLM DevOps는 이 수동 CMS 제품 위에 후속으로 올린다. 1차 목표와 섞어서 동시에 구현하지 않는다.
+
+초기 역할과 승인 경계는
+[Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)을 따른다.
+`SUPER_ADMIN`은 납품사의 기술 엔지니어이고 `GENERAL_ADMIN`은 배정된 Project를 운영하는
+고객사 관리자다. 고객사의 메뉴·콘텐츠·페이지·게시판·사이트 디자인 업무는
+`GENERAL_ADMIN`이 최고관리자 승인 없이 직접 처리한다. 별도 `REVIEWER`와 통합 Audit 제품은
+초기 MVP에 포함하지 않는다. 단, 후속 자율코딩 파이프라인은 서로 다른 두 계정의
+`GENERAL_ADMIN` 업무 승인과 `SUPER_ADMIN` 기술 승인을 단계별로 모두 요구한다.
 
 ## 2. 한 Workspace로 여는 방법
 
@@ -72,13 +80,13 @@ AX Module Studio 팀 개발환경을 구성해줘.
 
 | 팀원 | 1차 담당 Slice | 제품 결과 | 주 소유 경로 |
 |---|---|---|---|
-| 민승준 (`tmdwns0531`) | `AXMS-FND-01`, `AXMS-FND-04`, `AXMS-CMS-06` | Backend seam, 공통 Approval/Audit, Site Release/Publish/Rollback, 통합 게이트 | Backend contract/Flyway/common/release, Master |
+| 민승준 (`tmdwns0531`) | `AXMS-FND-01`, `AXMS-CMS-06` | Backend seam, Site Release/Publish/Rollback, 통합 게이트 | Backend contract/Flyway/common/release, Master |
 | 정차윤 | `AXMS-FND-03`, `AXMS-CMS-01`, `AXMS-CMS-07` | 로그인/RBAC, 회원 관리, 실제 사용자 Renderer | Backend auth/member/runtime, Frontend auth/members/site-runtime |
 | 이재욱 (`LEEJAEWOOK1`) | `AXMS-FND-02`, `AXMS-CMS-02`, `AXMS-CMS-05` | Frontend feature seam, 메뉴, 사이트 디자인/템플릿 | Frontend app/menus/site-design, 대응 Backend feature package |
 | 민은지 | `AXMS-CMS-03` | 콘텐츠·페이지 수동 관리 | Backend cms/content, Frontend features/content |
 | 윤서 | `AXMS-CMS-04` | 게시판·게시물 수동 관리 | Backend cms/board, Frontend features/boards |
 
-업무분장은 Repository별 수평 분할이 아니다. 각 Slice 소유자가 **Contract → Flyway → Spring → Frontend → E2E**를 끝까지 주도한다. 단, 공용 Contract, Flyway revision, App shell/router, Auth/Error/Approval/Audit, Compose/bootstrap은 민승준의 Integration lane을 통해 직렬화한다.
+업무분장은 Repository별 수평 분할이 아니다. 각 Slice 소유자가 **Contract → Flyway → Spring → Frontend → E2E**를 끝까지 주도한다. 단, 공용 Contract, Flyway revision, App shell/router, Auth/Error, 후속 자율코딩 이중 승인, Compose/bootstrap은 민승준의 Integration lane을 통해 직렬화한다. 기존 `AXMS-FND-04` 광범위 Approval/Audit 제안은 초기 수동 CMS Gate에서 제외한다.
 
 ## 5. 충돌 없는 실행 순서
 
@@ -86,11 +94,10 @@ AX Module Studio 팀 개발환경을 구성해줘.
 |---|---|---|
 | 0 | `AXMS-FND-01` 민승준 + `AXMS-FND-02` 이재욱 | `SETUP PASS` 후 즉시 |
 | 1 | `AXMS-FND-03` 정차윤 | AXMS-FND-01/02 병합 후 |
-| 2 | `AXMS-FND-04` 민승준 | AXMS-FND-03 병합 후; Contract/Flyway 공용 seam 직렬화 |
-| 3 | `AXMS-CMS-01` 정차윤 + `AXMS-CMS-02` 이재욱 + `AXMS-CMS-03` 민은지 + `AXMS-CMS-04` 윤서 | 공용 contract와 migration 번호 예약 후 feature-local package에서 병렬 |
-| 4 | `AXMS-CMS-05` 이재욱 | AXMS-CMS-02/03의 참조 contract 안정화 후 |
-| 5 | `AXMS-CMS-06` 민승준 | AXMS-CMS-02/03/05의 immutable Version 준비 후 |
-| 6 | `AXMS-CMS-07` 정차윤 + 전체 통합 E2E | AXMS-CMS-06 활성 Site Release 준비 후 |
+| 2 | `AXMS-CMS-01` 정차윤 + `AXMS-CMS-02` 이재욱 + `AXMS-CMS-03` 민은지 + `AXMS-CMS-04` 윤서 | AXMS-FND-03 병합, 공용 contract와 migration 번호 예약 후 feature-local package에서 병렬 |
+| 3 | `AXMS-CMS-05` 이재욱 | AXMS-CMS-02/03의 참조 contract 안정화 후 |
+| 4 | `AXMS-CMS-06` 민승준 | AXMS-CMS-02/03/05의 immutable Version 준비 후 |
+| 5 | `AXMS-CMS-07` 정차윤 + 전체 통합 E2E | AXMS-CMS-06 활성 Site Release 준비 후 |
 
 자신의 Wave가 열리기 전에는 구현을 시작하지 않는다. 대신 LLM이 현재 Slice의 사용자 시나리오, 테스트, 계약 제안과 feature-local mock을 준비하게 할 수 있지만 공용 hot spot은 수정하지 않는다.
 
@@ -137,11 +144,10 @@ origin/dev 최신화
 → Project/Role 권한 확인
 → 회원·메뉴·페이지·게시판·사이트 디자인 수동 관리
 → Draft Version과 Diff/Preview 확인
-→ Approval
-→ 하나의 Site Release Publish
+→ 일반관리자가 직접 하나의 Site Release Publish
 → 실제 사용자 Renderer 확인
 → 이전 Release Rollback
-→ Approval/Audit/Job history 확인
+→ Job/Version 상태 확인
 ```
 
 컨테이너가 healthy인 것, 기존 Local Full 콘솔이 보이는 것, fixture Connector/RAG/Coding E2E가 통과하는 것만으로는 전체관리자 CMS 제품 완료가 아니다.
