@@ -18,15 +18,19 @@
 ## Required reading
 
 1. `docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md`
-2. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md`
-3. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
-4. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-5. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
-6. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
-7. The applicable sibling repository `AGENTS.md`
-8. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+2. `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`
+3. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.9.md`
+4. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
+5. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
+6. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
+7. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
+8. The applicable sibling repository `AGENTS.md`
+9. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
-The Project Spec is not reduced to the currently implemented OpenAPI. A healthy container or a technical E2E does not prove completion of an unimplemented product feature.
+The Project Spec is not reduced to the currently implemented OpenAPI. The approved Auth/RBAC MVP
+overlay is the later authority for the initial two-role model, manual-CMS approval exclusion, Audit
+exclusion, and autonomous-coding dual approval. A healthy container or a technical E2E does not
+prove completion of an unimplemented product feature.
 
 ## LLM onboarding protocol
 

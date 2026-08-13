@@ -12,11 +12,12 @@ AX-Module-Studio-Workspace/          # no .git
 
 ## Current checkpoint
 
-The latest checkpoint is [implementation/team handoff v0.8](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md). All four canonical repositories now contain the reviewed baseline on protected `main` and `dev` branches, so teammate remote assembly can proceed through the Master bootstrap flow. The implementation remains a technical foundation rather than the planned product CMS: production RBAC, the five manual CMS domains, Site Release/Renderer, natural-language CMS, real repository tools, PathPolicy UI/versioning, and LLM DevOps remain incomplete.
+The latest checkpoint is [implementation/team handoff v0.9](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.9.md). All four canonical repositories now contain the reviewed baseline on protected `main` and `dev` branches, so teammate remote assembly can proceed through the Master bootstrap flow. The [Auth/RBAC MVP specification](docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md) fixes the initial product boundary at two administrator roles, direct customer CMS operation, and a later dual-approval exception for autonomous coding. The implementation remains a technical foundation rather than the planned product CMS: production RBAC, the five manual CMS domains, Site Release/Renderer, natural-language CMS, real repository tools, PathPolicy UI/versioning, and LLM DevOps remain incomplete.
 
 ## Entry points
 
 - [팀원 원클릭 전체관리자 CMS 시작 가이드](docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
+- [Auth/RBAC MVP specification](docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)
 - [Document index](docs/README.md)
 - [Feature traceability matrix](docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
 - [Team ownership and roadmap](docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
