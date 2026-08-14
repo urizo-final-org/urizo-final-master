@@ -22,11 +22,12 @@
 3. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.9.md`
 4. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
 5. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
-6. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-7. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
-8. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
-9. The applicable sibling repository `AGENTS.md`
-10. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+6. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
+7. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
+8. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
+9. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
+10. The applicable sibling repository `AGENTS.md`
+11. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
 The Project Spec is not reduced to the currently implemented OpenAPI. The approved Auth/RBAC MVP
 overlay is the later authority for the initial two-role model, manual-CMS approval exclusion, Audit
@@ -36,6 +37,7 @@ prove completion of an unimplemented product feature.
 ## LLM onboarding protocol
 
 - Treat natural-language requests such as `AX Module Studio 팀 개발환경을 구성해줘`, `로컬 환경을 세팅해줘`, or `환경 최신화해줘` as an onboarding/setup request.
+- Treat `깃 pull 해줘`, `전체 Git 최신화`, or `워크스페이스 최신화` as a request to run the Master-first safe four-repository synchronization in `scripts/sync-workspace.ps1 -ApproveNetwork`. Re-read the updated Master rules and status snapshot before continuing. Never translate this request into an unconditional `pull origin dev` on every current branch.
 - The teammate only needs to clone/open this Master repository and make that request. Do not require the teammate to copy and run PowerShell, Git, Docker, Maven, Node, or Python commands manually when the agent can run the version-managed scripts.
 - First read the required documents above and run the read-only `scripts/preflight-workspace.ps1`. Explain the detected repository, Git, Docker/WSL, database, and health state before proposing changes.
 - Explain the exact next action and whether it needs network access, local runtime mutation, authentication/MFA/browser interaction, administrator elevation, installation, or reboot. Obtain the applicable explicit approval before crossing that boundary.
@@ -52,6 +54,7 @@ prove completion of an unimplemented product feature.
 - Orchestrator owns only the Python LangGraph Coding Runtime and consumes Backend coding contracts.
 - Master owns the repository manifest, workspace bootstrap wrapper, latest handoff, traceability, team ownership, migration reservation ledger, and collaboration rules.
 - Product source, Compose, migrations, runtime credentials, business data, and Docker volumes never move into Master.
+- Only Min Seungjun (`tmdwns0531`) may create Master branches, commits, pushes, pull requests, or merges. Teammates use Master as a read/pull-only control repository and submit Slice work only to changed Frontend, Backend, or Orchestrator repositories.
 
 ## Notion synchronization policy
 
@@ -60,8 +63,8 @@ prove completion of an unimplemented product feature.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
 - Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. A request to implement code, update Git documentation, open a PR, merge, or report status does not imply Notion-write authorization.
 - When an explicit Notion synchronization is requested, first fetch and inspect the relevant canonical repositories, verify the applicable `origin/dev` commits, merged PRs, specifications, and validation evidence, and then project that verified state into Notion. If Git and Notion conflict, treat Git as authoritative and report the mismatch.
-- Notion MCP access is not a teammate setup prerequisite. A teammate LLM starts from current Git plus an assigned task packet containing at least the Slice ID, target repositories, scope, dependencies, and any optional Notion URL or snapshot.
-- Read only the task-relevant Notion page or rows when access and a reference are supplied. Do not scrape the entire Notion workspace after every pull, and do not block implementation solely because the teammate has no Notion MCP connection.
+- Teammates do not connect or use Notion MCP. A teammate LLM starts from current Git plus an assigned task packet containing at least the Slice ID, target repositories, scope, dependencies, and any optional team-lead-provided read-only snapshot.
+- A teammate LLM may consume only a task-relevant read-only snapshot explicitly supplied by the team lead. Do not request Notion MCP, scrape the Notion workspace, or block implementation because Notion is unavailable.
 
 ## Safety
 
@@ -75,6 +78,7 @@ prove completion of an unimplemented product feature.
 ## Git and team workflow
 
 - Team-member work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a PR approved by the `tmdwns0531` Master/Admin integration account.
+- Every team-member Branch work slug contains the lowercase Slice ID. Every Commit subject uses `<type>(<SLICE-ID>/<github-id>): <result>`, and every PR title uses `[<SLICE-ID>][<github-id>] <result>`. The PR body records Slice version, worker name/GitHub ID, Repository, dependencies, connected PRs, Contract/Migration impact, verification, Blocker, and next Gate.
 - Team members do not push directly to `dev` or `main`. The `tmdwns0531` Master/Admin account is the intentional Ruleset bypass actor and may directly update `dev`/`main`, merge its own validated governance changes, and approve team-member PRs. An additional teammate approval is not required for Master/Admin-authored changes.
 - Never force-push. Every Master/Admin bypass use must retain validation evidence and the resulting commit SHA in the handoff or PR record.
 - One vertical slice may span repositories, but it uses the same Slice ID/work slug and separate cross-linked PRs.

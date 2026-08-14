@@ -5,7 +5,9 @@
 > Purpose: small Git-owned status and WBS view that every teammate LLM reads after synchronizing Master
 
 This is the current operational snapshot for local LLMs. It complements the detailed roadmap and
-handoff without requiring every teammate to connect Notion MCP or scrape the full Notion workspace.
+handoff without allowing teammate Notion MCP connections or full Notion workspace scraping.
+Only Min Seungjun updates this Master file. Teammates consume it read-only and report Source PR/Git
+evidence through their assigned Repository workflow.
 
 ## 1. Authority and freshness
 
@@ -74,11 +76,11 @@ Detailed future Slice ownership and dependencies remain in
 
 ## 7. Snapshot update triggers
 
-Update this Git file when any of the following changes:
+The team lead updates this Git file when any of the following changes:
 
 - Wave or Slice assignment;
 - deadline or milestone;
-- PR opened, blocked, approved, or merged;
+- Slice-level state changes because a PR opened, became blocked, or merged;
 - implementation or validation gate;
 - blocker or dependency that changes who can start work.
 

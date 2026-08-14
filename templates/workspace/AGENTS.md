@@ -32,11 +32,14 @@
 
 - At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, `urizo-final-master/docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
 - If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md`, the current LLM project-status snapshot, and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
+- Only Min Seungjun (`tmdwns0531`) controls Master writes and Notion MCP. Teammates read/pull Master and create Slice Branches, Commits, and PRs only in changed Frontend, Backend, or Orchestrator repositories.
+- Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: Master first, then all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
+- Team Branches, Commits, and PRs must contain the assigned Slice ID and confirmed GitHub ID according to `urizo-final-master/docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
 - Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. Git work, PR, merge, and status requests do not imply Notion-write authorization.
 - For an explicitly requested Notion synchronization, first fetch and verify the relevant canonical repositories, `origin/dev` commits, merged PRs, specifications, and validation evidence. Project that state into Notion; if the two conflict, Git is authoritative and the mismatch must be reported.
-- Notion MCP is optional for teammates. Start from current Git and the assigned task packet: Slice ID, target repositories, scope, dependencies, and an optional Notion URL or snapshot.
-- Read only task-relevant Notion content when access and a reference are supplied. Never scrape the full workspace after every pull, and never block work solely because Notion MCP is unavailable.
+- Teammates do not connect or use Notion MCP. Start from current Git and the assigned task packet: Slice ID, target repositories, scope, dependencies, and an optional team-lead-provided read-only snapshot.
+- Consume only a task-relevant read-only Notion snapshot explicitly supplied by the team lead. Never request Notion MCP, scrape the workspace, or block work because Notion is unavailable.
 <!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->
 
 ## Safety and Git

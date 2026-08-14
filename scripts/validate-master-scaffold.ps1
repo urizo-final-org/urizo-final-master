@@ -15,6 +15,7 @@ $required = @(
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
     'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',
     'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
+    'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md',
     'docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
@@ -27,6 +28,7 @@ $required = @(
     'templates/workspace/AX-Module-Studio.code-workspace',
     'scripts/preflight-workspace.ps1',
     'scripts/bootstrap-workspace.ps1',
+    'scripts/sync-workspace.ps1',
     'scripts/health-workspace.ps1',
     'scripts/validate-master-scaffold.ps1'
 )
@@ -86,6 +88,9 @@ if ([regex]::Matches($workspaceAgentTemplate, [regex]::Escape($managedPolicyBegi
 $workspaceClaudeTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates\workspace\CLAUDE.md')
 if ($workspaceClaudeTemplate -notmatch 'urizo-final-master/AGENTS\.md') {
     throw 'Workspace CLAUDE template must route every task through Master AGENTS.md.'
+}
+if ($workspaceAgentTemplate -notmatch 'scripts/sync-workspace\.ps1') {
+    throw 'Workspace AGENTS template must route shared Git synchronization through sync-workspace.ps1.'
 }
 
 $parseFailures = [System.Collections.Generic.List[string]]::new()
