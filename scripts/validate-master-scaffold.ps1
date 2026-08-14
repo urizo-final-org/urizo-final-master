@@ -75,6 +75,18 @@ foreach ($workspaceFile in @(
     }
 }
 
+$managedPolicyBegin = '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->'
+$managedPolicyEnd = '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
+$workspaceAgentTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates\workspace\AGENTS.md')
+if ([regex]::Matches($workspaceAgentTemplate, [regex]::Escape($managedPolicyBegin)).Count -ne 1 -or
+    [regex]::Matches($workspaceAgentTemplate, [regex]::Escape($managedPolicyEnd)).Count -ne 1) {
+    throw 'Workspace AGENTS template must contain exactly one managed local-LLM policy block.'
+}
+$workspaceClaudeTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates\workspace\CLAUDE.md')
+if ($workspaceClaudeTemplate -notmatch 'urizo-final-master/AGENTS\.md') {
+    throw 'Workspace CLAUDE template must route every task through Master AGENTS.md.'
+}
+
 $parseFailures = [System.Collections.Generic.List[string]]::new()
 foreach ($scriptFile in Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1') {
     $tokens = $null
@@ -113,6 +125,7 @@ foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend',
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
+Write-Host 'PASS: managed local-LLM policy and Claude routing'
 Write-Host 'PASS: four canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'
 Write-Host 'PASS: no forbidden destructive command patterns'

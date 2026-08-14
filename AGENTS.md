@@ -52,6 +52,16 @@ prove completion of an unimplemented product feature.
 - Master owns the repository manifest, workspace bootstrap wrapper, latest handoff, traceability, team ownership, migration reservation ledger, and collaboration rules.
 - Product source, Compose, migrations, runtime credentials, business data, and Docker volumes never move into Master.
 
+## Notion synchronization policy
+
+- At the start of every local implementation task, read this Master `AGENTS.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. The team lead must not have to paste this policy into each LLM prompt.
+- If the task fetches, pulls, or otherwise synchronizes Git, re-read the updated Master `AGENTS.md` and the task-relevant Master documents after synchronization and before planning or implementation. Do this without requiring a separate teammate instruction.
+- Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
+- Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. A request to implement code, update Git documentation, open a PR, merge, or report status does not imply Notion-write authorization.
+- When an explicit Notion synchronization is requested, first fetch and inspect the relevant canonical repositories, verify the applicable `origin/dev` commits, merged PRs, specifications, and validation evidence, and then project that verified state into Notion. If Git and Notion conflict, treat Git as authoritative and report the mismatch.
+- Notion MCP access is not a teammate setup prerequisite. A teammate LLM starts from current Git plus an assigned task packet containing at least the Slice ID, target repositories, scope, dependencies, and any optional Notion URL or snapshot.
+- Read only the task-relevant Notion page or rows when access and a reference are supplied. Do not scrape the entire Notion workspace after every pull, and do not block implementation solely because the teammate has no Notion MCP connection.
+
 ## Safety
 
 - Preserve every sibling branch, HEAD, uncommitted change, Core DB, checkpoint DB, Docker volume, secret, and running container unless the user explicitly authorizes a scoped change.

@@ -27,6 +27,18 @@
 - Use the generated `AX-Module-Studio.code-workspace` as the four-repository development view. Before work, report the assigned Slice ID, owner, dependencies, shared seams, and repository-specific PR order from the Master team roadmap.
 - Report `SETUP PASS` only after the v0.8 acceptance contract passes. Do not implement from a broad workstream request without one assigned Slice ID.
 
+<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->
+## Automatic local LLM and Notion policy
+
+- At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
+- If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md` and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
+- Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
+- Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. Git work, PR, merge, and status requests do not imply Notion-write authorization.
+- For an explicitly requested Notion synchronization, first fetch and verify the relevant canonical repositories, `origin/dev` commits, merged PRs, specifications, and validation evidence. Project that state into Notion; if the two conflict, Git is authoritative and the mismatch must be reported.
+- Notion MCP is optional for teammates. Start from current Git and the assigned task packet: Slice ID, target repositories, scope, dependencies, and an optional Notion URL or snapshot.
+- Read only task-relevant Notion content when access and a reference are supplied. Never scrape the full workspace after every pull, and never block work solely because Notion MCP is unavailable.
+<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->
+
 ## Safety and Git
 
 - Preserve all branch/HEAD/uncommitted state, databases, volumes, secrets, and running containers.
