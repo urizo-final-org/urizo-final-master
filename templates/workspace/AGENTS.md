@@ -30,8 +30,8 @@
 <!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->
 ## Automatic local LLM and Notion policy
 
-- At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
-- If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md` and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
+- At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, `urizo-final-master/docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
+- If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md`, the current LLM project-status snapshot, and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
 - Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. Git work, PR, merge, and status requests do not imply Notion-write authorization.
 - For an explicitly requested Notion synchronization, first fetch and verify the relevant canonical repositories, `origin/dev` commits, merged PRs, specifications, and validation evidence. Project that state into Notion; if the two conflict, Git is authoritative and the mismatch must be reported.

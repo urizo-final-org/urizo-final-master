@@ -21,11 +21,12 @@
 2. `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`
 3. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.9.md`
 4. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
-5. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-6. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
-7. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
-8. The applicable sibling repository `AGENTS.md`
-9. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+5. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
+6. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
+7. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
+8. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
+9. The applicable sibling repository `AGENTS.md`
+10. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
 The Project Spec is not reduced to the currently implemented OpenAPI. The approved Auth/RBAC MVP
 overlay is the later authority for the initial two-role model, manual-CMS approval exclusion, Audit
@@ -55,7 +56,7 @@ prove completion of an unimplemented product feature.
 ## Notion synchronization policy
 
 - At the start of every local implementation task, read this Master `AGENTS.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. The team lead must not have to paste this policy into each LLM prompt.
-- If the task fetches, pulls, or otherwise synchronizes Git, re-read the updated Master `AGENTS.md` and the task-relevant Master documents after synchronization and before planning or implementation. Do this without requiring a separate teammate instruction.
+- If the task fetches, pulls, or otherwise synchronizes Git, re-read the updated Master `AGENTS.md`, `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, and the task-relevant Master documents after synchronization and before planning or implementation. Do this without requiring a separate teammate instruction.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
 - Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. A request to implement code, update Git documentation, open a PR, merge, or report status does not imply Notion-write authorization.
 - When an explicit Notion synchronization is requested, first fetch and inspect the relevant canonical repositories, verify the applicable `origin/dev` commits, merged PRs, specifications, and validation evidence, and then project that verified state into Notion. If Git and Notion conflict, treat Git as authoritative and report the mismatch.

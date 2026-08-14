@@ -14,6 +14,7 @@ $required = @(
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md',
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
     'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',
+    'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
     'docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
