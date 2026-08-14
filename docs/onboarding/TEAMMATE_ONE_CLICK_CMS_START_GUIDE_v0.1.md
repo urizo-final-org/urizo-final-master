@@ -9,7 +9,7 @@
 
 | 전체관리자 CMS 영역 | 완료 결과 |
 |---|---|
-| 로그인·권한·회원 | Production 로그인, 고정 `SUPER_ADMIN`/`GENERAL_ADMIN`, Project 격리, 회원 조회·초대·상태 관리 |
+| 로그인·권한·회원 | 완료된 Production 로그인과 고정 `SUPER_ADMIN`/`GENERAL_ADMIN` 역할 인가 위에 CMS-01 회원 조회·초대·상태 관리 추가; 현재 단일 고객사 데모는 Project 격리 미적용 |
 | 메뉴 | MenuSpec Draft/Version, 경로 검증, Preview |
 | 콘텐츠·페이지 | Content/PageSpec Draft/Version, 구성요소·데이터 연결, Preview |
 | 게시판 | Board/Post 상태, 역할 검증, CRUD·게시, soft delete |
@@ -21,6 +21,8 @@
 
 초기 역할과 승인 경계는
 [Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)을 따른다.
+FND-03의 실제 완료 범위와 Project 격리 축소는 더 최신 결정인
+[FND-03 completion decision](../product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md)을 따른다.
 `SUPER_ADMIN`은 납품사의 기술 엔지니어이고 `GENERAL_ADMIN`은 배정된 Project를 운영하는
 고객사 관리자다. 고객사의 메뉴·콘텐츠·페이지·게시판·사이트 디자인 업무는
 `GENERAL_ADMIN`이 최고관리자 승인 없이 직접 처리한다. 별도 `REVIEWER`와 통합 Audit 제품은
@@ -51,6 +53,7 @@ AX-Module-Studio-Workspace/              # .git 없음
 ```text
 AX-Module-Studio-Workspace/              # 하나의 Vibe Coding 화면, Git 아님
   AGENTS.md
+  CLAUDE.md                              # Claude Code가 공통 AGENTS 규칙을 import
   AX-Module-Studio.code-workspace
   urizo-final-master/                    # 문서·업무분장·bootstrap
   urizo-final-frontend/                  # React 제품 UI
@@ -86,7 +89,7 @@ AX Module Studio 팀 개발환경을 구성해줘.
 | 민은지 | `AXMS-CMS-03` | 콘텐츠·페이지 수동 관리 | Backend cms/content, Frontend features/content |
 | 윤서 | `AXMS-CMS-04` | 게시판·게시물 수동 관리 | Backend cms/board, Frontend features/boards |
 
-업무분장은 Repository별 수평 분할이 아니다. 각 Slice 소유자가 **Contract → Flyway → Spring → Frontend → E2E**를 끝까지 주도한다. 단, 공용 Contract, Flyway revision, App shell/router, Auth/Error, 후속 자율코딩 이중 승인, Compose/bootstrap은 민승준의 Integration lane을 통해 직렬화한다. 기존 `AXMS-FND-04` 광범위 Approval/Audit 제안은 초기 수동 CMS Gate에서 제외한다.
+업무분장은 Repository별 수평 분할이 아니다. 각 Slice 소유자가 **Contract → Flyway → Spring → Frontend → E2E**를 끝까지 주도한다. 단, 공용 Contract, Flyway revision, App shell/router, Auth/Error, 후속 자율코딩 이중 승인, Compose/bootstrap은 민승준의 Integration lane을 통해 직렬화한다. 기존 `AXMS-FND-04` 광범위 Approval/Audit 제안은 별도 Foundation Slice와 Wave에서 종료되었고, 후속 자율코딩 이중 승인은 실제 Coding 소비 Slice가 구현한다.
 
 ## 5. 충돌 없는 실행 순서
 
@@ -100,6 +103,9 @@ AX Module Studio 팀 개발환경을 구성해줘.
 | 5 | `AXMS-CMS-07` 정차윤 + 전체 통합 E2E | AXMS-CMS-06 활성 Site Release 준비 후 |
 
 자신의 Wave가 열리기 전에는 구현을 시작하지 않는다. 대신 LLM이 현재 Slice의 사용자 시나리오, 테스트, 계약 제안과 feature-local mock을 준비하게 할 수 있지만 공용 hot spot은 수정하지 않는다.
+
+Wave 0과 Wave 1은 현재 병합 완료다. 이미지나 구형 문서의 `Wave 2 = AXMS-FND-04`는 폐기된
+일정이다. 별도 FND-04 단계 없이 위 표의 CMS-01–04 병렬 Wave가 다음 단계다.
 
 ## 6. 업무 시작 시 LLM에 전달할 내용
 

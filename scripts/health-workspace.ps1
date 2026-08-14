@@ -22,7 +22,7 @@ if (Test-Path -LiteralPath (Join-Path $WorkspaceRoot '.git')) {
     throw 'The shared workspace must not be a Git repository.'
 }
 
-$backendHealth = Join-Path $WorkspaceRoot 'urizo-final-backend\scripts\health.ps1'
+$backendHealth = Join-Path $WorkspaceRoot 'urizo-final-backend/scripts/health.ps1'
 if (-not (Test-Path -LiteralPath $backendHealth -PathType Leaf)) {
     throw 'Backend health.ps1 is missing. The source baseline may not be published on this checkout.'
 }

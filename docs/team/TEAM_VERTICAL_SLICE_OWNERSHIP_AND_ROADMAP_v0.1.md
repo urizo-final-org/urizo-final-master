@@ -1,6 +1,6 @@
 # AX Module Studio 5-person vertical-slice ownership and roadmap v0.1
 
-> Baseline: 2026-08-12
+> Baseline: 2026-08-14; Foundation completion revalidated from canonical Source `origin/dev`
 > Goal: minimize shared-file collisions while each owner completes user-visible Contract→Flyway→Spring→Frontend→E2E slices
 
 The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: two-role production Auth/RBAC, member management, menu, content/page, board, site design/template, direct customer-admin Site Release/Publish/Rollback, and the end-user Renderer. General manual-CMS approval/rejection and a unified Audit product are not part of the initial MVP. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied. Autonomous coding remains the exception and requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals at every side-effect Gate under the [Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md).
@@ -18,8 +18,11 @@ Confirmed account mapping is limited to:
 
 - 민승준 → `tmdwns0531`
 - 이재욱 → `LEEJAEWOOK1`
+- 정차윤 → `jcy644542` (FND-03 Backend/Frontend merged PR evidence)
+- 윤서 → `HaveOffDuty` (Backend PR #4 evidence)
 
-Do not infer handles for 정차윤, 민은지, or 윤서. Confirm them before creating branches, GitHub teams, or CODEOWNERS entries.
+Do not infer 민은지's GitHub handle. Confirm it before creating a Branch, GitHub team, or CODEOWNERS
+entry for that member.
 
 ## 2. People and workstreams
 
@@ -118,12 +121,15 @@ Repository PR shorthand:
 | Slice | E2E lead | User-visible/engineering outcome | Expected paths | Dependency and PR order |
 |---|---|---|---|---|
 | `AXMS-FND-00` Workspace governance | 민승준 | Master manifest, handoff, traceability, safe bootstrap | `M/**` | none; `M` |
-| `AXMS-FND-01` Backend characterization/seam | 민승준 | existing Project/Connector/Knowledge/RAG/Job behavior unchanged through domain delegates | Backend `project/connector/knowledge/rag/job`, current facade tests | current Stage 3 regression; `B` |
-| `AXMS-FND-02` Frontend app seam | 이재욱 | existing two console screens preserved under route/feature boundaries | Frontend `app`, `features/local-full`, `features/providers`, `shared/api` | may run parallel with FND-01; `F` |
-| `AXMS-FND-03` Production Auth/RBAC | 정차윤 | fixed `SUPER_ADMIN`/`GENERAL_ADMIN`, login/session, Project membership, server-injected actor/project scope | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | FND-01/02; `B→F` |
-| `AXMS-FND-04` Broad Approval/Audit/Job primitive | 민승준 | **DEFERRED**: not an initial manual-CMS prerequisite; existing Product Job behavior stays unchanged and new primitives require a concrete consumer | N/A until re-scoped; Coding dual approval belongs to later DVO Slices | does not block CMS-01–04 |
+| `AXMS-FND-01` Backend characterization/seam | 민승준 | **DONE**: existing Project/Connector/Knowledge/RAG/Job behavior preserved through domain delegates | Backend `project/connector/knowledge/rag/job`, current facade tests | Backend PR #6 merged; `B` |
+| `AXMS-FND-02` Frontend app seam | 이재욱 | **DONE**: existing console screens preserved under route/feature boundaries | Frontend `app`, `features/local-full`, `features/providers`, `shared/api` | Frontend PR #3 merged; `F` |
+| `AXMS-FND-03` Production Auth/RBAC | 정차윤 | **DONE, reduced single-customer scope**: fixed roles, login/session, Backend role enforcement and Frontend role-aware UX; no Project narrowing | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | Backend PR #7 → Frontend PR #4 merged; `B→F` |
+| `AXMS-FND-04` Broad Approval/Audit/Job primitive | none | **RETIRED**: not a scheduled Slice; no general manual-CMS Approval/Audit product and no separate Foundation Wave | N/A; later Coding dual approval belongs to the consuming Coding/LLM DevOps Slices | no implementation or PR |
 
-Only FND-01 and FND-02 are safely parallel at first. FND-03 starts after both merge and reserves the Auth Contract/Flyway seam. FND-04 is deferred and does not block the manual-CMS phase.
+The Foundation sequence through FND-03 is complete. There is no FND-04 Wave. CMS-01–04 are the next
+parallel product Slices after team-lead task packets and shared Contract/Flyway reservations. FND-03
+completion details and the deliberate Project-isolation reduction are fixed in the later completion
+decision; do not overstate the delivered boundary.
 
 ### Phase 1 — Five manual CMS domains, Release, Renderer
 
