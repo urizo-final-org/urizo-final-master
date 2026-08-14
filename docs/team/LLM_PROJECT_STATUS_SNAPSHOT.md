@@ -14,8 +14,9 @@ handoff without requiring every teammate to connect Notion MCP or scrape the ful
 - Work assignment, milestone, and priority changes require team-lead confirmation.
 - Notion Gantt, WBS, and timeline pages are human-facing projections. They are updated only when Min
   Seungjun explicitly requests a Notion write in the current task.
-- If a fetched remote ref is newer than the SHA recorded below, use the newer Git evidence for
-  implementation state and report this snapshot as stale. Do not guess an assignment or deadline.
+- If a fetched Frontend, Backend, or Orchestrator remote ref is newer than the SHA recorded below, use
+  the newer Git evidence for implementation state and report this snapshot as stale. The checked-out
+  commit containing this file is the current Master evidence. Do not guess an assignment or deadline.
 
 ## 2. Delivery milestones
 
@@ -30,7 +31,7 @@ Verified by fetching each canonical `origin/dev` on 2026-08-14.
 
 | Repository | `origin/dev` | Latest verified evidence |
 |---|---|---|
-| Master | `e79637c6fbedf70135bb52ff23e069642a2cb8a8` | Master PR #2 merged; Auth/RBAC MVP specification published |
+| Master | base `e79637c6fbedf70135bb52ff23e069642a2cb8a8` | snapshot-PR base; the commit containing this file supersedes this embedded base |
 | Frontend | `bffaebde9b4d320cd7031f3dd8f270539b5b54d8` | Frontend PR #3 merged; `AXMS-FND-02` app seam |
 | Backend | `45b2afc9ec1db0ba096c0952afe63a7f241c9ad6` | Backend PR #6 merged; `AXMS-FND-01` backend seam |
 | Orchestrator | `eaeb3a380035e8ddb13e42fb1877baabd9f57549` | Coding runtime baseline; no Foundation Auth/RBAC change |
