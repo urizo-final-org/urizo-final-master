@@ -31,8 +31,12 @@
 ## Automatic local LLM and Notion policy
 
 - At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, `urizo-final-master/docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
+- Detect and report the host OS and PowerShell version. Follow the Master multi-OS specification, use OS-neutral Repository paths, and never ask macOS/Linux users to run `powershell.exe`.
 - If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md`, the current LLM project-status snapshot, and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
+- Treat the team lead's `MASTER UPDATE COMPLETE` packet as the signal to synchronize, not as a substitute for Git evidence. Match its Snapshot version, Slice ID, Task version, worker, target repositories, and Master commit to the checked-in Master status snapshot.
+- Before implementation, return `MASTER CONTEXT PASS` with the recognized assignment and fetched Source `origin/dev` refs. Return `MASTER CONTEXT BLOCKED` and stop if the announcement, local Master commit, or assignment row differs.
 - Only Min Seungjun (`tmdwns0531`) controls Master writes and Notion MCP. Teammates read/pull Master and create Slice Branches, Commits, and PRs only in changed Frontend, Backend, or Orchestrator repositories.
+- Only Min Seungjun advances each worker's Slice `Task-Version` in Master and announces the checked-in version, next work, and Master commit. Teammates consume it read-only.
 - Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: Master first, then all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
 - Team Branches, Commits, and PRs must contain the assigned Slice ID and confirmed GitHub ID according to `urizo-final-master/docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.

@@ -202,7 +202,7 @@ else {
     }
 }
 
-$templateRoot = Join-Path $masterRoot 'templates\workspace'
+$templateRoot = Join-Path $masterRoot 'templates/workspace'
 $agentTemplate = Join-Path $templateRoot 'AGENTS.md'
 $workspaceAgent = Join-Path $WorkspaceRoot 'AGENTS.md'
 Copy-TemplateIfAbsent -Source $agentTemplate -Target $workspaceAgent
@@ -211,7 +211,14 @@ Sync-ManagedTextBlock `
     -Target $workspaceAgent `
     -BeginMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->' `
     -EndMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
-Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'CLAUDE.md') -Target (Join-Path $WorkspaceRoot 'CLAUDE.md')
+$claudeTemplate = Join-Path $templateRoot 'CLAUDE.md'
+$workspaceClaude = Join-Path $WorkspaceRoot 'CLAUDE.md'
+Copy-TemplateIfAbsent -Source $claudeTemplate -Target $workspaceClaude
+Sync-ManagedTextBlock `
+    -Source $claudeTemplate `
+    -Target $workspaceClaude `
+    -BeginMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:BEGIN -->' `
+    -EndMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->'
 Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'AX-Module-Studio.code-workspace') -Target (Join-Path $WorkspaceRoot 'AX-Module-Studio.code-workspace')
 
 if ($RunLocalFull) {
@@ -233,7 +240,7 @@ if ($RunLocalFull) {
         }
     }
 
-    $backendBootstrap = Join-Path $WorkspaceRoot 'urizo-final-backend\scripts\bootstrap-dev.ps1'
+    $backendBootstrap = Join-Path $WorkspaceRoot 'urizo-final-backend/scripts/bootstrap-dev.ps1'
     if (-not (Test-Path -LiteralPath $backendBootstrap -PathType Leaf)) {
         throw 'Backend bootstrap-dev.ps1 is missing. The reviewed source baseline is not available on this checkout.'
     }

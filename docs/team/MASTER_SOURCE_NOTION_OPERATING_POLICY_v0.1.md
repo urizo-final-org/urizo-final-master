@@ -79,7 +79,31 @@ Next-Gate:
 - Master 상태/WBS는 Slice 배정·상태 전환·병합·Blocker·Milestone 변경 시 갱신한다. 개별 코드
   Commit마다 Master를 수정하지 않는다.
 
-## 4. `깃 pull 해줘`의 고정 의미
+## 4. 팀장 갱신·인계 핸드셰이크
+
+팀원별 작업 단위와 버전은 Master의
+[`LLM_PROJECT_STATUS_SNAPSHOT.md`](LLM_PROJECT_STATUS_SNAPSHOT.md)에서 관리한다. 이 값은 구현
+코드 버전이 아니라 `작업자 + Slice + 범위 + 대상 Repository + 의존성 + 다음 Gate`로 구성된
+할당 패킷의 `Task-Version`이다.
+
+고정 순서:
+
+1. 팀장 민승준이 관련 Source Repository의 실제 `origin/dev`, 병합 PR, 검증 결과를 확인한다.
+2. 팀장이 Master 상태표의 Snapshot version과 해당 작업자의 Slice/Task version, 상태, 다음 작업,
+   다음 Gate를 갱신하고 Master에 반영한다.
+3. 팀장이 팀원에게 `MASTER UPDATE COMPLETE` 패킷으로 갱신 완료, 다음 작업, Master Commit을
+   간략히 통보한다.
+4. 팀원이 `깃 pull 해줘`라고 요청하면 로컬 LLM은 Master를 먼저 안전 동기화한 다음 관련 Source
+   Repository를 동기화한다.
+5. 로컬 LLM은 최신 Master `AGENTS.md`, 운영정책, 상태표를 다시 읽고 통보받은 Snapshot/Slice/Task
+   version과 작업자·대상 Repository가 일치하는지 확인한다.
+6. 로컬 LLM은 구현 전에 `MASTER CONTEXT PASS` 또는 `MASTER CONTEXT BLOCKED`로 인지 결과와
+   다음 작업을 보고한다. 불일치할 때는 추측해서 구현하지 않는다.
+
+팀장 통보 형식과 로컬 LLM 인지 보고의 필수 필드는 상태표의 템플릿을 사용한다. Master 변경
+권한은 계속 팀장에게만 있고, 팀원은 인지 결과나 진행 상태를 Master에 직접 쓰지 않는다.
+
+## 5. `깃 pull 해줘`의 고정 의미
 
 팀원이 공통 Workspace에서 LLM에 `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`라고
 요청하면 이를 네 Repository의 **안전 동기화 요청**으로 해석한다. 이 요청은 Canonical Git의
@@ -101,7 +125,7 @@ Fetch와 Fast-forward에 대한 해당 작업의 Network 승인이다. 로그인
 이 절차는 `scripts/sync-workspace.ps1 -ApproveNetwork`가 소유한다. Master가 최신 정책을 제공하지
 못하면 Source Working Tree 갱신 전에 중단한다.
 
-## 5. Notion 운영모델 고정
+## 6. Notion 운영모델 고정
 
 Notion은 구현 원본이 아니라 팀장·팀원·멘토가 보는 시각적 관리면이다.
 

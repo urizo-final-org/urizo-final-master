@@ -1,8 +1,16 @@
 # AX Module Studio Auth/RBAC MVP specification v0.1
 
 > Decision date: 2026-08-13 (Asia/Seoul)
-> Status: Approved product MVP overlay
+> Status: Approved product MVP target with a later reduced implementation overlay
 > Applies to: `AXMS-FND-03` and every later Slice that consumes product identity or Project authorization
+> Later completion authority: `AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md` records the
+> delivered single-customer reduction, moves full member management to CMS-01, and retires the scheduled
+> FND-04 Wave while preserving later Coding dual approval.
+
+For current implementation and scheduling decisions, the later completion authority wins wherever this
+document still describes the multi-Project target state. Sections 3 through 7 retain that target product
+model for future expansion; they are not evidence that Project isolation or member management shipped in
+FND-03.
 
 ## 1. Decision and precedence
 
@@ -27,11 +35,12 @@ Contract/Flyway reservation rules.
 
 - production login, logout, and current-session identity;
 - the two fixed roles above;
-- Project membership for `GENERAL_ADMIN`;
+- the Project-membership persistence/service seam for later expansion, without Project narrowing in the
+  current single-customer demonstration;
 - server-derived actor, role, and Project scope;
 - Backend enforcement plus Frontend role-aware navigation;
-- 401, 403, and cross-Project isolation behavior;
-- a one-time first `SUPER_ADMIN` bootstrap path;
+- production 401 and 403 behavior; cross-Project isolation remains a future multi-customer target;
+- two one-shot bootstrapped demonstration administrators;
 - the role foundation required by later dual-control autonomous coding.
 
 ### Excluded
@@ -52,7 +61,7 @@ Contract/Flyway reservation rules.
 | Role | Korean UI name | Scope | Primary responsibility |
 |---|---|---|---|
 | `SUPER_ADMIN` | 최고관리자 | Platform-global | Delivery-company technical configuration, integration, security, and support |
-| `GENERAL_ADMIN` | 일반관리자 | Assigned Projects only | Customer-company business CMS operation |
+| `GENERAL_ADMIN` | 일반관리자 | Current single customer; assigned Projects after a future multi-customer Slice | Customer-company business CMS operation |
 
 `Project Admin`, `고객사 관리자`, `일반 관리자`, and `일반관리자` in earlier documents map to
 `GENERAL_ADMIN` for this MVP. `SUPER_ADMIN` does not act as the customer's business approver.
@@ -214,14 +223,16 @@ This specification does not reserve a Flyway revision and does not authorize DDL
 
 ## 8. Slice boundaries and roadmap effect
 
-### `AXMS-FND-03`
+### `AXMS-FND-03` -- delivered reduced boundary
 
-- implement the two fixed roles, login/session, Project membership, server actor context, and
-  Backend/Frontend enforcement;
-- preserve the current Local Full acceptance path through an explicit development-only profile;
-- add valid login, invalid login, 401, 403, cross-Project isolation, disabled-account, and
-  client-role-forgery tests;
-- do not add manual-CMS approval, Audit UI, custom permissions, or Coding approval nodes.
+- implemented the two fixed roles, login/session, server actor context, and Backend/Frontend
+  enforcement;
+- preserved the current Local Full acceptance path through an explicit development-only profile;
+- implemented valid/invalid login and role-bound 401/403 behavior;
+- retained a Project-membership seam but deliberately did not apply Project narrowing for the initial
+  single-customer demonstration;
+- did not add full member-management endpoints/UI, manual-CMS approval, Audit UI, custom permissions,
+  or Coding approval nodes.
 
 ### `AXMS-CMS-01`
 
@@ -231,10 +242,9 @@ This specification does not reserve a Flyway revision and does not authorize DDL
 
 ### `AXMS-FND-04`
 
-The former broad Common Approval/Audit/Job proposal is not a prerequisite for the initial manual
-CMS. It is deferred and must not block `AXMS-CMS-01` through `AXMS-CMS-04`. Existing Product Job
-behavior remains preserved; new common primitives are introduced only by a concrete consuming
-Slice.
+The former broad Common Approval/Audit/Job proposal is retired as a scheduled Foundation Slice.
+There is no FND-04 Wave before `AXMS-CMS-01` through `AXMS-CMS-04`. Existing Product Job behavior
+remains preserved; new common primitives are introduced only by a concrete consuming Slice.
 
 ### Coding/LLM DevOps
 
@@ -243,18 +253,20 @@ the corresponding later Coding/LLM DevOps Slices.
 
 ## 9. Acceptance criteria
 
-`AXMS-FND-03` is complete only when all of the following pass:
+`AXMS-FND-03` is complete for the reduced single-customer demonstration when all of the following
+pass:
 
 1. A `SUPER_ADMIN` and a `GENERAL_ADMIN` can log in and log out.
 2. The current-session response contains server-derived actor and fixed role information without a
    Secret or password value.
-3. A `GENERAL_ADMIN` sees only assigned Projects and can operate Project-scoped business endpoints.
-4. The same account cannot list or access an unassigned Project or its resource IDs.
-5. A `GENERAL_ADMIN` receives 403 for platform technical configuration.
-6. A `SUPER_ADMIN` can reach the technical configuration boundary and all Projects.
-7. Supplying a forged role, actor ID, or Project ID does not elevate authority.
-8. Expired, revoked, and disabled-account sessions fail closed.
-9. Existing Stage 3–5 behavior and the development-only Local Full acceptance path remain
+3. A `GENERAL_ADMIN` can operate customer business CMS functions without delivery-engineer approval.
+4. A `GENERAL_ADMIN` receives 403 for platform technical configuration.
+5. A `SUPER_ADMIN` can reach the technical configuration boundary.
+6. Supplying a forged role or actor ID does not elevate authority.
+7. Expired, revoked, and disabled-account sessions fail closed.
+8. Existing Stage 3–5 behavior and the development-only Local Full acceptance path remain
    compatible.
-10. No manual-CMS approval/Audit product feature or autonomous-coding workflow is accidentally
+9. No manual-CMS approval/Audit product feature or autonomous-coding workflow is accidentally
     included in the Slice.
+10. Project narrowing and full member management are not claimed as implemented; those require a
+    separately assigned future multi-customer Slice and `AXMS-CMS-01`, respectively.

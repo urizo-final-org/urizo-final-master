@@ -8,12 +8,17 @@ Use this only after the teammate reports `SETUP PASS`. The Integration/Contract 
 이름: <본인 이름>
 GitHub ID: <본인 GitHub ID>
 Slice ID: <현재 할당된 Slice ID>
+Task Version: <팀장이 통보한 Task Version>
+Snapshot Version: <팀장이 통보한 Snapshot Version>
 Slice 목표: <사용자에게 보이는 한 개의 완료 결과>
 선행 PR/의존성: <PR URL 또는 N/A>
 예상 변경 Repository: <Frontend/Backend/Orchestrator 중 해당 항목>
 
 urizo-final-master의 최신 AGENTS, implementation/team handoff,
 traceability, team roadmap, Flyway ledger와 변경할 sibling AGENTS를 완독하라.
+동기화 후 Master status snapshot의 Snapshot/Slice/Task Version, 작업자,
+대상 Repository, 다음 작업이 이 패킷과 일치하는지 확인하고 구현 전에
+MASTER CONTEXT PASS 또는 정확한 MASTER CONTEXT BLOCKED를 보고하라.
 
 전체 workstream이나 다음 Phase를 한꺼번에 구현하지 말고 현재 Slice 하나만 수행하라.
 Slice ID나 선행 의존성이 비어 있거나 병합되지 않았다면 구현하지 말고 보고하라.
@@ -45,8 +50,6 @@ tmdwns0531 Master/Admin integration account; do not ask another teammate to crea
 a duplicate PR or repeat the same validation unless the integration owner requests it.
 ```
 
-Initial coding window:
-
-- `AXMS-FND-01`: 민승준
-- `AXMS-FND-02`: 이재욱, parallel with FND-01
-- Other implementation waits until these preparation Slices are merged and the roadmap dependency opens the next Slice.
+Static coding windows in this prompt are forbidden because they become stale. The checked-in Master
+status snapshot and the team lead's matching `MASTER UPDATE COMPLETE` packet are the only current
+assignment/version authority. FND-03 is complete, and there is no scheduled FND-04 Wave.

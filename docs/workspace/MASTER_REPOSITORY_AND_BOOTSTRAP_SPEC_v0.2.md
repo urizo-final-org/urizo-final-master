@@ -27,6 +27,11 @@ The first clean teammate machine is still an acceptance run for host-specific Gi
 
 The teammate opens a coding agent and provides the Master URL, their name/GitHub ID, and a desired parent path. After Master is available, the LLM follows `AGENTS.md` and the setup prompt.
 
+Codex-compatible agents enter through `AGENTS.md`. Claude Code enters through `CLAUDE.md`, whose managed
+block imports the same parent and Master `AGENTS.md` authority. Bootstrap updates both managed blocks
+without overwriting teammate custom text. Windows uses Windows PowerShell 5.1 or PowerShell 7; macOS and
+Linux use PowerShell 7 (`pwsh`) with OS-neutral Repository paths.
+
 ```text
 read authority and ownership
 → read-only workspace/Git/Docker/DB preflight
@@ -57,7 +62,8 @@ Planning remains available through `-WhatIf`. A teammate should not be asked to 
 | Existing non-empty non-repository folder | Block; never overwrite or delete |
 | Origin mismatch | Block; never rewrite remote automatically |
 | Dirty Source worktree | Preserve it; block local-full bootstrap |
-| Existing different parent template | Warn and preserve |
+| Existing parent `AGENTS.md` or `CLAUDE.md` with custom text | Preserve custom text and synchronize only the single marked AXMS managed block |
+| Existing different editor workspace template | Warn and preserve |
 | Git/Docker login or MFA | Stop for human interaction and resume verification |
 | Docker/WSL install, administrator, reboot | Explain and obtain explicit approval |
 | Secret entry | User enters it in the designated CMS or platform credential flow |
