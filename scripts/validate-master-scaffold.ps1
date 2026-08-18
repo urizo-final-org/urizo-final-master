@@ -15,6 +15,7 @@ $required = @(
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md',
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
     'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md',
+    'docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md',
     'docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md',
     'docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md',
     'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',

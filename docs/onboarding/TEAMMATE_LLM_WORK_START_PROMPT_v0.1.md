@@ -56,3 +56,8 @@ Never create or merge a PR targeting main. Main promotion is a periodic manual t
 Static coding windows in this prompt are forbidden because they become stale. The checked-in Master
 status snapshot and the team lead's matching `MASTER UPDATE COMPLETE` packet are the only current
 assignment/version authority. FND-03 is complete, and there is no scheduled FND-04 Wave.
+
+The current approved product order is Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated
+CMS acceptance. After that Gate, every remaining capability is `DISCUSSION_REQUIRED`; do not infer an
+owner, order, scope, or Slice ID from historical Phase tables. Require the later checked-in team
+decision before post-CMS implementation.

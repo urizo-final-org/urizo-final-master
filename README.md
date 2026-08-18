@@ -12,7 +12,7 @@ AX-Module-Studio-Workspace/          # no .git
 
 ## Current checkpoint
 
-The latest checkpoint is [implementation/team handoff v1.0](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md). All four canonical repositories expose protected `main` and `dev` branches, and FND-03 production two-role login/role enforcement is merged in its reduced single-customer demonstration boundary. The [completion decision](docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md) records that Project isolation is not implemented, full member management moves to CMS-01, and there is no scheduled FND-04 Wave. The five manual CMS domains, Site Release/Renderer, natural-language CMS, real repository tools, PathPolicy UI/versioning, and LLM DevOps remain incomplete. Autonomous coding still requires distinct customer and technical approvals later.
+The latest checkpoint is [implementation/team handoff v1.0](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md), with the later [team checklist decision overlay](docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md) as the current product/execution authority. FND-03 production two-administrator-role login/role enforcement is merged in its reduced single-customer demonstration boundary; `GENERAL_USER`, Approval History, and the core Audit Log remain CMS milestone work. The approved order is Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated CMS acceptance. Remaining public-data/RAG/Model Mapping, Coding/PathPolicy, natural-language CMS, and LLM DevOps order, owner, and scope are decided only at the post-CMS team-planning Gate. Later LLM DevOps retains exactly three dual-approval Gates: autonomous-coding result, PR creation, and deployment.
 
 ## Entry points
 
