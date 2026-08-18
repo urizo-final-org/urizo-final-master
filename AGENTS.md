@@ -18,30 +18,34 @@
 ## Required reading
 
 1. `docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md`
-2. `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`
-3. `docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md`
-4. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md`
-5. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
-6. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
-7. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
-8. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-9. `docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md`
-10. `docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md`
-11. `docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md`
-12. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
-13. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
-14. The applicable sibling repository `AGENTS.md`
-15. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+2. `docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`
+3. `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`
+4. `docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md`
+5. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md`
+6. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
+7. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
+8. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
+9. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
+10. `docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md`
+11. `docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md`
+12. `docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md`
+13. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
+14. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
+15. The applicable sibling repository `AGENTS.md`
+16. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
-The Project Spec is not reduced to the currently implemented OpenAPI. The approved Auth/RBAC MVP
-overlay is the later authority for the initial two-role model, manual-CMS approval exclusion, Audit
-exclusion, and autonomous-coding dual approval. A healthy container or a technical E2E does not
-prove completion of an unimplemented product feature.
+The Project Spec is not reduced to the currently implemented OpenAPI. The team checklist decision
+overlay is the latest authority for the three-role target, Approval History/core Audit Log inclusion,
+the CMS-first execution order, the post-CMS team-planning Gate, and the exact three later LLM DevOps
+dual-approval Gates. A healthy container or a technical E2E does not prove completion of an
+unimplemented product feature.
 
 The later FND-03 completion decision is authoritative for the reduced single-customer demonstration:
 production two-role login/role enforcement is complete, Project isolation and full member management are
-not part of FND-03, and the scheduled FND-04 Foundation Wave is retired. Coding/LLM DevOps dual approval
-is still required later and is not removed with FND-04.
+not part of FND-03, and the scheduled FND-04 Foundation Wave is retired. The later target additionally
+requires `GENERAL_USER`, Approval History, and a core Audit Log in the CMS milestone. Later Coding/LLM
+DevOps uses exactly three dual-approval Gates: autonomous-coding result, PR creation, and deployment.
+The internal request→limited patch→one allowlisted test→result flow runs without a human approval pause.
 
 ## LLM onboarding protocol
 
@@ -55,6 +59,7 @@ is still required later and is not removed with FND-04.
 - If Git/Docker login, MFA, administrator elevation, installation, or reboot requires human interaction, stop at that boundary, explain the shortest human action, and resume verification after the teammate completes it. Never bypass or solicit secrets in chat or command arguments.
 - After bootstrap, open or recommend the generated `AX-Module-Studio.code-workspace`, run `scripts/health-workspace.ps1`, and report service URLs, warnings, and any remaining blocker.
 - Before assigning or implementing work, read `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md` and state the Slice ID, E2E lead, reserved shared seams, repository paths, dependencies, and PR order.
+- The approved order ends at Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated CMS acceptance. Post-CMS backlog order, owner, scope, Slice IDs, and PR order remain unassigned until a new team-lead Git decision is checked in.
 - Report `SETUP PASS` only when the v0.8 setup acceptance contract is satisfied. Do not begin implementation from a generic workstream description; require one assigned Slice ID.
 
 ## Ownership boundaries

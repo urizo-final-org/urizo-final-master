@@ -1,8 +1,9 @@
 # AX Module Studio FND-03 completion scope and FND-04 retirement decision v0.1
 
 > Decision date: 2026-08-14 (Asia/Seoul)
-> Status: team-lead-confirmed current MVP decision
+> Status: authoritative delivered FND-03 evidence with a later product-decision overlay
 > Evidence: Backend PR #7 and Frontend PR #4 merged to canonical `dev`
+> Current product authority: `AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`
 
 ## 1. Decision
 
@@ -27,12 +28,16 @@ The current delivery serves one customer organization. Therefore FND-03 does not
 |---|---|
 | Cross-Project membership isolation in FND-03 | omitted for the single-customer demonstration; do not claim it is implemented |
 | Complete administrator account/member management in FND-03 | moved to `AXMS-CMS-01`; FND-03 provides only the bootstrapped demo accounts and underlying authority seam |
-| General manual-CMS approval/rejection and unified Audit | remains excluded from the initial MVP |
+| `GENERAL_USER` | not delivered by FND-03; fixed as a later CMS target through CMS-01/CMS-07 |
+| Approval History and core Audit Log | not delivered by FND-03; included in the later CMS MVP target without adding a separate Reviewer Gate |
 
 This decision supersedes the Project-isolation completion conditions in the earlier Auth/RBAC MVP
 specification for the current demonstration only. If multi-customer operation is introduced, it requires
 a new explicitly assigned Slice and migration/contract review; it must not be silently inferred from the
 existing `ProjectMembership` types or tables.
+
+The team checklist decision overlay supersedes this historical reduction for the current product target.
+It does not change what FND-03 actually shipped.
 
 ## 3. FND-04 disposition
 
@@ -43,12 +48,16 @@ Slice**. There is no Wave between FND-03 and the manual CMS parallel work.
 FND-01 + FND-02
 → FND-03 complete
 → CMS-01 + CMS-02 + CMS-03 + CMS-04 (after shared Contract/Flyway reservations)
+→ CMS-05 → CMS-06 → CMS-07 and integrated CMS acceptance
+→ team deep-dive planning Gate before any post-CMS backlog implementation
 ```
 
-This does not remove autonomous-coding approval. The later Coding/LLM DevOps Slices still require two
-distinct accounts—one assigned `GENERAL_ADMIN` and one `SUPER_ADMIN`—at every side-effect Gate. Those
-consumer-specific records, hash binding, invalidation, and LangGraph interrupt/resume are implemented
-with the consuming Coding Slice rather than through a premature broad FND-04 primitive.
+This does not remove autonomous-coding approval. The later Coding/LLM DevOps Slices require two
+distinct accounts—one assigned `GENERAL_ADMIN` and one `SUPER_ADMIN`—at exactly three Gates:
+autonomous-coding result, PR creation, and deployment. Request→limited patch→one allowlisted test→result
+runs without a human approval pause. The consumer-specific records, hash binding, invalidation, and
+LangGraph interrupt/resume are implemented with the consuming Coding Slice rather than through a
+premature broad FND-04 primitive.
 
 ## 4. Git evidence
 

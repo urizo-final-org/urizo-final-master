@@ -1,29 +1,37 @@
 # AX Module Studio Auth/RBAC MVP specification v0.1
 
 > Decision date: 2026-08-13 (Asia/Seoul)
-> Status: Approved product MVP target with a later reduced implementation overlay
+> Status: Historical administrator Auth/RBAC authority with later delivered and product-decision overlays
 > Applies to: `AXMS-FND-03` and every later Slice that consumes product identity or Project authorization
 > Later completion authority: `AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md` records the
 > delivered single-customer reduction, moves full member management to CMS-01, and retires the scheduled
 > FND-04 Wave while preserving later Coding dual approval.
+> Approval-gate clarification: 2026-08-18 — later LLM DevOps has exactly three dual-approval Gates:
+> autonomous-coding result, PR creation, and deployment.
+> Current product authority: `AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md` adds
+> `GENERAL_USER`, Approval History/core Audit Log, and the post-CMS team-planning Gate.
 
-For current implementation and scheduling decisions, the later completion authority wins wherever this
-document still describes the multi-Project target state. Sections 3 through 7 retain that target product
-model for future expansion; they are not evidence that Project isolation or member management shipped in
-FND-03.
+For delivered FND-03 evidence, the later completion authority wins wherever this document still
+describes the multi-Project target state. For the current product target and scheduling, the team
+checklist decision overlay wins. Sections 3 through 7 are not evidence that Project isolation,
+`GENERAL_USER`, member management, Approval History, or Audit Log shipped in FND-03.
 
 ## 1. Decision and precedence
 
-The initial product MVP uses exactly two administrator roles:
+The delivered FND-03 administrator boundary uses exactly two administrator roles:
 
 - `SUPER_ADMIN` — 최고관리자, the delivery company's technical engineer;
 - `GENERAL_ADMIN` — 일반관리자, the customer company's Project-scoped CMS operator.
 
+The later current product target adds one fixed non-administrator role:
+
+- `GENERAL_USER` — 일반 사용자, the published end-user site's user without administrator authority.
+
 This document is the approved MVP interpretation of the preserved
 `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`. It takes precedence where that document uses
-`Project Admin`, `Reviewer`, generic `관리자`, manual-CMS approval, or general Audit language in a
-way that conflicts with this two-role decision. Requirements unrelated to identity, authorization,
-manual-CMS approval, or Audit remain unchanged.
+`Project Admin`, `Reviewer`, generic `관리자`, manual-CMS approval, or general Audit language. The
+later team checklist overlay supersedes this document for `GENERAL_USER`, Approval History/core Audit
+Log inclusion, and post-CMS scheduling.
 
 The purpose is to open `AXMS-FND-03` without designing a large IAM product. It does not authorize
 implementation before the roadmap dependency gate is open, and it does not change the separate
@@ -34,13 +42,15 @@ Contract/Flyway reservation rules.
 ### Included
 
 - production login, logout, and current-session identity;
-- the two fixed roles above;
+- the delivered two administrator roles plus the fixed `GENERAL_USER` product target;
 - the Project-membership persistence/service seam for later expansion, without Project narrowing in the
   current single-customer demonstration;
 - server-derived actor, role, and Project scope;
 - Backend enforcement plus Frontend role-aware navigation;
 - production 401 and 403 behavior; cross-Project isolation remains a future multi-customer target;
 - two one-shot bootstrapped demonstration administrators;
+- later `GENERAL_USER` account/session and published Renderer access through CMS-01/CMS-07;
+- Approval History and core Audit Log screens over state-changing MVP events;
 - the role foundation required by later dual-control autonomous coding.
 
 ### Excluded
@@ -49,9 +59,8 @@ Contract/Flyway reservation rules.
 - a separate `REVIEWER` role;
 - SSO, OAuth login, MFA, SCIM, and enterprise federation;
 - password recovery and a full account-administration product;
-- general content, post, page, menu, or design approval/rejection;
-- unified Audit history, an Audit search API, and an Audit administration screen;
-- End User authentication, which belongs to the end-user Renderer scope if later required;
+- a separate pre-publication `REVIEWER` workflow for ordinary manual CMS work;
+- exhaustive Audit capture of every view, click, read, or navigation event;
 - Developer/PM as a product RBAC role;
 - autonomous-coding approval persistence and LangGraph nodes, which are implemented only in the
   later Coding/LLM DevOps Slices.
@@ -62,9 +71,12 @@ Contract/Flyway reservation rules.
 |---|---|---|---|
 | `SUPER_ADMIN` | 최고관리자 | Platform-global | Delivery-company technical configuration, integration, security, and support |
 | `GENERAL_ADMIN` | 일반관리자 | Current single customer; assigned Projects after a future multi-customer Slice | Customer-company business CMS operation |
+| `GENERAL_USER` | 일반 사용자 | Published end-user site | Uses published user-facing functions without administrator authority |
 
 `Project Admin`, `고객사 관리자`, `일반 관리자`, and `일반관리자` in earlier documents map to
 `GENERAL_ADMIN` for this MVP. `SUPER_ADMIN` does not act as the customer's business approver.
+`GENERAL_USER` is distinct from both administrator roles and never inherits an administrator route or
+technical permission.
 
 The current Coding internal schema still contains the legacy string `PROJECT_ADMIN`. FND-03 must not
 break the existing Coding Harness by renaming that consumer contract in place. Treat it as a legacy
@@ -76,7 +88,7 @@ support override, but normal CMS operation must never wait for a `SUPER_ADMIN` a
 
 ## 4. Minimum permission matrix
 
-### 4.1 Authentication, Project, and administrator assignment
+### 4.1 Authentication, Project, administrator, and General User assignment
 
 | Operation | `SUPER_ADMIN` | `GENERAL_ADMIN` |
 |---|---:|---:|
@@ -85,10 +97,12 @@ support override, but normal CMS operation must never wait for a `SUPER_ADMIN` a
 | Create or archive a Project | allow | deny |
 | Assign or remove a `GENERAL_ADMIN` Project membership | allow | deny in the initial MVP |
 | Create, disable, or restore an administrator account | allow | deny in the initial MVP |
+| Create, disable, restore, or assign a `GENERAL_USER` account | support override | assigned Project: allow in `AXMS-CMS-01` |
 | Grant or revoke `SUPER_ADMIN` | allow through a protected technical path | deny |
 
-`AXMS-FND-03` owns the identity and Project-membership authority. A complete member-management UI,
-invitation workflow, and customer member lifecycle remain `AXMS-CMS-01` work.
+`AXMS-FND-03` owns the delivered administrator identity authority. A complete member-management UI,
+`GENERAL_USER` lifecycle, invitation/status workflow, and customer membership remain `AXMS-CMS-01`
+work. `AXMS-CMS-07` completes General User login/session and published Renderer access.
 
 ### 4.2 Technical configuration
 
@@ -142,33 +156,59 @@ GENERAL_ADMIN edit
 Domain validation, version immutability where specified, and Draft-not-public invariants still
 apply. They are system safety checks, not delivery-engineer approval gates.
 
+### 4.5 Approval History and core Audit Log
+
+| Operation | `SUPER_ADMIN` | `GENERAL_ADMIN` | `GENERAL_USER` |
+|---|---:|---:|---:|
+| View Project Approval History | all Projects | assigned Project | deny |
+| View core Audit Log | all Projects | assigned Project | deny |
+| Record actor-bound CMS mutation/publish/rollback evidence | system | system | system for applicable user actions |
+
+The screens include core state-changing account, permission, Draft/version, Preview, publish,
+unpublish, Site Release, and rollback events. They do not log every view or click. Ordinary manual CMS
+still uses `GENERAL_ADMIN` direct publication; recording that decision does not add a separate Reviewer
+or `SUPER_ADMIN` approval Gate.
+
 ## 5. Autonomous-coding exception: dual control
 
-Autonomous coding is not ordinary CMS operation. Every side-effect Gate requires two approvals
-from two distinct authenticated accounts:
+Autonomous coding is not ordinary CMS operation. It requires dual control at exactly three human
+approval Gates. Each Gate requires approvals from two distinct authenticated accounts:
 
 1. one `GENERAL_ADMIN` who is assigned to the target Project and confirms the customer/business
    intent;
 2. one `SUPER_ADMIN` who confirms technical scope, security, evidence, and delivery risk.
 
-The later Coding/LLM DevOps flow applies dual control at least to:
+The approved flow is:
 
 ```text
-Scope / Context / read-write range
-→ Patch / Diff and candidate SHA
-→ Test / Build / Preview evidence
-→ PR creation
-→ Deployment
+Natural-language request
+→ limited code change
+→ one allowlisted test
+→ result / Diff / evidence
+→ Gate 1: autonomous-coding result dual approval
+→ Gate 2: PR creation dual approval
+→ automatic CI/readback and manual merge under Git policy
+→ Gate 3: deployment dual approval
 ```
+
+The internal request→code change→test→result sequence runs without human approval between its steps.
+Scope, Context Pack, PathPolicy, denylist, command allowlist, and evidence production remain mandatory
+automatic safety checks; they are not additional human approval Gates. Manual PR merge remains governed
+by the Git workflow and is not a fourth product dual-approval Gate.
 
 Rules:
 
 - the same `actor_id` cannot satisfy both approvals;
-- one rejection or missing approval keeps the pipeline paused;
-- a changed scope, PathPolicy hash, patch, candidate SHA, or evidence hash invalidates the approvals
-  bound to the earlier value;
+- one rejection or missing approval at any of the three Gates keeps the pipeline paused;
+- Gate 1 approvals bind the request, scope/PathPolicy, candidate SHA, Diff, and test/result evidence;
+  changing any bound value invalidates Gate 1 and every downstream approval;
+- Gate 2 approvals bind the exact candidate and PR payload; changing either invalidates Gate 2 and
+  every downstream approval;
+- Gate 3 approvals bind the exact deployable artifact, CI evidence, target environment, and deployment
+  plan; changing any bound value invalidates Gate 3;
 - Spring Backend and Core DB are the authorization and approval source of truth;
-- LangGraph only interrupts, checkpoints, and resumes after Spring confirms both approvals;
+- LangGraph interrupts for human approval only at the three Gates and resumes after Spring confirms
+  both approvals;
 - the Orchestrator cannot grant a role, fabricate an approval, or hold final authorization.
 
 `AXMS-FND-03` must preserve role and Project identity suitable for this future rule, but must not
@@ -214,7 +254,7 @@ usability feature only; the Backend repeats authorization for every operation.
 The exact Flyway schema is owned by the `AXMS-FND-03` implementation Slice, but the minimum
 conceptual records are:
 
-- administrator account and fixed role;
+- administrator and `GENERAL_USER` account with fixed role;
 - revocable opaque session with expiration;
 - Project membership for `GENERAL_ADMIN`;
 - existing Project aggregate relationship.
@@ -231,14 +271,20 @@ This specification does not reserve a Flyway revision and does not authorize DDL
 - implemented valid/invalid login and role-bound 401/403 behavior;
 - retained a Project-membership seam but deliberately did not apply Project narrowing for the initial
   single-customer demonstration;
-- did not add full member-management endpoints/UI, manual-CMS approval, Audit UI, custom permissions,
-  or Coding approval nodes.
+- did not add `GENERAL_USER`, full member-management endpoints/UI, Approval History/Audit UI, custom
+  permissions, or Coding approval nodes.
 
 ### `AXMS-CMS-01`
 
-- add the complete member list/invite/status/Project-membership management product on the FND-03
-  authority;
-- do not create another role model.
+- add the complete administrator and `GENERAL_USER` list/invite/status/Project-membership management
+  product on the FND-03 authority;
+- add the fixed `GENERAL_USER` role without creating a custom-role editor.
+
+### `AXMS-CMS-06` and `AXMS-CMS-07`
+
+- `AXMS-CMS-06` integrates Approval History and core Audit Log query/UI with Site Release,
+  Publish/Unpublish, and Rollback evidence;
+- `AXMS-CMS-07` completes `GENERAL_USER` login/session and published Renderer access.
 
 ### `AXMS-FND-04`
 
@@ -266,7 +312,7 @@ pass:
 7. Expired, revoked, and disabled-account sessions fail closed.
 8. Existing Stage 3–5 behavior and the development-only Local Full acceptance path remain
    compatible.
-9. No manual-CMS approval/Audit product feature or autonomous-coding workflow is accidentally
-    included in the Slice.
+9. No later CMS Approval History/Audit product feature, `GENERAL_USER`, or autonomous-coding workflow
+   is incorrectly claimed as delivered by the historical FND-03 Slice.
 10. Project narrowing and full member management are not claimed as implemented; those require a
     separately assigned future multi-customer Slice and `AXMS-CMS-01`, respectively.

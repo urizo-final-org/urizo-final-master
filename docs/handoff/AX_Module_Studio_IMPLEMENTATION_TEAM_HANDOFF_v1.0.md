@@ -3,6 +3,7 @@
 > Updated: 2026-08-18 (Asia/Seoul)
 > Status: Foundation Auth/RBAC complete in the reduced single-customer MVP boundary
 > Supersedes: v0.9 implementation status and execution order; preserves historical publication evidence
+> Current product/execution overlay: `../product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`
 
 ## 1. Current Source baseline
 
@@ -41,7 +42,12 @@ remain required before a Slice edits those shared seams.
 | `AXMS-CMS-03` | 민은지 | manual content/page Draft/version/preview/direct publish |
 | `AXMS-CMS-04` | 윤서 | board/post CRUD, publish, and soft delete |
 
-CMS-05 → CMS-06 → CMS-07 remains sequential after the required reference/version contracts exist.
+CMS-01 additionally owns `GENERAL_USER` account/status/permission administration. CMS-05 → CMS-06 →
+CMS-07 remains sequential after the required reference/version contracts exist. CMS-06 integrates the
+Approval History/core Audit Log screen, and CMS-07 completes General User login/session plus the
+published Renderer. After integrated CMS acceptance, the team performs a deep-dive planning Gate and
+newly confirms every remaining capability's order, owner, scope, Slice IDs, dependencies, and PR order.
+No post-CMS backlog implementation is currently authorized.
 
 ## 4. Team environment baseline
 
@@ -55,13 +61,17 @@ Backend.
 
 ## 5. Preserved product rules
 
-- `SUPER_ADMIN` is the delivery-company technical engineer; `GENERAL_ADMIN` is the customer operator.
+- The fixed target roles are `SUPER_ADMIN`, `GENERAL_ADMIN`, and `GENERAL_USER`; only the first two
+  administrator roles are already delivered by FND-03.
 - Manual CMS data and publication do not require `SUPER_ADMIN` approval.
-- General Audit UI and broad manual-CMS approval/rejection remain outside the initial MVP.
-- Autonomous coding remains the exception and retains two distinct-account approvals at every
-  side-effect Gate in later Coding/LLM DevOps Slices.
+- Approval History and a core Audit Log screen are in the CMS MVP. They record core state-changing
+  actions and direct publication decisions without adding a separate Reviewer or `SUPER_ADMIN` Gate.
+- Autonomous coding remains the exception and requires two distinct-account approvals at exactly
+  three later Coding/LLM DevOps Gates: autonomous-coding result, PR creation, and deployment. Its
+  internal request→limited patch→one allowlisted test→result flow has no human approval pause.
 - Master and Notion writes remain team-lead controlled. Teammate LLMs consume Master read-only and
   submit Slice PRs only to changed Source repositories.
+- Former post-CMS roadmap Phase rows are discussion input only, not active assignments.
 
 ## 6. Git integration policy update — 2026-08-18
 

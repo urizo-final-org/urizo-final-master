@@ -2,16 +2,23 @@
 
 > Baseline: 2026-08-18; Foundation completion and Wave 3 naming revalidated from canonical Source `origin/dev`
 > Goal: minimize shared-file collisions while each owner completes user-visible Contract→Flyway→Spring→Frontend→E2E slices
+> Current decision authority: [team checklist decision overlay](../product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md)
 
-The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: two-role production Auth/RBAC, member management, menu, content/page, board, site design/template, direct customer-admin Site Release/Publish/Rollback, and the end-user Renderer. General manual-CMS approval/rejection and a unified Audit product are not part of the initial MVP. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied. Autonomous coding remains the exception and requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals at every side-effect Gate under the [Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md).
+The first team product milestone is the assembled **CMS product**: delivered administrator Auth/RBAC,
+the fixed `GENERAL_USER` target, member management, menu, content/page, board, site design/template,
+direct customer-admin Site Release/Publish/Rollback, Approval History, core Audit Log, and the end-user
+Renderer. A separate manual-CMS Reviewer Gate is not required. Later public-data/RAG/Model Mapping,
+Coding/PathPolicy, natural-language CMS, and LLM DevOps work remains discussion-required backlog until
+the CMS milestone passes and a new team decision assigns it. Autonomous coding retains exactly three
+future dual-approval Gates—autonomous-coding result, PR creation, and deployment.
 
 ## 1. Operating model
 
 1. Work is divided by user-visible vertical slice, not by Frontend/Backend/DB horizontal layer.
 2. Every slice has one E2E lead. That lead drives contract, migration, Spring, Frontend, tests, and handoff to completion.
 3. The Integration/Contract owner serializes shared seams; a feature lead does not directly edit a reserved seam without that lane.
-4. The Orchestrator joins only Coding contract/graph slices. Product RAG, manual CMS, and natural-language CMS stay in Spring.
-5. Natural-language CMS and LLM DevOps are deliberately split among multiple owners.
+4. The Orchestrator does not change for the current CMS milestone. Any later Coding contract/graph work requires the post-CMS decision Gate.
+5. Post-CMS order, owner, scope, Slice IDs, dependencies, and PR order are deliberately unassigned until the team deep-dive decision is checked into Master.
 6. A healthy local stack and technical fixture E2E do not satisfy a product slice Definition of Done.
 
 Confirmed account mapping is limited to:
@@ -28,11 +35,11 @@ entry for that member.
 
 | Member | Primary workstream | Cross-review responsibility | Must not own alone |
 |---|---|---|---|
-| 민승준 | Integration/Contract owner; public/coding contracts, Flyway lane, common Error, future Coding dual approval, Compose/bootstrap, Master manifest/handoff | all shared seams and final integrated E2E | natural-language CMS whole; LLM DevOps whole |
-| 정차윤 | Production Auth/RBAC, members, Project membership, security UX | role/project isolation and dual-approval consumer policy | shared contracts without lane; LLM DevOps whole |
-| 이재욱 | Frontend feature architecture, menu/site design, Renderer, coding Diff/PR UX | App shell and browser behavior | app shell as an unreviewed private hot spot; natural-language CMS whole |
-| 민은지 | real Connector, content/page, RAG/Model Mapping, test/build/preview evidence | data quality and execution evidence | RAG as one large feature; natural-language CMS whole |
-| 윤서 | Repository/PathPolicy, Coding Runtime/Orchestrator, RAG evaluation, selected board slice | coding safety and consumer contract parity | Coding/LLM DevOps whole |
+| 민승준 | Integration/Contract owner; Flyway lane, common Error, CMS-06 Release/Approval History/Audit, Compose/bootstrap, Master handoff | all shared seams and final CMS E2E | post-CMS backlog without a new team decision |
+| 정차윤 | delivered administrator Auth/RBAC; CMS-01 `GENERAL_USER` membership; CMS-07 login/Renderer | role/member isolation and user security UX | shared contracts without lane; post-CMS backlog without a new team decision |
+| 이재욱 | Frontend feature architecture; CMS-02 menu; CMS-05 site design/template | App shell and browser behavior | app shell as an unreviewed private hot spot; post-CMS backlog without a new team decision |
+| 민은지 | CMS-03 content/page | content/data quality and CMS evidence | post-CMS backlog without a new team decision |
+| 윤서 | CMS-04 board/post | board state and authorization behavior | post-CMS backlog without a new team decision |
 
 ## 3. RACI
 
@@ -40,14 +47,14 @@ entry for that member.
 
 | Boundary | 민승준 | 정차윤 | 이재욱 | 민은지 | 윤서 |
 |---|---:|---:|---:|---:|---:|
-| Public/Coding OpenAPI and JSON Schema | A/R | C | C | C | C |
+| Current CMS public OpenAPI and JSON Schema | A/R | C | C | C | C |
 | Flyway reservation, order, verification | A/R | C | I | C | C |
 | App shell/router/navigation | A | C | R | I | I |
-| Common Error/Auth and future Coding dual-approval contract | A/R | C | C | C | C |
-| Production Auth/RBAC/members | C | A/R | C | I | C |
+| Common Error/Auth/Approval History/Audit contract | A/R | C | C | C | C |
+| Production Auth/RBAC/administrator and `GENERAL_USER` members | C | A/R | C | I | C |
 | Menu/SiteTemplate/Renderer | C | C | A/R | C | I |
-| Connector/content/page/RAG/Model Mapping | C | I | C | A/R | C |
-| PathPolicy/Coding contract/Orchestrator | C | C | C | C | A/R |
+| Content/page | C | I | C | A/R | C |
+| Board/post | C | C | C | C | A/R |
 | Backend Compose/bootstrap/health | A/R | I | C | C | C |
 | Master manifest/handoff | A/R | C | C | C | C |
 | Per-slice E2E | A for integration gate | R for owned slices | R for owned slices | R for owned slices | R for owned slices |
@@ -124,7 +131,7 @@ Repository PR shorthand:
 | `AXMS-FND-01` Backend characterization/seam | 민승준 | **DONE**: existing Project/Connector/Knowledge/RAG/Job behavior preserved through domain delegates | Backend `project/connector/knowledge/rag/job`, current facade tests | Backend PR #6 merged; `B` |
 | `AXMS-FND-02` Frontend app seam | 이재욱 | **DONE**: existing console screens preserved under route/feature boundaries | Frontend `app`, `features/local-full`, `features/providers`, `shared/api` | Frontend PR #3 merged; `F` |
 | `AXMS-FND-03` Production Auth/RBAC | 정차윤 | **DONE, reduced single-customer scope**: fixed roles, login/session, Backend role enforcement and Frontend role-aware UX; no Project narrowing | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | Backend PR #7 → Frontend PR #4 merged; `B→F` |
-| `AXMS-FND-04` Broad Approval/Audit/Job primitive | none | **RETIRED**: not a scheduled Slice; no general manual-CMS Approval/Audit product and no separate Foundation Wave | N/A; later Coding dual approval belongs to the consuming Coding/LLM DevOps Slices | no implementation or PR |
+| `AXMS-FND-04` Broad Approval/Audit/Job primitive | none | **RETIRED**: not a scheduled Foundation Slice or separate Wave | Approval History/core Audit are delivered through consuming CMS Slices; future Coding approvals require a later decision | no implementation or PR |
 
 The Foundation sequence through FND-03 is complete. The original Wave 2 / FND-04 work is retired and
 later Waves are not renumbered. **Wave 3 is CMS-01–04**, the next parallel product Wave. An explicit owner
@@ -137,64 +144,41 @@ not overstate the delivered boundary.
 
 | Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
 |---|---|---|---|---|
-| `AXMS-CMS-01` Member management | 정차윤 | list/invite/status/Project membership; permission failure | Backend `cms/member`; Frontend `features/members` | FND-03; `B→F` |
+| `AXMS-CMS-01` Member management | 정차윤 | fixed `GENERAL_USER`; administrator/user list, invite, status, Project membership, permission failure; core account Audit events | Backend `cms/member`; Frontend `features/members` | FND-03; `B→F` |
 | `AXMS-CMS-02` Manual menu | 이재욱 | `GENERAL_ADMIN` MenuSpec Draft/Version, duplicate-path validation, preview, direct publish | Backend `cms/menu`; Frontend `features/menus` | FND-03; `B→F` |
 | `AXMS-CMS-03` Manual content/page | 민은지 | `GENERAL_ADMIN` Content/PageSpec Draft/Version, component/data binding, preview, direct publish | Backend `cms/content`; Frontend `features/content` | FND-03; `B→F` |
 | `AXMS-CMS-04` Manual board | 윤서 | `GENERAL_ADMIN` Board/Post state, role enforcement, CRUD/publish, soft delete | Backend `cms/board`; Frontend `features/boards` | FND-03; `B→F` |
 | `AXMS-CMS-05` Site design/template | 이재욱 | registry-constrained Header/Footer/Layout/Token, SiteTemplateSpec Version, desktop/mobile preview | Backend `cms/site`; Frontend `features/site-design` | CMS-02/03 reference contracts; `B→F` |
-| `AXMS-CMS-06` Site Release | 민승준 | immutable Menu/Page/SiteTemplate versions atomically published/rolled back directly by assigned `GENERAL_ADMIN` | Backend `cms/release`; Frontend `features/releases` | CMS-02/03/05; `B→F` |
-| `AXMS-CMS-07` End-user Renderer | 정차윤 | public route reads active Site Release only; Draft is never exposed | Backend `site/runtime`; Frontend `site-runtime` | CMS-06; `B→F` |
+| `AXMS-CMS-06` Site Release and operation history | 민승준 | immutable versions directly published/rolled back by assigned `GENERAL_ADMIN`; integrated Approval History/core Audit Log query and UI | Backend `cms/release`, shared audit seam; Frontend `features/releases`, `features/audit` | CMS-01–05 core events; `B→F` |
+| `AXMS-CMS-07` General User Renderer | 정차윤 | `GENERAL_USER` login/session; published route reads active Site Release only; Draft is never exposed | Backend `site/runtime`; Frontend `site-runtime` | CMS-06; `B→F` |
 
-CMS-01–04 may prepare feature-local code and mocks in parallel after their contracts are reserved. Flyway creation and merge still use one lane. CMS-05→06→07 are sequential because of reference/publish invariants.
+CMS-01–04 run in parallel after their contracts are reserved. Each emits applicable core Audit events;
+Flyway creation and merge still use one lane. CMS-05→06→07 are sequential because of
+reference/publish invariants. Integrated CMS acceptance opens the team deep-dive planning Gate, not an
+automatic next implementation Phase.
 
-### Phase 2 — Real data, RAG quality, Model Mapping
+### Post-CMS backlog — discussion required
 
-| Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
-|---|---|---|---|---|
-| `AXMS-DATA-01` Real public-data Connector | 민은지 | actual HTTPS adapter, domain configuration, SSRF/DNS/redirect/size/timeout/pagination/mapping; fixture retained as test adapter | Backend `connector`, `integration/publicdata`; Frontend `features/connectors` | FND-03; `B→F` |
-| `AXMS-RAG-01` Evaluation Dataset/Run | 윤서 | Dataset/Question Versions; Hit@K, MRR, Citation, Refusal, latency history and artifacts | Backend `rag/evaluation`; Frontend `features/rag-evaluation` | DATA-01 and current Knowledge build; `B→F` |
-| `AXMS-RAG-02` Compare/Threshold/Tuning | 정차윤 | candidate vs Active comparison, versioned threshold warning/block, tuning evidence | same RAG packages | RAG-01; `B→F` |
-| `AXMS-MAP-01` Task Provider/Model Mapping | 민은지 | fixed use-case mapping, capability validation, version activation, Job snapshot; no graph rewiring | Backend `ai/gateway/mapping`; Frontend `features/model-routing` | FND-03 and Provider CMS; `B→F` |
+The former Phase 2 through Phase 5 tables are no longer an approved execution sequence or ownership
+assignment. They are reduced to the following capability inventory for the post-CMS team deep-dive.
 
-Deterministic retrieval metrics must work without an `EVALUATION_JUDGE`. Paid judge calls and LangSmith are optional, approval-gated, and must not determine base readiness. Orchestrator does not change in this phase.
-
-### Phase 3 — Repository, PathPolicy, real Coding Tools
-
-| Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
-|---|---|---|---|---|
-| `AXMS-COD-01` Repository registry/tree | 윤서 | Super Admin sees registered repository status and a read-only tree without credential disclosure | Backend `coding/repository`; Frontend `features/coding/repositories` | FND-03; `B→F` |
-| `AXMS-COD-02` PathPolicy Version | 정차윤 | tree-checkbox read/write rules, immutable version, technical evidence, fixed non-overridable denylist | public/coding schemas; Flyway; Backend `coding/pathpolicy`; Frontend coding policy | COD-01; `B-expand→O if context changes→F` |
-| `AXMS-COD-03` Real read Tools | 윤서 | `list_tree`, `search_code`, `read_file` with repository/project/policy/realpath enforcement | Backend Tool executors; Orchestrator tool client/graph; Frontend result UI | COD-02; `B-expand→O→F` |
-| `AXMS-COD-04` Mutation Tools | 이재욱 | isolated-worktree `write_file/apply_patch`; whole-patch rejection on one invalid path; traversal/symlink/escape blocked | Backend mutation executors; Orchestrator nodes; Frontend Diff UX | COD-03; `B-expand→O→F` |
-| `AXMS-COD-05` Diff/Test/Build/Preview | 민은지 | candidate-SHA diff and async allowlisted checks with timeout/retry/evidence hashes | Backend check/preview executors; Orchestrator nodes; Frontend evidence/preview | COD-04; `B-expand→O→F` |
-| `AXMS-COD-06` Coding graph integration | 윤서 | plan→patch→test→preview interrupt/resume with duplicate side effect zero | Backend coding lifecycle; Orchestrator fixed graph; Frontend job timeline | COD-03–05; `B-expand→O→F` |
-
-Repository tools are sliced in the order `tree/read → write/apply_patch/diff → test → build → preview`. Each Tool slice includes contract, required evidence persistence, Spring authority, Orchestrator consumer, UI result, and E2E. The Orchestrator never receives Provider/Git/Docker credentials or final authorization.
-
-### Phase 4 — Natural-language CMS on manual CMS
-
-| Slice | E2E lead | Outcome | Expected paths | Dependency and PR order |
-|---|---|---|---|---|
-| `AXMS-NAT-01` ActionPlan/Draft/Diff primitive | 민승준 | natural language→typed ActionPlan→structured Draft→ValidationReport→Diff; model/prompt/policy snapshot | Backend `cms/natural`; shared public schemas; Frontend `features/natural-cms` | manual CMS + MAP-01; `B→F` |
-| `AXMS-NAT-02` Natural-language Menu | 이재욱 | MenuSpec Draft, validation, Diff, preview; no direct active-pointer mutation | Menu packages and feature route | NAT-01 + CMS-02; `B→F` |
-| `AXMS-NAT-03` Natural-language Content/Page | 민은지 | Content/PageSpec Draft, component/data/Knowledge binding, preview | content/page packages and feature route | NAT-01 + CMS-03; `B→F` |
-| `AXMS-NAT-04` Natural-language SiteTemplate | 윤서 | SiteTemplateSpec Draft constrained to Registry/Token; desktop/mobile preview | site packages and feature route | NAT-01 + CMS-05; `B→F`; no Orchestrator |
-| `AXMS-NAT-05` Combined preview/publish/rollback | 정차윤 | assigned `GENERAL_ADMIN` evaluates Diffs and directly publishes or rolls back one Site Release | release UI | NAT-02–04 + CMS-06/07; `B→F` |
-
-After NAT-01 is merged, NAT-02–04 can run in parallel in disjoint feature packages. Identity/role changes are not natural-language actions. Raw HTML/CSS/JS remains prohibited.
-
-### Phase 5 — LLM DevOps after real Coding/PathPolicy
-
-| Slice | E2E lead | Outcome | Dependency and PR order |
+| Capability inventory | Current evidence boundary | Topics the team must newly decide | Status |
 |---|---|---|---|
-| `AXMS-DVO-01` Scope/Context dual approval | 정차윤 | request→Context Pack→read/write scope→distinct `GENERAL_ADMIN` business and `SUPER_ADMIN` technical approvals | COD-02/03/06; `B-expand→O→F` |
-| `AXMS-DVO-02` Patch/Diff dual approval | 윤서 | both roles approve the candidate SHA and policy hash; any change invalidates both approvals | COD-04/06 + DVO-01; `B-expand→O→F` |
-| `AXMS-DVO-03` Test/Build/Preview dual approval | 민은지 | allowlisted commands and evidence hash require both roles, with retry and expiry | COD-05 + DVO-02; `B-expand→O→F` |
-| `AXMS-DVO-04` PR creation dual approval | 이재욱 | only a candidate approved by both roles can push a feature branch/open PR; merge stays manual | DVO-03; `B-expand→O→F` |
-| `AXMS-DVO-05` CI/deploy dual manual gate | 민승준 | CI readback and deploy require both roles; staging adapter keeps the previous image on failure | DVO-04; external Cloud/credentials require separate approval |
-| `AXMS-DVO-06` Dual-approval evidence timeline | 정차윤 | Scope/Patch/Test/Preview/PR/CI/Deploy actors, SHA, policy, evidence, two approvals, rejection, and invalidation | DVO-01–05; `B-expand→O→F` |
+| Real public-data Connector; RAG Dataset/Evaluation/Compare/Tuning; Provider/Model Mapping | deterministic Connector/RAG and model-selection foundations only | target domains, metrics, thresholds, model/embedding choices, Slice structure, owner, dependencies, PR order | `DISCUSSION_REQUIRED`; not assigned |
+| Repository registry; PathPolicy; real read/write/diff/test/build/preview Coding Tools | Coding Harness and fixture read foundation only | repository access, fixed policies, Tool scope, test/build boundary, Slice structure, owner, dependencies, PR order | `DISCUSSION_REQUIRED`; not assigned |
+| Natural-language CMS | no product implementation | supported CMS domains, ActionPlan/Draft/Diff/Preview boundary, publication UX, Slice structure, owner, dependencies, PR order | `DISCUSSION_REQUIRED`; not assigned |
+| LLM DevOps | no real product implementation | exact execution scope, repository/cloud boundary, evidence UX, Slice structure, owner, dependencies, PR order | `DISCUSSION_REQUIRED`; not assigned |
+| External-user chatbot and remaining presentation flows | incomplete or not implemented | authentication, RAG dependency, first/second Vertical Slice, demo order, owner, dependencies | `DISCUSSION_REQUIRED`; not assigned |
 
-Automatic merge, unapproved deployment, free shell, operational source mutation, and Python-held Git credentials remain prohibited.
+The post-CMS discussion may reuse, rename, split, combine, or retire former candidate Slice IDs. No
+former owner or Phase number carries forward automatically. The new Git decision must identify the
+confirmed order, owner, scope, Slice IDs, target repositories, dependencies, shared seams, and PR order.
+
+One product invariant is already fixed for any future LLM DevOps design: dual approval occurs at
+exactly three Gates—autonomous-coding result, PR creation, and deployment. Internal
+request→limited patch→one allowlisted test→result execution is uninterrupted. Manual PR merge is a Git
+workflow action, not a fourth product Gate. Automatic merge, unapproved deployment, free shell,
+operational source mutation, and Python-held Git credentials remain prohibited.
 
 ## 6. Parallel windows
 
@@ -202,12 +186,12 @@ Automatic merge, unapproved deployment, free shell, operational source mutation,
 |---|---|---|
 | P0-A | FND-01 Backend seam + FND-02 Frontend seam | no contract/DB behavior change |
 | P1-A | CMS-01/02/03/04 feature-local work after FND-03 | Contract reservation and Flyway merge |
-| P2-A | RAG-01 UI mock + MAP-01 UI mock while DATA-01 Backend stabilizes | public contract and DB revisions |
-| P3-A | COD feature UI components and executor unit harnesses | coding schema, PathPolicy model, graph |
-| P4-A | NAT-02/03/04 after NAT-01 | shared ActionPlan/Draft contract and release |
-| P5-A | UI/evidence views for subsequent DevOps stages | Coding job state machine and coding contracts |
+| P1-B | CMS-05→CMS-06→CMS-07 sequential completion | reference/version, Release, Audit, Renderer, and integrated acceptance |
+| Post-CMS | none until a new checked-in team decision | all remaining order/owner/scope/Slice/dependency/PR seams |
 
-No two owners edit public OpenAPI, Flyway directory, app shell/navigation, common Auth/Error, future Coding dual-approval, Compose/bootstrap, or Master manifest concurrently.
+No two owners edit public OpenAPI, Flyway directory, app shell/navigation, common Auth/Error,
+Approval History/Audit, Compose/bootstrap, or Master manifest concurrently. Post-CMS backlog files do
+not become active hot spots until the new team decision assigns them.
 
 ## 7. Proposed CODEOWNERS model
 
@@ -274,8 +258,8 @@ Slice IDs use a stable phase/domain identifier, for example:
 
 ```text
 AXMS-CMS-02
-AXMS-COD-04
-AXMS-DVO-03
+AXMS-CMS-03
+AXMS-CMS-06
 ```
 
 Branches preserve the approved rule:
@@ -333,9 +317,6 @@ Additional phase gates:
 
 | Phase | Additional DoD |
 |---|---|
-| Manual CMS | `GENERAL_ADMIN` Draft/version/preview/direct publish/rollback; Draft never public; no `SUPER_ADMIN` approval Gate. |
-| RAG | Dataset/metric/threshold/compare history; Active pointer remains unchanged on failure. |
-| Model Mapping | fixed use cases only; capability mismatch blocked; mapping version snapshotted into Job. |
-| Coding | traversal/symlink/denylist/escape blocked; policy/candidate hashes bound; duplicate side effect zero. |
-| Natural-language CMS | ActionPlan→Draft→validation→Diff/Preview→`GENERAL_ADMIN` publish→Release→rollback; raw HTML/CSS/JS blocked. |
-| LLM DevOps | every side-effect Gate requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals; changed scope/SHA/policy/evidence invalidates both; automatic merge and unapproved deploy zero. |
+| CMS milestone | fixed `GENERAL_USER`; `GENERAL_ADMIN` Draft/version/preview/direct publish/rollback; Draft never public; no separate Reviewer or `SUPER_ADMIN` approval Gate; Approval History and core Audit Log screens; General User Renderer. |
+| Post-CMS backlog | detailed DoD is `TBD` at the team deep-dive and must be checked into Master before implementation. |
+| Future LLM DevOps invariant | exactly three Gates—autonomous-coding result, PR creation, deployment—require distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals; internal request/patch/test/result steps do not pause; automatic merge and unapproved deploy remain prohibited. |

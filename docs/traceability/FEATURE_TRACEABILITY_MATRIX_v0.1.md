@@ -1,7 +1,7 @@
 # AX Module Studio AS-IS/TO-BE feature traceability matrix v0.1
 
-> Baseline date: 2026-08-14
-> Product authority: preserved Project Spec, Auth/RBAC MVP overlay, and the later FND-03 completion/FND-04 retirement decision
+> Baseline date: 2026-08-18
+> Product authority: preserved Project Spec, delivered FND-03 evidence, and the later team checklist decision overlay
 > Implementation checkpoint: v1.0 handoff; Backend `e0a702d`, Frontend `0ba4295`, Orchestrator `eaeb3a3`
 
 ## 1. Status vocabulary
@@ -40,10 +40,16 @@ Paths are relative to their owning source repository unless noted otherwise.
 | E10 | Model foundation: Backend `ProviderCapabilityConfiguration.java`, `CodingModelTurnService.java`; code-configured registry and first eligible CHAT candidate, not DB task mapping. |
 | E11 | Integrated runtime/E2E: Backend `compose.dev.yaml`, `scripts/verify-full-local-e2e.ps1`, `scripts/health.ps1`. |
 | E12 | Recorded verification: handoff package `AX_Module_Studio_IMPLEMENTATION_SESSION_HANDOFF_v0.6.md`. |
-| E13 | Approved Auth/RBAC MVP: Master `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`; fixed `SUPER_ADMIN`/`GENERAL_ADMIN`, direct customer CMS operation, no initial Audit product, future Coding dual approval. |
+| E13 | Historical administrator Auth/RBAC MVP: Master `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`; delivered `SUPER_ADMIN`/`GENERAL_ADMIN`, direct customer CMS operation, future Coding dual approval. |
 | E14 | FND-03 implementation and later scope decision: Backend PR #7 at `e0a702d`, Frontend PR #4 at `0ba4295`, and Master `AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md`; production login/roles implemented, Project narrowing deliberately omitted for the single-customer demo, FND-04 retired. |
+| E15 | Current team checklist overlay: Master `docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`; fixed `GENERAL_USER`, Approval History/core Audit MVP, CMS-first execution plus post-CMS planning Gate, and exactly three LLM DevOps dual-approval Gates. |
 
-No implemented identifiers were found for `menu_version`, `page_version`, `site_template`, `site_release`, general `approval`, general `audit_log`, `golden_question`, `model_mapping`, or `path_policy_version`. FND-03 adds account, session, role, and membership persistence, but Project narrowing is not active in the approved single-customer demonstration. General Approval/Audit is no longer an initial manual-CMS requirement under E13/E14. Coding-specific approval fragments still do not satisfy the later two-account dual-approval rule.
+No implemented identifiers were found for `GENERAL_USER`, `menu_version`, `page_version`,
+`site_template`, `site_release`, general `approval`, general `audit_log`, `golden_question`,
+`model_mapping`, or `path_policy_version`. FND-03 adds administrator account, session, role, and
+membership persistence, but Project narrowing is not active in the approved single-customer
+demonstration. Approval History/core Audit are now MVP requirements under E15 but remain unimplemented.
+Coding-specific approval fragments still do not satisfy the later three-Gate two-account rule.
 
 ## 3. Confirmed AS-IS
 
@@ -65,27 +71,27 @@ No implemented identifiers were found for `menu_version`, `page_version`, `site_
 
 | ID | Product requirement | Contract | DB | Backend | Frontend | Orchestrator | E2E | Overall |
 |---|---|---|---|---|---|---|---|---|
-| T1 | Real public-data Connector and domain replacement | `FOUNDATION_ONLY`: configurable request/response/mapping shape | `FOUNDATION_ONLY`: config JSON and secret reference shape | `NOT_IMPLEMENTED`: non-fixture host rejected | `NOT_IMPLEMENTED`: fixture values fixed | `N/A` | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY` |
-| T2 | Fixed two-role production login/session and platform-role enforcement E13/E14 | `IMPLEMENTED`: login/logout/me and errors | `IMPLEMENTED`: account/role/session and membership seam | `IMPLEMENTED`: server-derived session and role checks; no Project narrowing | `IMPLEMENTED`: login/logout/expiry and role-aware navigation | `FOUNDATION_ONLY`: Coding role string is not yet migrated to product authority | `IMPLEMENTED` for approved reduced scope | `IMPLEMENTED(reduced MVP)`; full member management is CMS-01 and future multi-customer isolation needs a new Slice |
+| T1 | Real public-data Connector and domain replacement | `FOUNDATION_ONLY`: configurable request/response/mapping shape | `FOUNDATION_ONLY`: config JSON and secret reference shape | `NOT_IMPLEMENTED`: non-fixture host rejected | `NOT_IMPLEMENTED`: fixture values fixed | `N/A` | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; technical foundation only |
+| T2 | Fixed `SUPER_ADMIN`/`GENERAL_ADMIN`/`GENERAL_USER` target E13–E15 | `PARTIAL`: administrator login/logout/me exists; General User contract absent | `PARTIAL`: administrator account/role/session and membership seam only | `PARTIAL`: administrator server-derived session and role checks; no General User or Project narrowing | `PARTIAL`: administrator login/logout/expiry and role-aware navigation only | `FOUNDATION_ONLY`: Coding role string is not yet migrated to product authority | `IMPLEMENTED` only for delivered two-administrator reduced scope | `PARTIAL`; CMS-01 adds General User administration, CMS-07 adds login/Renderer access |
 | T3 | Five manual CMS domains | `NOT_IMPLEMENTED`: no menu/member/content/board/design operations | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `N/A` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` |
 | T4 | MenuSpec/PageSpec/SiteTemplateSpec, versions, Preview, direct `GENERAL_ADMIN` Publish, Site Release, Rollback | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `N/A` for manual workflow | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`; no `SUPER_ADMIN` approval Gate in the initial MVP |
-| T5 | End-user site Renderer | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`: admin acceptance console only | `N/A` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` |
-| T6 | Natural language→ActionPlan→Draft→validation→Diff/Preview→`GENERAL_ADMIN` publish/rollback | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `N/A`: Product AI belongs in Spring; current graph is Coding only | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` |
-| T7 | RAG Dataset/Metric/Compare/Threshold/Tuning | `FOUNDATION_ONLY`: Knowledge score field | `FOUNDATION_ONLY`: single score, no dataset/case/run/metric/threshold | `FOUNDATION_ONLY`: Evaluate phase uses constant 100 E4 | `NOT_IMPLEMENTED` dashboard/artifacts | `N/A` by default | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY` |
-| T8 | Task-level Provider/Model Mapping in fixed workflows | `FOUNDATION_ONLY`: selected model in Model Turn | `NOT_IMPLEMENTED`: scoped mapping/version table absent | `FOUNDATION_ONLY`: code registry, first CHAT candidate E10 | `NOT_IMPLEMENTED`: key registration only | `FOUNDATION_ONLY`: consumes selection, never owns it | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY` |
-| T9 | Repository tree/read/write/apply_patch/diff/test/build/preview | `FOUNDATION_ONLY`: four candidate tool names, incomplete set | `FOUNDATION_ONLY`: execution store exists but fixture-constrained | `NOT_IMPLEMENTED`: classpath fixture only | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`: no real repo/filesystem mutation | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY` |
-| T10 | Repository Tree checkbox PathPolicy Version and fixed denylist | `FOUNDATION_ONLY`: policy hash/requested path context | `NOT_IMPLEMENTED`: no repository/policy/rule/version aggregate | `FOUNDATION_ONLY`: exact README check only | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY`: snapshot/hash parity | fixture traversal denial only | `FOUNDATION_ONLY` |
-| T11 | LLM DevOps Scope/Patch/Test/Preview/PR/CI/Deploy two-account gates | `FOUNDATION_ONLY`: Coding state/hash/tool fragments | `FOUNDATION_ONLY`: lifecycle/tool execution; no two-account gate/evidence/PR/deploy aggregate | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY`: one approval interrupt is insufficient | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY`; each Gate later requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals E13 |
-| T12 | General manual-CMS Approval/Audit product | `N/A` for initial MVP | `N/A` beyond existing technical records | `N/A` | `N/A` | `N/A` | `N/A` | Removed from the initial MVP by E13; existing Product Job behavior remains and Coding dual approval is tracked in T11 |
+| T5 | `GENERAL_USER` login/session and end-user site Renderer | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`: admin acceptance console only | `N/A` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`; fixed CMS-07 target |
+| T6 | Natural-language CMS candidate capability | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `N/A`: current graph is Coding only | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; scope/order/owner unassigned |
+| T7 | RAG Dataset/Metric/Compare/Threshold/Tuning candidate capability | `FOUNDATION_ONLY`: Knowledge score field | `FOUNDATION_ONLY`: single score, no dataset/case/run/metric/threshold | `FOUNDATION_ONLY`: Evaluate phase uses constant 100 E4 | `NOT_IMPLEMENTED` dashboard/artifacts | `N/A` by default | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; technical foundation only |
+| T8 | Provider/Model Mapping candidate capability | `FOUNDATION_ONLY`: selected model in Model Turn | `NOT_IMPLEMENTED`: scoped mapping/version table absent | `FOUNDATION_ONLY`: code registry, first CHAT candidate E10 | `NOT_IMPLEMENTED`: key registration only | `FOUNDATION_ONLY`: consumes selection, never owns it | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; technical foundation only |
+| T9 | Repository/Coding Tool candidate capability | `FOUNDATION_ONLY`: four candidate tool names, incomplete set | `FOUNDATION_ONLY`: execution store exists but fixture-constrained | `NOT_IMPLEMENTED`: classpath fixture only | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`: no real repo/filesystem mutation | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; Harness foundation only |
+| T10 | Repository PathPolicy candidate capability | `FOUNDATION_ONLY`: policy hash/requested path context | `NOT_IMPLEMENTED`: no repository/policy/rule/version aggregate | `FOUNDATION_ONLY`: exact README check only | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY`: snapshot/hash parity | fixture traversal denial only | `DISCUSSION_REQUIRED` after CMS; foundation only |
+| T11 | LLM DevOps candidate with fixed three two-account Gates: autonomous-coding result, PR creation, deployment | `FOUNDATION_ONLY`: Coding state/hash/tool fragments | `FOUNDATION_ONLY`: lifecycle/tool execution; no three-Gate approval/evidence/PR/deploy aggregate | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED` | `FOUNDATION_ONLY`: one generic approval interrupt does not implement the three exact Gates | `NOT_IMPLEMENTED` | `DISCUSSION_REQUIRED` after CMS; Gate invariant fixed by E15, internal request→limited patch→one test→result remains uninterrupted |
+| T12 | MVP Approval History and core Audit Log | `NOT_IMPLEMENTED`: query/event contract absent | `NOT_IMPLEMENTED`: core approval/audit aggregate absent | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`: screens absent | `N/A` for current CMS | `NOT_IMPLEMENTED` | `NOT_IMPLEMENTED`; required by E15 through consuming CMS Slices without a separate Reviewer Gate |
 
 ## 5. Original Project Spec trace
 
 | Project Spec requirement group | Current implementation evidence | Gap disposition |
 |---|---|---|
 | §4.1 P0 1–3: auth/project/provider | production two-role login/role enforcement and protected Provider credentials exist E14 | Add CMS-01 member management; do not claim Project isolation in the current single-customer demo. |
-| §4.1 P0 4–11: Connector/RAG/citations | deterministic Stage 3 slice | Replace fixture with real public-data adapter; implement quality Dataset/Metrics and two-domain E2E. |
-| §4.1 P0 12–16, 25–26: natural-language menu/page/template, preview/publish/rollback | no contract/source | Implement manual CMS/version/release/renderer first, then natural-language Draft workflow. |
-| §4.1 P0 17: Tool/Audit history | Product/Coding technical histories | Preserve existing technical histories; do not build a general Audit product in the initial MVP. Later Coding dual approvals require their own evidence records. |
+| §4.1 P0 4–11: Connector/RAG/citations | deterministic Stage 3 slice | Post-CMS discussion must newly confirm real-data/RAG scope, order, owner, metrics, and E2E boundary. |
+| §4.1 P0 12–16, 25–26: natural-language menu/page/template, preview/publish/rollback | no contract/source | Complete the fixed CMS milestone; then newly decide natural-language CMS scope, order, and owner. |
+| §4.1 P0 17: Tool/Audit history | Product/Coding technical histories | Add MVP Approval History/core Audit screens for state-changing actions; later Coding Gates add their evidence only after post-CMS discussion. |
 | §4.1 P0 18–19: staging and two-domain demo | local Docker only; fixture mixes sample topics | Cloud work remains separately approval-gated; two true end-to-end configured domains remain missing. |
 | §4.1 P0 20–23: Build UI, retrieval harness, evaluation dashboard, artifacts | build phases/job console and active RAG exist | Implement metric history, comparison, threshold, failure artifacts, and downloads. |
 | §4.1 P0 24: five manual CMS areas | absent | Implement all five as small vertical slices. |
@@ -93,8 +99,8 @@ No implemented identifiers were found for `menu_version`, `page_version`, `site_
 | §14: CI/CD and rollback | Dockerfiles/local Compose | GitHub Actions, immutable staging, manual environment gate, and image rollback are missing. |
 | §17: performance/observability | health/trace/job state foundation | Measure product paths after implementation; token/cost/model/evaluation observability remains incomplete. |
 | §18: full Definition of Done | fixture technical E2E only | Full Project Spec E2E is not met. |
-| §25/§31.6: controlled coding extension | Coding Harness foundation | Build Repository/PathPolicy/real tools before DevOps gates. |
-| §31.4: task Model Mapping | Provider capability foundation | Add versioned DB mapping per fixed use case and snapshot it into Jobs. |
+| §25/§31.6: controlled coding extension | Coding Harness foundation | Post-CMS discussion must newly decide Repository/PathPolicy/Tool/DevOps scope and sequence; the Harness does not assign it. |
+| §31.4: task Model Mapping | Provider capability foundation | Post-CMS discussion must newly decide mapping use cases, persistence, scope, order, and owner. |
 | §§32–33: design/template and CMS UX | visual reference only, not product screen | Implement registry/spec/renderer/preview/release using the prescribed admin shell language. |
 | §34: one-file/one-command onboarding | Backend macOS/pwsh and Windows 5.1 fixes plus published Master wrapper exist | Preserve per-PC preflight/health and OS-neutral Master paths; a new/reinstalled host still requires its own acceptance. |
 
@@ -105,4 +111,7 @@ No implemented identifiers were found for `menu_version`, `page_version`, `site_
 3. Do not call T9–T11 complete because tool schemas mention mutation; runtime executes only fixture `read_file`.
 4. Do not call T3–T6 complete because the UI demonstrates workflow calls; it is not the manual CMS, Renderer, Site Release, or natural-language CMS.
 5. Do not overstate T2: production login and role enforcement are complete for the reduced demo, but Project isolation and a complete member-management product are not.
-6. Do not reintroduce general manual-CMS approval or Audit as an assumed dependency; E13 explicitly removes them from the initial MVP while preserving later Coding dual approval.
+6. Do not omit `GENERAL_USER`, Approval History, or core Audit from the CMS target; E15 requires them.
+   Do not infer a separate Reviewer or `SUPER_ADMIN` pre-publication Gate from that inclusion.
+7. Do not treat T1 or T6–T11 as an assigned sequence. Their order, owner, scope, and Slice structure are
+   decided only after integrated CMS acceptance.

@@ -3,6 +3,7 @@
 > Date: 2026-08-13 (Asia/Seoul)
 > Status: Auth/RBAC MVP decision recorded; Foundation Wave still in progress
 > Supersedes the execution order and product-role interpretation in v0.8 while preserving its remote-publication evidence
+> Later current authority: `../product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`
 
 ## 1. Outcome
 
@@ -37,8 +38,8 @@ Flyway, Compose, database state, or runtime state.
 
 An assigned `GENERAL_ADMIN` directly creates, updates, deletes, previews, publishes, unpublishes, and
 rolls back the customer Project's menu, content/page, board/post, and site design/template data.
-`SUPER_ADMIN` approval or rejection is not required. A separate Reviewer role and a unified Audit
-product/UI are excluded from the initial MVP.
+`SUPER_ADMIN` approval or rejection is not required. The later decision still excludes a separate
+Reviewer Gate but includes Approval History and a core Audit Log screen in the CMS MVP.
 
 ### Technical configuration
 
@@ -48,15 +49,15 @@ Normal customer CMS work does not wait for the delivery engineer.
 
 ### Autonomous coding
 
-Autonomous coding remains a strict exception. Every side-effect Gate requires approvals from two
-distinct accounts:
+Autonomous coding remains a strict exception. The later clarified flow requires approvals from two
+distinct accounts at exactly three Gates—autonomous-coding result, PR creation, and deployment:
 
 - an assigned `GENERAL_ADMIN` for customer/business intent;
 - a `SUPER_ADMIN` for technical/security/delivery risk.
 
-Spring Backend and Core DB remain authoritative. LangGraph pauses and resumes but does not grant
-authority. Scope, policy, candidate SHA, patch, or evidence changes invalidate approvals bound to the
-earlier value.
+The internal request→limited patch→one allowlisted test→result flow does not pause for human approval.
+Spring Backend and Core DB remain authoritative. LangGraph pauses and resumes only at the three human
+Gates but does not grant authority. A changed value invalidates approvals bound to the earlier value.
 
 ## 4. Updated execution order
 
@@ -66,6 +67,7 @@ FND-01 Backend seam + FND-02 Frontend seam
 → FND-03 two-role Auth/RBAC (Backend compatible contract/Flyway/Spring → Frontend)
 → CMS-01/02/03/04 feature-local work after Contract/Flyway reservation
 → CMS-05 → CMS-06 → CMS-07
+→ team deep-dive planning Gate before post-CMS work
 ```
 
 The former FND-04 gate is removed from this initial sequence. Approval persistence is introduced only
