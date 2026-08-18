@@ -1,6 +1,6 @@
 # AX Module Studio implementation/team handoff v1.0
 
-> Date: 2026-08-14 (Asia/Seoul)
+> Updated: 2026-08-18 (Asia/Seoul)
 > Status: Foundation Auth/RBAC complete in the reduced single-customer MVP boundary
 > Supersedes: v0.9 implementation status and execution order; preserves historical publication evidence
 
@@ -28,10 +28,11 @@ The exact FND-03 reduction and FND-04 disposition are authoritative in
 Do not claim Project isolation or a complete account-management product from FND-03. `AXMS-CMS-01`
 owns the full member-management UI/API work.
 
-## 3. Next active work
+## 3. Next active work — Wave 3
 
-There is no FND-04 Wave. After the Integration/Contract owner reserves shared contracts and Flyway
-revisions, the next parallel product work is:
+The original Wave 2 / FND-04 work is retired and later Waves are not renumbered. The next parallel
+product work is **Wave 3**. A separate Task Packet is optional; shared contract and Flyway reservations
+remain required before a Slice edits those shared seams.
 
 | Slice | Lead | Outcome |
 |---|---|---|

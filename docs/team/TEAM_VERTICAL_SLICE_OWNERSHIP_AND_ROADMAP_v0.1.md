@@ -1,6 +1,6 @@
 # AX Module Studio 5-person vertical-slice ownership and roadmap v0.1
 
-> Baseline: 2026-08-14; Foundation completion revalidated from canonical Source `origin/dev`
+> Baseline: 2026-08-18; Foundation completion and Wave 3 naming revalidated from canonical Source `origin/dev`
 > Goal: minimize shared-file collisions while each owner completes user-visible Contract→Flyway→Spring→Frontend→E2E slices
 
 The first team product milestone is not infrastructure expansion. It is the assembled **manual administrator CMS product**: two-role production Auth/RBAC, member management, menu, content/page, board, site design/template, direct customer-admin Site Release/Publish/Rollback, and the end-user Renderer. General manual-CMS approval/rejection and a unified Audit product are not part of the initial MVP. Later RAG, Coding, natural-language CMS, and LLM DevOps work does not open until this milestone's dependency gates are satisfied. Autonomous coding remains the exception and requires distinct `GENERAL_ADMIN` and `SUPER_ADMIN` approvals at every side-effect Gate under the [Auth/RBAC MVP specification](../product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md).
@@ -126,10 +126,12 @@ Repository PR shorthand:
 | `AXMS-FND-03` Production Auth/RBAC | 정차윤 | **DONE, reduced single-customer scope**: fixed roles, login/session, Backend role enforcement and Frontend role-aware UX; no Project narrowing | public contract/fixtures; Flyway identity/RBAC; Backend `common/auth`; Frontend `features/auth` | Backend PR #7 → Frontend PR #4 merged; `B→F` |
 | `AXMS-FND-04` Broad Approval/Audit/Job primitive | none | **RETIRED**: not a scheduled Slice; no general manual-CMS Approval/Audit product and no separate Foundation Wave | N/A; later Coding dual approval belongs to the consuming Coding/LLM DevOps Slices | no implementation or PR |
 
-The Foundation sequence through FND-03 is complete. There is no FND-04 Wave. CMS-01–04 are the next
-parallel product Slices after team-lead task packets and shared Contract/Flyway reservations. FND-03
-completion details and the deliberate Project-isolation reduction are fixed in the later completion
-decision; do not overstate the delivered boundary.
+The Foundation sequence through FND-03 is complete. The original Wave 2 / FND-04 work is retired and
+later Waves are not renumbered. **Wave 3 is CMS-01–04**, the next parallel product Wave. An explicit owner
+request may start a named Slice; a separate Task Packet is optional refinement, while shared
+Contract/Flyway reservations remain mandatory before editing those shared seams. FND-03 completion
+details and the deliberate Project-isolation reduction are fixed in the later completion decision; do
+not overstate the delivered boundary.
 
 ### Phase 1 — Five manual CMS domains, Release, Renderer
 

@@ -1,7 +1,7 @@
 # AX Module Studio LLM project status snapshot
 
-> Updated: 2026-08-14 (Asia/Seoul)
-> Snapshot-Version: `v0.2`
+> Updated: 2026-08-18 (Asia/Seoul)
+> Snapshot-Version: `v0.3`
 > Owner: Min Seungjun (`tmdwns0531`), Integration/Contract owner
 > Purpose: small Git-owned status and WBS view that every teammate LLM reads after synchronizing Master
 
@@ -46,7 +46,7 @@ Verified by fetching each canonical `origin/dev` on 2026-08-14.
 | 0 | `AXMS-FND-01` Backend seam | `v0.1` | 민승준 / `tmdwns0531` | Backend | merged to Backend `dev` | preserve as the Backend base for FND-03 |
 | 0 | `AXMS-FND-02` Frontend app seam | `v0.1` | 이재욱 / `LEEJAEWOOK1` | Frontend | merged to Frontend `dev` | preserve as the Frontend base for FND-03 |
 | 1 | `AXMS-FND-03` Production Auth/RBAC | `v0.2` | 정차윤 / `jcy644542` | Backend, Frontend | `DONE`: Backend PR #7 and Frontend PR #4 merged; reduced single-customer boundary | preserve login/role authority; Project isolation is not implemented and full member management moves to CMS-01 |
-| none | `AXMS-FND-04` broad common Approval/Audit primitive | `N/A` | no assignee | no target | `RETIRED`: not a scheduled Foundation Slice and no Wave is reserved | Coding dual approval remains consumer-owned by later Coding/LLM DevOps Slices |
+| 2 | `AXMS-FND-04` broad common Approval/Audit primitive | `N/A` | no assignee | no target | `RETIRED`: the original Wave 2 slot is closed and is not reused | Coding dual approval remains consumer-owned by later Coding/LLM DevOps Slices |
 
 `Task version` is the team-lead-controlled version of one worker's assigned Slice packet. Min Seungjun
 increments it when the assigned worker, scope, target repositories, dependencies, or next gate changes.
@@ -62,17 +62,19 @@ The authoritative completion boundary is
 Do not infer Project isolation from persisted membership types. The current demonstration is single
 customer, and FND-03 intentionally does not narrow `GENERAL_ADMIN` access by Project.
 
-## 5. Next active Wave
+## 5. Next active Wave — Wave 3
 
-There is no FND-04 Wave. The next parallel work, after the Integration/Contract owner reserves shared
-contracts and Flyway revisions, is:
+The original `Wave 2 = AXMS-FND-04` work was retired without renumbering later team Waves. Therefore the
+next active work is **Wave 3**, the parallel `AXMS-CMS-01` through `AXMS-CMS-04` manual-CMS Wave. A
+separate Task Packet is not required to recognize or name Wave 3. Shared contracts and Flyway revisions
+must still be reserved before a Slice edits those shared seams.
 
-| Slice | Task version | Lead | State | Next gate |
-|---|---|---|---|---|
-| `AXMS-CMS-01` | unassigned | 정차윤 / `jcy644542` | awaiting team-lead task packet | member/account status and membership contract reservation |
-| `AXMS-CMS-02` | unassigned | 이재욱 / `LEEJAEWOOK1` | awaiting team-lead task packet | MenuSpec contract reservation |
-| `AXMS-CMS-03` | unassigned | 민은지 | awaiting team-lead task packet | Content/PageSpec contract reservation and confirmed GitHub ID |
-| `AXMS-CMS-04` | unassigned | 윤서 / `HaveOffDuty` | awaiting team-lead task packet | Board/Post contract reservation |
+| Slice | Lead | State | Next gate |
+|---|---|---|---|
+| `AXMS-CMS-01` | 정차윤 / `jcy644542` | `NEXT — WAVE 3` | member/account status and membership contract reservation |
+| `AXMS-CMS-02` | 이재욱 / `LEEJAEWOOK1` | `NEXT — WAVE 3` | MenuSpec contract reservation |
+| `AXMS-CMS-03` | 민은지 | `NEXT — WAVE 3` | Content/PageSpec contract reservation and confirmed GitHub ID |
+| `AXMS-CMS-04` | 윤서 / `HaveOffDuty` | `NEXT — WAVE 3` | Board/Post contract reservation |
 
 ## 6. Primary work allocation
 
