@@ -38,7 +38,7 @@
 - Before implementation, return `MASTER CONTEXT PASS` with the recognized assignment and fetched Source `origin/dev` refs. Return `MASTER CONTEXT BLOCKED` and stop if the announcement, local Master commit, or assignment row differs.
 - Only Min Seungjun (`tmdwns0531`) controls Master writes and Notion MCP. Teammates read/pull Master and create Slice Branches, Commits, and PRs only in changed Frontend, Backend, or Orchestrator repositories.
 - Only Min Seungjun advances each worker's Slice `Task-Version` in Master and announces the checked-in version, next work, and Master commit. Teammates consume it read-only.
-- Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: Master first, then all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
+- Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: always scope Master plus all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
 - Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`. Never create or merge a PR targeting `main`.
 - `main` is reserved for periodic manual promotion by Min Seungjun and is outside routine local LLM and coding-agent workflows.
 - Team Branches, Commits, and PRs must contain the assigned Slice ID and confirmed GitHub ID according to `urizo-final-master/docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
@@ -53,6 +53,7 @@
 
 - Preserve all branch/HEAD/uncommitted state, databases, volumes, secrets, and running containers.
 - No automatic reset, clean, stash, checkout, database initialization, or volume deletion.
+- For a new assigned task, use a clean local `dev` fast-forwarded to `origin/dev`, then create the required local feature branch or a separate worktree. Preserve and report dirty, diverged, or local-only work instead of switching it automatically.
 - No secret values or full secret digests in prompts, chat, commands, logs, commits, or PRs.
 - Network/login/admin/reboot/credential/Prod/Cloud/SSH actions require explicit approval.
 - Team-member work uses latest `dev` → `feature/<confirmed-github-id>_<work-slug>_<version>` → PR to `dev`, approved by the `tmdwns0531` Master/Admin integration account.

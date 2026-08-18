@@ -28,7 +28,7 @@ The later current product target adds one fixed non-administrator role:
 - `GENERAL_USER` — 일반 사용자, the published end-user site's user without administrator authority.
 
 This document is the approved MVP interpretation of the preserved
-`AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`. It takes precedence where that document uses
+[`AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`](AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md). It takes precedence where that document uses
 `Project Admin`, `Reviewer`, generic `관리자`, manual-CMS approval, or general Audit language. The
 later team checklist overlay supersedes this document for `GENERAL_USER`, Approval History/core Audit
 Log inclusion, and post-CMS scheduling.

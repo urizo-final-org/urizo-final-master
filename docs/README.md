@@ -8,7 +8,7 @@
 4. Later delivered boundary: [FND-03 completion and FND-04 retirement decision](product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md)
 5. Current LLM status/WBS: [LLM project status snapshot](team/LLM_PROJECT_STATUS_SNAPSHOT.md)
 6. Master·Source Git·Notion policy: [operating policy v0.1](team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-7. Product intent: preserved `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+7. Product intent: [preserved cross-system Project Spec](product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md)
 8. Spring/Flyway/LangGraph responsibility overlay: the v0.2 architecture documents preserved in the Backend documentation set
 9. Current implementation checkpoint: [implementation/team handoff v1.0](handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md)
 10. Current implementation gap: [feature traceability matrix](traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
