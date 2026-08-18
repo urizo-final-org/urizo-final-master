@@ -17,6 +17,7 @@ The latest checkpoint is [implementation/team handoff v1.0](docs/handoff/AX_Modu
 ## Entry points
 
 - [팀원 원클릭 전체관리자 CMS 시작 가이드](docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
+- [Preserved cross-system product specification](docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md)
 - [Auth/RBAC MVP specification](docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)
 - [FND-03 completion/FND-04 retirement decision](docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md)
 - [Multi-model LLM routing](docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md)
@@ -39,6 +40,11 @@ AX Module Studio 팀 개발환경을 구성해줘.
 ```
 
 Codex-compatible agents enter through `AGENTS.md`; Claude Code enters through `CLAUDE.md`, which imports the same authority. The shared rules instruct the LLM to read the current handoff and team assignment, detect Windows/macOS/Linux, run read-only preflight, explain approval boundaries, execute the version-managed bootstrap itself after approval, stop for required login/MFA/administrator/reboot/secret entry, and finish with workspace health verification. A teammate should not need to translate or copy routine setup commands manually. The initial Git clone/open and unavoidable interactive boundaries remain human actions.
+
+`깃 pull 해줘` means safe synchronization of all four repositories, not only the currently open one.
+Before a new task, each changed repository starts from a clean, current `dev`; feature work then uses the
+required local feature branch or a separate worktree. The synchronization flow never discards dirty or
+diverged work and never changes branches implicitly.
 
 Read-only checks:
 

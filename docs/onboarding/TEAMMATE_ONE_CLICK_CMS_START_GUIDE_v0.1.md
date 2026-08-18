@@ -136,13 +136,19 @@ Slice ID가 없거나 의존성이 닫혀 있거나 공용 seam 예약이 없으
 ## 7. Git 규칙
 
 ```text
-origin/dev 최신화
+네 Repository의 깨끗한 dev 체크아웃을 origin/dev로 최신화
 → feature/<github-id>_<동일-slice-slug>_<version>
 → Repository별 검증·Commit·Push
 → Repository별 dev PR
 → 같은 Slice ID와 상호 PR 링크
 → tmdwns0531 Master/Admin 승인·병합
 ```
+
+- `깃 pull 해줘`는 현재 Repository 하나가 아니라 Master, Frontend, Backend, Orchestrator 전체의
+  안전 동기화를 의미한다.
+- 새 작업은 변경할 Repository의 깨끗한 `dev`를 `origin/dev`로 Fast-forward한 뒤 로컬 Feature
+  Branch 또는 별도 Worktree를 생성한다.
+- Dirty, Diverged, local-only commit이 있는 Checkout은 자동 전환하지 않고 그대로 보존해 보고한다.
 
 - 모든 Repository의 Feature PR은 `dev`를 Base로 한다. LLM이나 Coding Agent는 `main` 대상 PR을
   만들거나 병합하지 않으며, `main`은 팀장 민승준이 주기적으로 수동 승격한다.

@@ -28,7 +28,7 @@ Paths are relative to their owning source repository unless noted otherwise.
 
 | ID | Evidence |
 |---|---|
-| E1 | Product requirements: handoff package `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`, especially §§4–7, 9–18, 25, 31–34. |
+| E1 | Product requirements: Master-preserved [cross-system Project Spec](../product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md), especially §§4–7, 9–18, 25, 31–34; later Master decisions supersede conflicts. |
 | E2 | Public contract: Backend `contracts/public/openapi.yaml`; 27 operations under Health, Projects, Connectors, Knowledge, RAG, Jobs. |
 | E3 | Core product schema: Backend Flyway `V20260811210000__create_stage3_product_core.sql` and `V20260811211500__create_product_job_outbox_and_batch.sql`. |
 | E4 | Fixture/data path: Backend `DeterministicConnectorFixture.java`, `ProductBatchService.java`, `ProductStore.java`. The adapter uses `fixture.invalid`; evaluation assigns score 100. |

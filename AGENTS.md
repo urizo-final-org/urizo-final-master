@@ -32,7 +32,8 @@
 13. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
 14. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
 15. The applicable sibling repository `AGENTS.md`
-16. For product intent, the preserved authoritative `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+16. For cross-system product intent, the preserved baseline
+    `docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
 
 The Project Spec is not reduced to the currently implemented OpenAPI. The team checklist decision
 overlay is the latest authority for the three-role target, Approval History/core Audit Log inclusion,
@@ -50,7 +51,7 @@ The internal request→limited patch→one allowlisted test→result flow runs w
 ## LLM onboarding protocol
 
 - Treat natural-language requests such as `AX Module Studio 팀 개발환경을 구성해줘`, `로컬 환경을 세팅해줘`, or `환경 최신화해줘` as an onboarding/setup request.
-- Treat `깃 pull 해줘`, `전체 Git 최신화`, or `워크스페이스 최신화` as a request to run the Master-first safe four-repository synchronization in `scripts/sync-workspace.ps1 -ApproveNetwork`. Re-read the updated Master rules and status snapshot before continuing. Never translate this request into an unconditional `pull origin dev` on every current branch.
+- Treat `깃 pull 해줘`, `전체 Git 최신화`, or `워크스페이스 최신화` as a request to run the Master-first safe four-repository synchronization in `scripts/sync-workspace.ps1 -ApproveNetwork`. Its default scope is Master plus all three Source repositories; never silently narrow it to the current repository. Re-read the updated Master rules and status snapshot before continuing. Never translate this request into an unconditional `pull origin dev` on every current branch.
 - The teammate only needs to clone/open this Master repository and make that request. Do not require the teammate to copy and run PowerShell, Git, Docker, Maven, Node, or Python commands manually when the agent can run the version-managed scripts.
 - First read the required documents above and run the read-only `scripts/preflight-workspace.ps1`. Explain the detected repository, Git, Docker/WSL, database, and health state before proposing changes.
 - Detect and report the host OS and PowerShell runtime. Use Windows PowerShell 5.1 or PowerShell 7 on Windows and `pwsh` on macOS/Linux; never translate cross-platform Repository paths with hard-coded Windows separators.
@@ -97,6 +98,7 @@ The internal request→limited patch→one allowlisted test→result flow runs w
 
 ## Git and team workflow
 
+- For a new assigned task, begin from a clean local `dev` that is fast-forwarded to `origin/dev`, then create `feature/<confirmed-github-id>_<work-slug>_<version>`. A separate worktree is preferred when the canonical checkout must remain on `dev`. If a checkout is dirty, diverged, or contains local-only commits, preserve it and report the blocker instead of switching automatically.
 - Team-member work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a PR approved by the `tmdwns0531` Master/Admin integration account.
 - Every team-member Branch work slug contains the lowercase Slice ID. Every Commit subject uses `<type>(<SLICE-ID>/<github-id>): <result>`, and every PR title uses `[<SLICE-ID>][<github-id>] <result>`. The PR body records Slice version, worker name/GitHub ID, Repository, dependencies, connected PRs, Contract/Migration impact, verification, Blocker, and next Gate.
 - Every agent-created pull request in Master, Frontend, Backend, and Orchestrator targets `dev`. A generic request to create, publish, or merge a PR never authorizes a `main` target.

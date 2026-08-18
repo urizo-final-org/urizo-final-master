@@ -14,7 +14,8 @@ This is the first combined implementation/team checkpoint after v0.6. It does no
 4. `TEAM_DEV_SETUP_v0.2.md`;
 5. `GIT-WORKFLOW_v0.2.md`;
 6. `AX_Module_Studio_IMPLEMENTATION_SESSION_HANDOFF_v0.6.md`;
-7. the complete original `AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`;
+7. the complete original Project Spec, now preserved in Master as
+   [`AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`](../product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md);
 8. the architecture handoff, team work/Git guide, Dev/Prod bootstrap spec, SiteTemplate spec, and admin UI reference;
 9. the conditional full `DATABASE_MIGRATION_POLICY_v0.2.md` and `AX_Module_Studio_LLM_Function_Tool_Job_Harness_Design_v0.2.md`;
 10. the parent workspace and all three source-repository `AGENTS.md` files.

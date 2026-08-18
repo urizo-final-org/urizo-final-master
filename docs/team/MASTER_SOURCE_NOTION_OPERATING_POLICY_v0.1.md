@@ -124,8 +124,8 @@ Next-Gate:
    다음 Gate를 갱신하고 Master에 반영한다.
 3. 팀장이 팀원에게 `MASTER UPDATE COMPLETE` 패킷으로 갱신 완료, 다음 작업, Master Commit을
    간략히 통보한다.
-4. 팀원이 `깃 pull 해줘`라고 요청하면 로컬 LLM은 Master를 먼저 안전 동기화한 다음 관련 Source
-   Repository를 동기화한다.
+4. 팀원이 `깃 pull 해줘`라고 요청하면 로컬 LLM은 Master를 먼저 안전 동기화한 다음 Frontend,
+   Backend, Orchestrator 세 Source Repository를 모두 동기화한다.
 5. 로컬 LLM은 최신 Master `AGENTS.md`, 운영정책, 상태표를 다시 읽고 통보받은 Snapshot/Slice/Task
    version과 작업자·대상 Repository가 일치하는지 확인한다.
 6. 로컬 LLM은 구현 전에 `MASTER CONTEXT PASS` 또는 `MASTER CONTEXT BLOCKED`로 인지 결과와
@@ -141,6 +141,11 @@ Next-Gate:
 Fetch와 Fast-forward에 대한 해당 작업의 Network 승인이다. 로그인·MFA·Rebase·충돌 해결·Branch
 전환·로컬 변경 삭제까지 승인한 것은 아니다.
 
+기본 범위는 항상 Master, Frontend, Backend, Orchestrator 전체다. 현재 열려 있는 Repository나
+작업자가 수정할 예정인 Repository 하나로 범위를 축소하지 않는다. 다만 안전 동기화는 모든
+Working Tree를 무조건 `origin/dev`로 덮는 명령이 아니다. 깨끗한 `dev`만 `origin/dev`로
+Fast-forward하고, Feature Branch와 로컬 변경은 아래 규칙대로 보존한다.
+
 고정 순서:
 
 1. 네 Repository의 Origin, Branch, HEAD, Dirty 상태를 읽기 전용으로 확인한다.
@@ -155,6 +160,19 @@ Fetch와 Fast-forward에 대한 해당 작업의 Network 승인이다. 로그인
 
 이 절차는 `scripts/sync-workspace.ps1 -ApproveNetwork`가 소유한다. Master가 최신 정책을 제공하지
 못하면 Source Working Tree 갱신 전에 중단한다.
+
+새 작업의 표준 Branch 수명주기는 다음과 같다.
+
+```text
+깨끗한 로컬 dev Checkout
+→ origin/dev Fast-forward
+→ feature/<github-id>_<slice-id-lower>-<work-slug>_<version> 생성
+→ 작업·검증·dev 대상 PR
+```
+
+Canonical Checkout을 계속 `dev`로 유지해야 하거나 병렬 작업이 필요하면 별도 Git Worktree에서
+Feature Branch를 사용한다. Dirty, Diverged, local-only commit이 있는 Checkout은 자동으로
+`dev` 전환하지 않으며, 로컬 상태를 보존하고 정확한 차단 원인을 보고한다.
 
 ## 7. Notion 운영모델 고정
 

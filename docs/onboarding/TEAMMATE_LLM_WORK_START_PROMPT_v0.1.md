@@ -37,8 +37,9 @@ Slice ID나 선행 의존성이 비어 있거나 병합되지 않았다면 구�
 공통 Auth/Error/Approval/Audit, Backend Compose/bootstrap, Master manifest/handoff는
 Integration/Contract owner의 직렬화 lane 없이 편집하지 마라.
 
-승인 후 latest origin/dev 기반으로
+승인 후 변경할 Repository의 깨끗한 dev를 origin/dev로 Fast-forward하고
 feature/<내-github-id>_<동일-work-slug>_<version> 브랜치를 사용하라.
+Dirty, Diverged, local-only commit이 있으면 자동 checkout/reset하지 말고 보존 상태를 보고하라.
 변경 Repository마다 검증·commit·push·dev 대상 PR을 분리하고 같은 Slice ID로 상호 링크하라.
 직접 dev/main push, force push, auto merge를 금지한다.
 모든 Repository에서 PR Base는 dev다. main 대상 PR을 생성·병합하거나 main을 직접 변경하지 마라.
