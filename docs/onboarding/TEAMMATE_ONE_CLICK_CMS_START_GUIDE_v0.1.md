@@ -97,15 +97,15 @@ AX Module Studio 팀 개발환경을 구성해줘.
 |---|---|---|
 | 0 | `AXMS-FND-01` 민승준 + `AXMS-FND-02` 이재욱 | `SETUP PASS` 후 즉시 |
 | 1 | `AXMS-FND-03` 정차윤 | AXMS-FND-01/02 병합 후 |
-| 2 | `AXMS-CMS-01` 정차윤 + `AXMS-CMS-02` 이재욱 + `AXMS-CMS-03` 민은지 + `AXMS-CMS-04` 윤서 | AXMS-FND-03 병합, 공용 contract와 migration 번호 예약 후 feature-local package에서 병렬 |
-| 3 | `AXMS-CMS-05` 이재욱 | AXMS-CMS-02/03의 참조 contract 안정화 후 |
-| 4 | `AXMS-CMS-06` 민승준 | AXMS-CMS-02/03/05의 immutable Version 준비 후 |
-| 5 | `AXMS-CMS-07` 정차윤 + 전체 통합 E2E | AXMS-CMS-06 활성 Site Release 준비 후 |
+| 3 | `AXMS-CMS-01` 정차윤 + `AXMS-CMS-02` 이재욱 + `AXMS-CMS-03` 민은지 + `AXMS-CMS-04` 윤서 | AXMS-FND-03 병합, 공용 contract와 migration 번호 예약 후 feature-local package에서 병렬 |
+| Wave 3 이후 | `AXMS-CMS-05` 이재욱 | AXMS-CMS-02/03의 참조 contract 안정화 후 |
+| Wave 3 이후 | `AXMS-CMS-06` 민승준 | AXMS-CMS-02/03/05의 immutable Version 준비 후 |
+| Wave 3 이후 | `AXMS-CMS-07` 정차윤 + 전체 통합 E2E | AXMS-CMS-06 활성 Site Release 준비 후 |
 
 자신의 Wave가 열리기 전에는 구현을 시작하지 않는다. 대신 LLM이 현재 Slice의 사용자 시나리오, 테스트, 계약 제안과 feature-local mock을 준비하게 할 수 있지만 공용 hot spot은 수정하지 않는다.
 
-Wave 0과 Wave 1은 현재 병합 완료다. 이미지나 구형 문서의 `Wave 2 = AXMS-FND-04`는 폐기된
-일정이다. 별도 FND-04 단계 없이 위 표의 CMS-01–04 병렬 Wave가 다음 단계다.
+Wave 0과 Wave 1은 현재 병합 완료다. 기존 `Wave 2 = AXMS-FND-04`는 폐기되었지만 이후 Wave를
+재번호화하지 않는다. 따라서 위 표의 CMS-01–04 병렬 작업이 공식 **Wave 3**이며 현재 다음 단계다.
 
 ## 6. 업무 시작 시 LLM에 전달할 내용
 

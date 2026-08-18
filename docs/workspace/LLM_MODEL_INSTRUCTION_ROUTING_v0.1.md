@@ -1,6 +1,6 @@
 # AX Module Studio multi-model LLM instruction routing v0.1
 
-> Updated: 2026-08-14 (Asia/Seoul)
+> Updated: 2026-08-18 (Asia/Seoul)
 > Owner: Min Seungjun (`tmdwns0531`)
 > Scope: Codex-compatible GPT coding agents and Claude Code used by the five-person team
 
@@ -28,9 +28,9 @@ AX-Module-Studio-Workspace/              # not Git
 │   ├── AGENTS.md                        # Master authority and required-reading router
 │   ├── CLAUDE.md                        # imports Master AGENTS for Master-only Claude sessions
 │   └── docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md
-├── urizo-final-frontend/AGENTS.md
-├── urizo-final-backend/AGENTS.md
-└── urizo-final-orchestrator/AGENTS.md
+├── urizo-final-frontend/{AGENTS.md,CLAUDE.md}       # repository router; Claude imports AGENTS
+├── urizo-final-backend/{AGENTS.md,CLAUDE.md}        # repository router; Claude imports AGENTS
+└── urizo-final-orchestrator/{AGENTS.md,CLAUDE.md}   # repository router; Claude imports AGENTS
 ```
 
 Team implementation starts from the common non-Git parent workspace after bootstrap. A Source-only
@@ -51,16 +51,20 @@ Both model families must perform the same sequence:
 Model identity never changes Repository ownership, approval boundaries, Git naming, Definition of Done,
 or Notion-write authority.
 
-## 4. What may be model-specific
+## 4. What may be model- or Source-repository-specific
 
-Model-specific entry files may contain only:
+Model-specific and Source-repository entry files may contain only:
 
 - how that coding agent loads the common instructions;
 - model/tool-specific navigation or context-loading guidance;
 - a short warning about unsupported automatic discovery.
+- the Source repository's stable scope and ownership boundary;
+- links to repository-local build, test, migration, or runtime documentation.
 
 They must not contain a private copy of role permissions, Slice ownership, WBS state, runtime versions,
 Git workflow, or safety rules. Those facts change over time and remain in their designated Master files.
+Source `AGENTS.md` files are therefore routing stubs, not secondary policy authorities. Source
+`CLAUDE.md` files import the corresponding `AGENTS.md` and add no duplicate common policy.
 
 ## 5. Update behavior
 
