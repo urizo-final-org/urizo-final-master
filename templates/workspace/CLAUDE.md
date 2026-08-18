@@ -1,3 +1,15 @@
-# AX Module Studio Workspace
+# AX Module Studio Workspace — Claude Code
 
-Read and follow `AGENTS.md`. Treat the four sibling folders as four independent Git repositories. Preserve local state and use Master handoff/manifest for routing; Backend remains the integrated runtime root.
+<!-- AXMS-MANAGED-CLAUDE-ROUTING:BEGIN -->
+@AGENTS.md
+@urizo-final-master/AGENTS.md
+
+## Claude-specific routing
+
+- The imported `AGENTS.md` files are the common normative project rules. Do not create a divergent
+  Claude-only copy of product, Git, WBS, approval, runtime, or safety policy.
+- Before changing a Source Repository, read its applicable `AGENTS.md` and the assigned Slice documents
+  routed by Master.
+- Treat the four sibling folders as independent Git repositories. Backend remains the integrated runtime
+  root; Master remains read-only for teammates.
+<!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->

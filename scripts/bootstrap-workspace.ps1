@@ -71,6 +71,69 @@ function Copy-TemplateIfAbsent {
     Write-Host "CREATED template: $Target"
 }
 
+function Sync-ManagedTextBlock {
+    param(
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][string]$Target,
+        [Parameter(Mandatory = $true)][string]$BeginMarker,
+        [Parameter(Mandatory = $true)][string]$EndMarker
+    )
+
+    $sourceContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Source
+    $sourceStart = $sourceContent.IndexOf($BeginMarker)
+    $sourceEnd = $sourceContent.IndexOf($EndMarker)
+    if ($sourceStart -lt 0 -or $sourceEnd -lt $sourceStart) {
+        throw "Managed policy markers are missing or invalid in template: $Source"
+    }
+    $sourceEnd += $EndMarker.Length
+    $managedBlock = $sourceContent.Substring($sourceStart, $sourceEnd - $sourceStart)
+
+    if (-not (Test-Path -LiteralPath $Target -PathType Leaf)) {
+        if ($WhatIf) {
+            Write-Host "PLAN synchronize managed policy after template creation: $Target"
+            return
+        }
+        throw "Managed policy target is missing after template creation: $Target"
+    }
+
+    $targetContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Target
+    $targetBeginCount = [regex]::Matches($targetContent, [regex]::Escape($BeginMarker)).Count
+    $targetEndCount = [regex]::Matches($targetContent, [regex]::Escape($EndMarker)).Count
+    if ($targetBeginCount -ne $targetEndCount -or $targetBeginCount -gt 1) {
+        throw "Managed policy markers are incomplete or duplicated; refusing to rewrite: $Target"
+    }
+    $targetStart = $targetContent.IndexOf($BeginMarker)
+    $targetEnd = $targetContent.IndexOf($EndMarker)
+
+    if ($targetStart -ge 0) {
+        if ($targetEnd -lt $targetStart) {
+            throw "Managed policy markers are out of order; refusing to rewrite: $Target"
+        }
+        $targetEnd += $EndMarker.Length
+        $updatedContent = $targetContent.Substring(0, $targetStart) +
+            $managedBlock +
+            $targetContent.Substring($targetEnd)
+    }
+    else {
+        $trimmedContent = $targetContent.TrimEnd([char[]]"`r`n")
+        $updatedContent = $trimmedContent +
+            [Environment]::NewLine + [Environment]::NewLine +
+            $managedBlock + [Environment]::NewLine
+    }
+
+    if ($updatedContent -eq $targetContent) {
+        Write-Host "UNCHANGED managed policy: $Target"
+        return
+    }
+    if ($WhatIf) {
+        Write-Host "PLAN synchronize managed policy: $Target"
+        return
+    }
+
+    [System.IO.File]::WriteAllText($Target, $updatedContent, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "SYNCHRONIZED managed policy: $Target"
+}
+
 $plans = [System.Collections.Generic.List[object]]::new()
 foreach ($repository in $manifest.repositories) {
     $target = Join-Path $WorkspaceRoot $repository.relativePath
@@ -139,9 +202,23 @@ else {
     }
 }
 
-$templateRoot = Join-Path $masterRoot 'templates\workspace'
-Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'AGENTS.md') -Target (Join-Path $WorkspaceRoot 'AGENTS.md')
-Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'CLAUDE.md') -Target (Join-Path $WorkspaceRoot 'CLAUDE.md')
+$templateRoot = Join-Path $masterRoot 'templates/workspace'
+$agentTemplate = Join-Path $templateRoot 'AGENTS.md'
+$workspaceAgent = Join-Path $WorkspaceRoot 'AGENTS.md'
+Copy-TemplateIfAbsent -Source $agentTemplate -Target $workspaceAgent
+Sync-ManagedTextBlock `
+    -Source $agentTemplate `
+    -Target $workspaceAgent `
+    -BeginMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->' `
+    -EndMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
+$claudeTemplate = Join-Path $templateRoot 'CLAUDE.md'
+$workspaceClaude = Join-Path $WorkspaceRoot 'CLAUDE.md'
+Copy-TemplateIfAbsent -Source $claudeTemplate -Target $workspaceClaude
+Sync-ManagedTextBlock `
+    -Source $claudeTemplate `
+    -Target $workspaceClaude `
+    -BeginMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:BEGIN -->' `
+    -EndMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->'
 Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'AX-Module-Studio.code-workspace') -Target (Join-Path $WorkspaceRoot 'AX-Module-Studio.code-workspace')
 
 if ($RunLocalFull) {
@@ -163,7 +240,7 @@ if ($RunLocalFull) {
         }
     }
 
-    $backendBootstrap = Join-Path $WorkspaceRoot 'urizo-final-backend\scripts\bootstrap-dev.ps1'
+    $backendBootstrap = Join-Path $WorkspaceRoot 'urizo-final-backend/scripts/bootstrap-dev.ps1'
     if (-not (Test-Path -LiteralPath $backendBootstrap -PathType Leaf)) {
         throw 'Backend bootstrap-dev.ps1 is missing. The reviewed source baseline is not available on this checkout.'
     }

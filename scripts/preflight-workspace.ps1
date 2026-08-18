@@ -28,6 +28,18 @@ if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestPath | ConvertFrom-Json
 $results = [System.Collections.Generic.List[object]]::new()
 
+function Get-HostPlatform {
+    if ($PSVersionTable.PSVersion.Major -lt 6) {
+        return 'Windows'
+    }
+    if ($IsWindows) { return 'Windows' }
+    if ($IsMacOS) { return 'macOS' }
+    if ($IsLinux) { return 'Linux' }
+    return 'Unknown'
+}
+
+$hostPlatform = Get-HostPlatform
+
 function Add-Result {
     param(
         [Parameter(Mandatory = $true)][string]$Area,
@@ -75,10 +87,12 @@ function Find-DockerCli {
     if ($command) {
         $candidates.Add($command.Source)
     }
-    if ($env:LOCALAPPDATA) {
-        $candidates.Add((Join-Path $env:LOCALAPPDATA 'Programs\DockerDesktop\resources\bin\docker.exe'))
+    if ($hostPlatform -eq 'Windows' -and $env:LOCALAPPDATA) {
+        $candidates.Add((Join-Path $env:LOCALAPPDATA 'Programs/DockerDesktop/resources/bin/docker.exe'))
     }
-    $candidates.Add('C:\Program Files\Docker\Docker\resources\bin\docker.exe')
+    if ($hostPlatform -eq 'Windows') {
+        $candidates.Add('C:\Program Files\Docker\Docker\resources\bin\docker.exe')
+    }
     return $candidates | Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } | Select-Object -First 1
 }
 
@@ -98,6 +112,21 @@ function Invoke-DockerReadOnly {
         $ErrorActionPreference = $previousErrorAction
     }
     return [pscustomobject]@{ ExitCode = $exitCode; Output = @($output) }
+}
+
+Add-Result -Area 'Host' -Item 'Operating system' -Status 'PASS' -Detail $hostPlatform
+$powerShellVersion = $PSVersionTable.PSVersion.ToString()
+$minimumPowerShellOk = if ($hostPlatform -eq 'Windows') {
+    $PSVersionTable.PSVersion.Major -ge 5
+}
+else {
+    $PSVersionTable.PSVersion.Major -ge 7
+}
+if ($minimumPowerShellOk) {
+    Add-Result -Area 'Host' -Item 'PowerShell' -Status 'PASS' -Detail "version=$powerShellVersion"
+}
+else {
+    Add-Result -Area 'Host' -Item 'PowerShell' -Status 'BLOCKED' -Detail "version=$powerShellVersion; macOS/Linux require PowerShell 7"
 }
 
 if (Test-Path -LiteralPath (Join-Path $WorkspaceRoot '.git')) {
