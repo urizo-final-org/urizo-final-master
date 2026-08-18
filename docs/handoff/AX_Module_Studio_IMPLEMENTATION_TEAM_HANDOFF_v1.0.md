@@ -61,3 +61,13 @@ Backend.
   side-effect Gate in later Coding/LLM DevOps Slices.
 - Master and Notion writes remain team-lead controlled. Teammate LLMs consume Master read-only and
   submit Slice PRs only to changed Source repositories.
+
+## 6. Git integration policy update — 2026-08-18
+
+- Master PR #4 promoted `dev` to `main`; the remote Master `dev` branch was subsequently absent.
+- The preserved integration worktree at `9a5ae0f34db8eaeba2f2fe9b88dfcc168f7cfb8d` was used to recreate
+  remote Master `dev` with a non-force push. Existing `main` was left unchanged.
+- Across Master, Frontend, Backend, and Orchestrator, every Feature or agent-created PR now targets
+  `dev` only.
+- `main` is not an agent target. Min Seungjun periodically performs `dev` to `main` promotion manually
+  and ensures that the persistent `dev` integration branch is not deleted during that operation.

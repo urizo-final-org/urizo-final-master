@@ -135,7 +135,9 @@ origin/dev 최신화
 → tmdwns0531 Master/Admin 승인·병합
 ```
 
-- 팀원은 `main/dev`에 직접 Push하지 않는다.
+- 모든 Repository의 Feature PR은 `dev`를 Base로 한다. LLM이나 Coding Agent는 `main` 대상 PR을
+  만들거나 병합하지 않으며, `main`은 팀장 민승준이 주기적으로 수동 승격한다.
+- 팀원은 `dev`나 `main`에 직접 Push하지 않는다.
 - Force push, reset, clean, 자동 stash, 자동 merge를 금지한다.
 - 한 Slice가 Frontend와 Backend를 바꾸면 하나의 PR로 합치지 않고 Repository별 PR을 만든다.
 - Backend compatible contract/Flyway/Spring PR을 먼저 병합하고 Frontend consumer PR을 병합한다.
