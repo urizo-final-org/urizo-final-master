@@ -38,6 +38,8 @@
 - Only Min Seungjun (`tmdwns0531`) controls Master writes and Notion MCP. Teammates read/pull Master and create Slice Branches, Commits, and PRs only in changed Frontend, Backend, or Orchestrator repositories.
 - Only Min Seungjun advances each worker's Slice `Task-Version` in Master and announces the checked-in version, next work, and Master commit. Teammates consume it read-only.
 - Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: Master first, then all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
+- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`. Never create or merge a PR targeting `main`.
+- `main` is reserved for periodic manual promotion by Min Seungjun and is outside routine local LLM and coding-agent workflows.
 - Team Branches, Commits, and PRs must contain the assigned Slice ID and confirmed GitHub ID according to `urizo-final-master/docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
 - Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
 - Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. Git work, PR, merge, and status requests do not imply Notion-write authorization.
@@ -53,6 +55,8 @@
 - No secret values or full secret digests in prompts, chat, commands, logs, commits, or PRs.
 - Network/login/admin/reboot/credential/Prod/Cloud/SSH actions require explicit approval.
 - Team-member work uses latest `dev` → `feature/<confirmed-github-id>_<work-slug>_<version>` → PR to `dev`, approved by the `tmdwns0531` Master/Admin integration account.
-- Team members never push directly to `dev`/`main`. The `tmdwns0531` Master/Admin account may use the intentional Repository Admin Ruleset bypass to update `dev`/`main`, merge its own validated governance changes, and approve team PRs; no additional teammate approval is required for those owner changes.
+- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`. Generic Git, publish, or PR requests never authorize a `main` target.
+- `main` is reserved for periodic manual promotion by Min Seungjun. Local LLMs and coding agents never push to `main`, create or merge a PR targeting `main`, delete or recreate `main`, or otherwise advance it.
+- Team members never push directly to `dev`. The `tmdwns0531` Master/Admin account may use the intentional Repository Admin Ruleset bypass only to restore or integrate `dev`, merge validated owner changes into `dev`, and approve team PRs targeting `dev`.
 - Never force-push. Record validation evidence and the resulting SHA for every owner bypass operation.
 - Shared contracts, Flyway, app shell, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master manifest/handoff are serialized through the Integration/Contract owner.

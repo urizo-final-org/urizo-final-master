@@ -1,7 +1,8 @@
 # AX Module Studio Master·Source Git·Notion 운영정책 v0.1
 
 > 확정자: 민승준 (`tmdwns0531`), 팀장·Integration/Contract owner
-> 확정일: 2026-08-14 (Asia/Seoul)
+> 최초 확정일: 2026-08-14 (Asia/Seoul)
+> Git branch policy update: 2026-08-18 (Asia/Seoul)
 > 운영모델: Git 단일 작업 기준 + Master LLM 상태/WBS + Gate 단위 Notion 시각화
 
 ## 1. 권한 경계
@@ -20,7 +21,37 @@
 - Master와 Notion의 쓰기 권한은 팀장 전용이다. 팀장 지시 없는 코드 작업·PR·Merge·상태 보고는
   Notion 쓰기 권한을 의미하지 않는다.
 
-## 2. Git 식별 규칙
+## 2. `dev` 통합 브랜치와 `main` 수동 승격 정책
+
+다음 규칙은 Master, Frontend, Backend, Orchestrator 네 Repository에 동일하게 적용한다.
+
+```text
+Agent-PR-Base: dev
+Main-Promotion: manual-team-lead-only
+```
+
+1. `dev`는 유일한 일상 통합 브랜치다. 모든 Feature Branch와 모든 LLM·Agent 생성 PR의 Base는
+   반드시 `dev`다.
+2. `main`은 팀장 민승준이 주기적으로 수동 승격하는 Release Snapshot Branch다. 로컬 LLM과
+   Coding Agent는 `main`에 Push하거나, `main` 대상 PR을 생성·병합하거나, `main`을 삭제·재생성하거나,
+   그 밖의 방식으로 `main`을 전진시키지 않는다.
+3. `PR 만들어줘`, `전체 Git 최신화`, `동기화해줘`, `배포 준비해줘` 같은 일반 요청은 `main`
+   변경 권한을 포함하지 않는다. Agent는 항상 `dev`를 Base로 사용한다.
+4. 팀원은 Feature Branch만 Push하고 `dev` 대상 PR을 만든다. 팀장 계정의 Ruleset bypass는
+   `dev` 복구·통합과 `dev` 대상 PR 승인·병합에만 사용한다.
+5. 팀장의 `dev` → `main` 승격은 사람 주도의 별도 수동 작업이다. 승격 시 Head Branch 자동 삭제로
+   `dev`가 제거되지 않도록 확인하고, Agent가 그 작업을 대신 수행하지 않는다.
+
+### 2026-08-18 Master `dev` 복구 기록
+
+- Master PR #4의 `dev` → `main` 병합 뒤 원격 `dev`가 삭제된 상태를 확인했다.
+- 로컬의 보존된 현재 통합 작업본 `9a5ae0f34db8eaeba2f2fe9b88dfcc168f7cfb8d`에서 원격 `dev`를
+  non-force Push로 재생성했다.
+- 기존 `main`은 `afa5244f2c9bb6e55bb45fcb556a356746d91a00` 상태로 보존했으며 되돌리거나
+  추가 수정하지 않았다.
+- 이후 모든 Agent PR은 `dev`만 대상으로 하며, `main` 승격은 팀장이 주기적으로 수동 수행한다.
+
+## 3. Git 식별 규칙
 
 작업자 식별은 중복 가능한 이름보다 확인된 GitHub ID를 기준으로 한다. 한글 이름은 PR 본문에
 병기한다.
@@ -60,7 +91,7 @@ Blocker:
 Next-Gate:
 ```
 
-## 3. 상태 판정과 Master 현행화
+## 4. 상태 판정과 Master 현행화
 
 | 상태 | 최소 증거 |
 |---|---|
@@ -79,7 +110,7 @@ Next-Gate:
 - Master 상태/WBS는 Slice 배정·상태 전환·병합·Blocker·Milestone 변경 시 갱신한다. 개별 코드
   Commit마다 Master를 수정하지 않는다.
 
-## 4. 팀장 갱신·인계 핸드셰이크
+## 5. 팀장 갱신·인계 핸드셰이크
 
 팀원별 작업 단위와 버전은 Master의
 [`LLM_PROJECT_STATUS_SNAPSHOT.md`](LLM_PROJECT_STATUS_SNAPSHOT.md)에서 관리한다. 이 값은 구현
@@ -103,7 +134,7 @@ Next-Gate:
 팀장 통보 형식과 로컬 LLM 인지 보고의 필수 필드는 상태표의 템플릿을 사용한다. Master 변경
 권한은 계속 팀장에게만 있고, 팀원은 인지 결과나 진행 상태를 Master에 직접 쓰지 않는다.
 
-## 5. `깃 pull 해줘`의 고정 의미
+## 6. `깃 pull 해줘`의 고정 의미
 
 팀원이 공통 Workspace에서 LLM에 `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`라고
 요청하면 이를 네 Repository의 **안전 동기화 요청**으로 해석한다. 이 요청은 Canonical Git의
@@ -125,7 +156,7 @@ Fetch와 Fast-forward에 대한 해당 작업의 Network 승인이다. 로그인
 이 절차는 `scripts/sync-workspace.ps1 -ApproveNetwork`가 소유한다. Master가 최신 정책을 제공하지
 못하면 Source Working Tree 갱신 전에 중단한다.
 
-## 6. Notion 운영모델 고정
+## 7. Notion 운영모델 고정
 
 Notion은 구현 원본이 아니라 팀장·팀원·멘토가 보는 시각적 관리면이다.
 

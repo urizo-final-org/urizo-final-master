@@ -41,6 +41,8 @@ Integration/Contract owner의 직렬화 lane 없이 편집하지 마라.
 feature/<내-github-id>_<동일-work-slug>_<version> 브랜치를 사용하라.
 변경 Repository마다 검증·commit·push·dev 대상 PR을 분리하고 같은 Slice ID로 상호 링크하라.
 직접 dev/main push, force push, auto merge를 금지한다.
+모든 Repository에서 PR Base는 dev다. main 대상 PR을 생성·병합하거나 main을 직접 변경하지 마라.
+main 승격은 팀장 민승준이 주기적으로 수동 수행한다.
 
 완료 보고에는 변경 파일, 테스트 결과, Contract/Migration 영향,
 Repository별 commit/PR, merge 순서, 남은 blocker를 포함하라.
@@ -48,6 +50,7 @@ Git gate: as a team member, push only the assigned feature branch and open a PR 
 Never push directly to dev/main or force-push. Request approval and merge from the
 tmdwns0531 Master/Admin integration account; do not ask another teammate to create
 a duplicate PR or repeat the same validation unless the integration owner requests it.
+Never create or merge a PR targeting main. Main promotion is a periodic manual team-lead operation.
 ```
 
 Static coding windows in this prompt are forbidden because they become stale. The checked-in Master
