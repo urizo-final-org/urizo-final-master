@@ -1,111 +1,110 @@
 # AX Module Studio Master Repository Rules
 
-## Repository role
+## 저장소 경계
 
-- This repository is the workspace control, governance, documentation, and handoff repository.
-- It is not a monorepo and must not contain copies of Frontend, Backend, or Orchestrator source.
-- Its canonical remote is `https://github.com/urizo-final-org/urizo-final-master.git`.
-- The parent `AX-Module-Studio-Workspace` is not a Git repository. Never create `.git` there.
+- Master는 공통 기준·상태·Workspace 도구만 소유하며 제품 Source를 보관하지 않는다.
+- 상위 `AX-Module-Studio-Workspace`는 Git 저장소가 아니다.
+- Frontend, Backend, Orchestrator는 각각 독립 저장소다.
+- 여러 저장소를 변경하면 같은 Slice ID/work slug를 사용하되 Commit과 PR은 저장소별로 분리한다.
 
-## Sibling routing
+## 필수 읽기
 
-- `../urizo-final-frontend/**` belongs to the Frontend repository.
-- `../urizo-final-backend/**` belongs to the Spring Backend repository.
-- `../urizo-final-orchestrator/**` belongs to the Python LangGraph Coding Runtime repository.
-- `./**` belongs to this Master repository.
-- Read across repositories when a slice requires it, but make commits, pushes, and pull requests separately in every changed repository.
+작업 전 필요한 문서만 읽는다.
 
-## Required reading
+1. `docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md`
+2. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
+3. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
+4. 작업 저장소의 `AGENTS.md`
+5. DB 변경 시 `docs/team/FLYWAY_RESERVATION_LEDGER.md`
+6. 로컬 환경 작업 시 해당 Workspace·Infrastructure 문서
 
-1. `docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md`
-2. `docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md`
-3. `docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md`
-4. `docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md`
-5. `docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md`
-6. `docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md`
-7. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
-8. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
-9. `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md`
-10. `docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md`
-11. `docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md`
-12. `docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md`
-13. `docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md`
-14. `docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md` or `TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md`, as applicable
-15. The applicable sibling repository `AGENTS.md`
-16. For cross-system product intent, the preserved baseline
-    `docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md`
+삭제된 과거 CMS Spec, Wave, 추적표, 업무분장, 인수인계 내용을 추측하거나 복원하지 않는다.
 
-The Project Spec is not reduced to the currently implemented OpenAPI. The team checklist decision
-overlay is the latest authority for the three-role target, Approval History/core Audit Log inclusion,
-the CMS-first execution order, the post-CMS team-planning Gate, and the exact three later LLM DevOps
-dual-approval Gates. A healthy container or a technical E2E does not prove completion of an
-unimplemented product feature.
+## 현재 제품 범위
 
-The later FND-03 completion decision is authoritative for the reduced single-customer demonstration:
-production two-role login/role enforcement is complete, Project isolation and full member management are
-not part of FND-03, and the scheduled FND-04 Foundation Wave is retired. The later target additionally
-requires `GENERAL_USER`, Approval History, and a core Audit Log in the CMS milestone. Later Coding/LLM
-DevOps uses exactly three dual-approval Gates: autonomous-coding result, PR creation, and deployment.
-The internal request→limited patch→one allowlisted test→result flow runs without a human approval pause.
+현재 목표는 학원 발표용 로컬 CMS MVP다. 구현 범위는
+`AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md`만 따른다.
 
-## LLM onboarding protocol
+- 문서에 포함된 기능의 일반적인 설계·검증·테스트는 별도 승인 없이 진행한다.
+- 문서에 없는 화면·기능·역할·상태·워크플로·외부 연동을 추가하지 않는다.
+- 실운영 대비, 미래 확장성, 감사·승인·버전 관리 등을 이유로 범위를 선행 확장하지 않는다.
+- 범위를 벗어날 필요가 생기면 작업을 멈추고 팀장에게 승인 요청한다.
+- 세부 구현 하나하나는 승인 대상이 아니다. 사용자 기능 범위가 달라질 때만 승인받는다.
 
-- Treat natural-language requests such as `AX Module Studio 팀 개발환경을 구성해줘`, `로컬 환경을 세팅해줘`, or `환경 최신화해줘` as an onboarding/setup request.
-- Treat `깃 pull 해줘`, `전체 Git 최신화`, or `워크스페이스 최신화` as a request to run the Master-first safe four-repository synchronization in `scripts/sync-workspace.ps1 -ApproveNetwork`. Its default scope is Master plus all three Source repositories; never silently narrow it to the current repository. Re-read the updated Master rules and status snapshot before continuing. Never translate this request into an unconditional `pull origin dev` on every current branch.
-- The teammate only needs to clone/open this Master repository and make that request. Do not require the teammate to copy and run PowerShell, Git, Docker, Maven, Node, or Python commands manually when the agent can run the version-managed scripts.
-- First read the required documents above and run the read-only `scripts/preflight-workspace.ps1`. Explain the detected repository, Git, Docker/WSL, database, and health state before proposing changes.
-- Detect and report the host OS and PowerShell runtime. Use Windows PowerShell 5.1 or PowerShell 7 on Windows and `pwsh` on macOS/Linux; never translate cross-platform Repository paths with hard-coded Windows separators.
-- Explain the exact next action and whether it needs network access, local runtime mutation, authentication/MFA/browser interaction, administrator elevation, installation, or reboot. Obtain the applicable explicit approval before crossing that boundary.
-- After approval, run `scripts/bootstrap-workspace.ps1` with only the approved switches. It assembles missing sibling repositories, creates absent parent workspace files, and delegates local-full setup to the Backend-owned script.
-- If Git/Docker login, MFA, administrator elevation, installation, or reboot requires human interaction, stop at that boundary, explain the shortest human action, and resume verification after the teammate completes it. Never bypass or solicit secrets in chat or command arguments.
-- After bootstrap, open or recommend the generated `AX-Module-Studio.code-workspace`, run `scripts/health-workspace.ps1`, and report service URLs, warnings, and any remaining blocker.
-- Before assigning or implementing work, read `docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md` and state the Slice ID, E2E lead, reserved shared seams, repository paths, dependencies, and PR order.
-- The approved order ends at Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated CMS acceptance. Post-CMS backlog order, owner, scope, Slice IDs, and PR order remain unassigned until a new team-lead Git decision is checked in.
-- Report `SETUP PASS` only when the v0.8 setup acceptance contract is satisfied. Do not begin implementation from a generic workstream description; require one assigned Slice ID.
+## 단순성·범위·응답 원칙
 
-## Ownership boundaries
+- `Simple is best`를 기본 원칙으로 삼는다. 현재 Spec과 할당된 최소 완료 결과에 필요한 것만 만든다.
+- 필요 범위를 넘는 구현·리팩터링·추상화·설정·워크플로·문서·Slice 세분화는 승인 전 절대 진행하지 않는다.
+- Master 문서는 현재 결정·범위·검증에 필요한 내용만 남기고 반복 설명·개인별 이력·미확정 계획을 덜어낸다.
+- 테스트와 문서는 변경 위험과 시연 범위에 비례해 최소 충분 수준으로 작성한다.
+- 불가피하게 범위를 늘려야 하면 변경 전에 멈추고 `필요 이유 / 가장 작은 대안 / 영향`을 짧게 적어 팀장 승인을 요청한다.
+- Codex와 Claude는 같은 기준을 사용한다. 결과를 먼저 말하고 사람이 이해하기 쉬운 짧은 문장으로 답한다.
+- 단순 질문은 바로 답하고, 작업 상태·완료 보고는 아래 형식을 사용한다.
 
-- Backend owns public/coding contracts, Flyway, Spring API and Batch, Tool Gateway, integrated Compose, and Dev bootstrap.
-- Frontend owns the React admin and end-user UI and consumes the public contract.
-- Orchestrator owns only the Python LangGraph Coding Runtime and consumes Backend coding contracts.
-- Master owns the repository manifest, workspace bootstrap wrapper, latest handoff, traceability, team ownership, migration reservation ledger, model/OS routing and descriptive infrastructure baseline, and collaboration rules.
-- Master is the only normative source for cross-repository policy, roles, Wave/WBS state, assignments, Git/PR workflow, and shared safety rules. Source-repository `AGENTS.md` and `CLAUDE.md` files are routing entry points and may retain only repository-specific scope, ownership boundaries, and links to repository-local operational documentation. They must not copy changing Master policy.
-- Historical Source documents may preserve implementation evidence, but they must be marked non-normative when their status, roles, repository URLs, branch policy, or execution gates have been superseded by Master.
-- Product source, Compose, migrations, runtime credentials, business data, and Docker volumes never move into Master.
-- Only Min Seungjun (`tmdwns0531`) may create Master branches, commits, pushes, pull requests, or merges. Teammates use Master as a read/pull-only control repository and submit Slice work only to changed Frontend, Backend, or Orchestrator repositories.
+```text
+결과: 완료 | 진행 중 | 차단
+핵심: <변경 또는 판단 1~3줄>
+검증: <확인 결과 또는 미실행 이유>
+다음: <다음 행동 1줄>
+승인: 없음 | <필요한 승인과 이유>
+```
 
-## Notion synchronization policy
+## 작업 시작
 
-- At the start of every local implementation task, read this Master `AGENTS.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. The team lead must not have to paste this policy into each LLM prompt.
-- If the task fetches, pulls, or otherwise synchronizes Git, re-read the updated Master `AGENTS.md`, `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, and the task-relevant Master documents after synchronization and before planning or implementation. Do this without requiring a separate teammate instruction.
-- Treat the team lead's `MASTER UPDATE COMPLETE` packet as the signal to synchronize, not as a substitute for Git evidence. After synchronization, match its Snapshot version, Slice ID, Task version, worker, target repositories, and Master commit to `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`.
-- Before implementation, return `MASTER CONTEXT PASS` with the recognized Wave, Slice and any issued Task version, worker, target repositories, next work, next gate, and fetched Source `origin/dev` refs. An explicit owner request naming a Master-listed Slice is sufficient to start its first task; a separately named Task Packet is not required merely to recognize or name the active Wave. Return `MASTER CONTEXT BLOCKED` only when the explicit request conflicts with checked-in Master context or a required technical dependency is still closed.
-- Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
-- Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. A request to implement code, update Git documentation, open a PR, merge, or report status does not imply Notion-write authorization.
-- When an explicit Notion synchronization is requested, first fetch and inspect the relevant canonical repositories, verify the applicable `origin/dev` commits, merged PRs, specifications, and validation evidence, and then project that verified state into Notion. If Git and Notion conflict, treat Git as authoritative and report the mismatch.
-- Teammates do not connect or use Notion MCP. A teammate LLM starts from current Git plus an explicit owner work request naming at least the Slice ID and intended scope. A versioned Task Packet may refine target repositories, dependencies, and gates, but it does not define or renumber the active Wave.
-- Only Min Seungjun updates each worker's Slice `Task-Version` in Master and announces the checked-in version, next work, and Master commit. Team members consume that assignment read-only and never advance its version themselves.
-- A teammate LLM may consume only a task-relevant read-only snapshot explicitly supplied by the team lead. Do not request Notion MCP, scrape the Notion workspace, or block implementation because Notion is unavailable.
+- 최신 Master Spec과 Snapshot, 적용 저장소 규칙을 확인한다.
+- 팀장이 지정한 작업자, Slice ID/work slug, 저장소, 최소 완료 결과를 확인한다.
+- 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
+- 지정이 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
+- Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
 
-## Safety
+## 전체 Git 동기화
 
-- Preserve every sibling branch, HEAD, uncommitted change, Core DB, checkpoint DB, Docker volume, secret, and running container unless the user explicitly authorizes a scoped change.
-- Never run automatic reset, clean, stash, checkout, rebase, history rewrite, database initialization, Flyway repair/clean, or Docker volume deletion.
-- Do not output secret values or full secret fingerprints/digests.
-- Network download, login, administrator elevation, reboot, credential registration, Prod/Cloud/SSH, and destructive actions require explicit approval.
-- `scripts/preflight-workspace.ps1` and `scripts/health-workspace.ps1` are read-only.
-- `scripts/bootstrap-workspace.ps1` may clone/fetch only with `-ApproveNetwork`, and may invoke Backend local-full bootstrap only with both `-RunLocalFull` and `-ApproveLocalFullMutation` after a clean-worktree check.
+`깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
+`scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다.
 
-## Git and team workflow
+- Master 먼저, 이어서 Frontend·Backend·Orchestrator를 확인한다.
+- 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
+- 동기화 후 Master Spec과 Snapshot을 다시 읽는다.
 
-- For a new assigned task, begin from a clean local `dev` that is fast-forwarded to `origin/dev`, then create `feature/<confirmed-github-id>_<work-slug>_<version>`. A separate worktree is preferred when the canonical checkout must remain on `dev`. If a checkout is dirty, diverged, or contains local-only commits, preserve it and report the blocker instead of switching automatically.
-- Team-member work starts from current `origin/dev`, uses `feature/<confirmed-github-id>_<work-slug>_<version>`, and reaches `dev` through a PR approved by the `tmdwns0531` Master/Admin integration account.
-- Every team-member Branch work slug contains the lowercase Slice ID. Every Commit subject uses `<type>(<SLICE-ID>/<github-id>): <result>`, and every PR title uses `[<SLICE-ID>][<github-id>] <result>`. The PR body records Slice version, worker name/GitHub ID, Repository, dependencies, connected PRs, Contract/Migration impact, verification, Blocker, and next Gate.
-- Every agent-created pull request in Master, Frontend, Backend, and Orchestrator targets `dev`. A generic request to create, publish, or merge a PR never authorizes a `main` target.
-- `main` is the team lead's periodic manual promotion branch. Local LLMs and coding agents must not push to `main`, create or merge a PR targeting `main`, delete or recreate `main`, or otherwise advance it. Min Seungjun performs `dev` to `main` promotion manually outside routine agent workflows.
-- Team members do not push directly to `dev`. The `tmdwns0531` Master/Admin account may use the intentional Ruleset bypass only to restore or integrate `dev`, merge its own validated governance changes into `dev`, and approve team-member PRs targeting `dev`. An additional teammate approval is not required for those owner-authored `dev` changes.
-- Never force-push. Every Master/Admin bypass use must retain validation evidence and the resulting commit SHA in the handoff or PR record.
-- One vertical slice may span repositories, but it uses the same Slice ID/work slug and separate cross-linked PRs.
-- Shared contracts, Flyway revisions, app shell/router/navigation, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master handoff/manifest are serialized through the Integration/Contract owner.
-- Database work must reserve a UTC 14-digit Flyway revision before creating SQL and must pass empty-DB, previous-revision, repeated-migrate, single-history, and runtime-DDL-denial gates.
-- No commit, push, PR, ruleset, CODEOWNERS activation, or merge is implied by a documentation or scaffold task.
+## 소유권
+
+- Frontend: React UI와 브라우저 동작
+- Backend: Spring API, 공개 계약, Flyway, Compose, 로컬 실행·검증
+- Orchestrator: Python LangGraph Coding Runtime
+- Master: 현재 제품 범위, 공통 Git/팀 정책, 상태 Snapshot, Workspace 도구
+
+Master 쓰기는 Min Seungjun(`tmdwns0531`)만 담당한다. 팀원은 Master를 읽기 전용으로 사용한다.
+
+## Git 정책
+
+- 개발은 최신 `dev`에서 Feature Branch를 만들어 시작한다.
+- Team Branch, Commit, PR에는 지정된 Slice ID와 GitHub ID를 사용한다.
+- Every agent-created pull request in Master, Frontend, Backend, and Orchestrator targets `dev`.
+- `dev`와 `main`에 직접 Push하지 않는다.
+- `main` is the team lead's periodic manual promotion branch.
+- `main` 대상 PR, Force Push, 자동 Merge를 금지한다.
+- 여러 저장소 변경은 같은 work slug로 저장소별 별도 Commit/PR을 만든다.
+- 문서 변경은 Commit, Push, PR, Merge를 자동으로 승인하지 않는다.
+
+## 공통 변경
+
+공개 계약, Flyway, Frontend Router/App Shell, 공통 Auth/Error, Backend Compose·Bootstrap처럼
+여러 작업에 영향을 주는 파일은 Integration/Contract 담당과 충돌 여부를 먼저 확인한다.
+
+DB 변경은 SQL 작성 전에 Master Flyway Ledger에 UTC 14자리 Revision을 예약하고,
+빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
+
+## Notion
+
+- Notion은 현재 Git 작업의 자동 대상이 아니다.
+- Min Seungjun이 현재 요청에서 명시적으로 지시한 경우에만 쓴다.
+- Git이 구현 상태의 기준이며 Notion과 다르면 Git을 따른다.
+- 팀원은 Notion 연결을 요구받지 않는다.
+
+## 안전
+
+- Branch, HEAD, 로컬 변경, DB, Docker Volume, Secret, 실행 중인 Container를 보존한다.
+- 자동 Reset, Clean, Stash, Checkout, Rebase, DB 초기화, Flyway Repair/Clean, Volume 삭제를 금지한다.
+- Secret 값을 Prompt, Chat, 명령, Log, Commit, PR에 넣지 않는다.
+- Network, 로그인/MFA, 관리자 권한, 설치, 재부팅, Cloud/Prod/SSH는 명시적 승인 후 수행한다.
+- Notion 쓰기, Git Push, PR 생성·Merge, 배포는 각각 별도 요청이 있을 때만 수행한다.

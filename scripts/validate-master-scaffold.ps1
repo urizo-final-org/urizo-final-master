@@ -12,23 +12,15 @@ $required = @(
     'repository-manifest.json',
     'AX-Module-Studio.code-workspace',
     'docs/README.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md',
-    'docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md',
-    'docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md',
-    'docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md',
+    'docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md',
     'docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md',
-    'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',
+    'docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md',
     'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
     'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md',
-    'docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
-    'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md',
     'docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md',
     'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md',
-    'docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md',
     'templates/workspace/AGENTS.md',
@@ -46,14 +38,6 @@ foreach ($relative in $required) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required scaffold file is missing: $relative"
     }
-}
-
-$projectSpec = Get-Content -Raw -Encoding UTF8 -LiteralPath (
-    Join-Path $masterRoot 'docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md'
-)
-if ($projectSpec -notmatch '4126D4FA9E98AFC81F1FD3053A0362FCB71D1975E6D5F880E7BD9F36A487DBC4' -or
-    $projectSpec -notmatch 'AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md') {
-    throw 'Preserved Project Spec must retain source provenance and current-decision precedence.'
 }
 
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'repository-manifest.json') | ConvertFrom-Json

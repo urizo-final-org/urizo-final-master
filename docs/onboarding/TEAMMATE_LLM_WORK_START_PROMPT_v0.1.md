@@ -1,64 +1,51 @@
-# Teammate LLM work-start prompt v0.1
+# 팀원 LLM 작업 시작 Prompt
 
-Use this only after the teammate reports `SETUP PASS`. The Integration/Contract owner must fill every required placeholder and assign one Slice only.
+팀장은 필요한 항목만 채워 팀원에게 전달한다.
 
 ```text
 나는 AX Module Studio 팀원이다.
 
-이름: <본인 이름>
-GitHub ID: <본인 GitHub ID>
-Slice ID: <현재 할당된 Slice ID>
-Task Version: <팀장이 통보한 Task Version>
-Snapshot Version: <팀장이 통보한 Snapshot Version>
-Slice 목표: <사용자에게 보이는 한 개의 완료 결과>
-선행 PR/의존성: <PR URL 또는 N/A>
-예상 변경 Repository: <Frontend/Backend/Orchestrator 중 해당 항목>
+이름/GitHub ID: <작업자>
+Slice ID 또는 Work Slug: <지정값>
+Task Version: <지정값 또는 N/A>
+Snapshot Version: <현재 값>
+변경 Repository: <Frontend/Backend/Orchestrator>
+이번 완료 결과: <최소 CMS 기능 한 묶음>
 
-urizo-final-master의 최신 AGENTS, implementation/team handoff,
-traceability, team roadmap, Flyway ledger와 변경할 sibling AGENTS를 완독하라.
-동기화 후 Master status snapshot의 Snapshot/Slice/Task Version, 작업자,
-대상 Repository, 다음 작업이 이 패킷과 일치하는지 확인하고 구현 전에
-MASTER CONTEXT PASS 또는 정확한 MASTER CONTEXT BLOCKED를 보고하라.
+작업 전에 다음만 읽어라.
+1. Master AGENTS.md
+2. CMS 로컬 데모 최소 범위 문서
+3. 현재 상태 Snapshot
+4. 변경 Repository의 AGENTS.md
+5. DB 변경 시 Flyway 예약표
 
-전체 workstream이나 다음 Phase를 한꺼번에 구현하지 말고 현재 Slice 하나만 수행하라.
-Slice ID나 선행 의존성이 비어 있거나 병합되지 않았다면 구현하지 말고 보고하라.
+인식한 작업자, 범위, Repository, origin/dev와 로컬 변경 보존 상태를 짧게 보고하고
+MASTER CONTEXT PASS 또는 정확한 MASTER CONTEXT BLOCKED를 선언하라.
 
-구현 전 읽기 전용 Preflight 후 다음을 보고하라.
+최소 CMS 문서 안의 세부 구현, 입력 검증, 오류 처리, 테스트, 작은 UI 구성은 자율적으로
+진행하라. 문서에 없는 화면·기능·역할·상태·워크플로·외부 연동·대형 데이터 구조가
+필요하면 구현을 멈추고 팀장 승인을 요청하라. 미래 확장성을 이유로 미리 만들지 마라.
+`Simple is best`를 적용하라. 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는
+승인 전 절대 진행하지 마라. 범위 확대가 불가피하면 필요 이유, 가장 작은 대안, 영향을 먼저 보고하라.
 
-1. 네 Repository branch/HEAD/dirty
-2. 예상 Source path와 파일 소유권
-3. Contract → Flyway → Spring → Frontend → E2E 순서
-4. 공용 hot spot과 Integration/Contract owner 예약 필요 여부
-5. Flyway UTC revision 예약 필요 여부
-6. Repository별 PR 순서와 cross-link 계획
-7. 성공, validation, 401/403, conflict/idempotency, retry 테스트 계획
+공개 계약, Flyway, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap처럼 다른 작업에
+영향을 주는 공용 파일은 Integration/Contract 담당과 충돌 여부를 먼저 확인하라.
 
-공용 OpenAPI/JSON Schema, Flyway directory, App shell/router/navigation,
-공통 Auth/Error/Approval/Audit, Backend Compose/bootstrap, Master manifest/handoff는
-Integration/Contract owner의 직렬화 lane 없이 편집하지 마라.
+Dirty, Diverged, local-only 작업을 자동 Reset, Stash, Checkout하지 마라. 깨끗한 최신 dev
+기반 Feature Branch 또는 별도 Worktree를 사용하라. 저장소별 Commit/PR을 분리하고 모든
+PR은 dev를 대상으로 한다. dev/main 직접 Push, main 대상 PR, Force Push, 자동 Merge를
+금지한다.
 
-승인 후 변경할 Repository의 깨끗한 dev를 origin/dev로 Fast-forward하고
-feature/<내-github-id>_<동일-work-slug>_<version> 브랜치를 사용하라.
-Dirty, Diverged, local-only commit이 있으면 자동 checkout/reset하지 말고 보존 상태를 보고하라.
-변경 Repository마다 검증·commit·push·dev 대상 PR을 분리하고 같은 Slice ID로 상호 링크하라.
-직접 dev/main push, force push, auto merge를 금지한다.
-모든 Repository에서 PR Base는 dev다. main 대상 PR을 생성·병합하거나 main을 직접 변경하지 마라.
-main 승격은 팀장 민승준이 주기적으로 수동 수행한다.
+단순 질문은 바로 답하고, 작업 보고는 아래 형식으로 짧고 명료하게 작성하라.
 
-완료 보고에는 변경 파일, 테스트 결과, Contract/Migration 영향,
-Repository별 commit/PR, merge 순서, 남은 blocker를 포함하라.
-Git gate: as a team member, push only the assigned feature branch and open a PR to dev.
-Never push directly to dev/main or force-push. Request approval and merge from the
-tmdwns0531 Master/Admin integration account; do not ask another teammate to create
-a duplicate PR or repeat the same validation unless the integration owner requests it.
-Never create or merge a PR targeting main. Main promotion is a periodic manual team-lead operation.
+결과: 완료 | 진행 중 | 차단
+핵심: <변경 또는 판단 1~3줄>
+검증: <확인 결과 또는 미실행 이유>
+다음: <다음 행동 1줄>
+승인: 없음 | <필요한 승인과 이유>
+
+요청받지 않은 Push, PR, Merge, Notion 쓰기, 배포는 하지 마라.
 ```
 
-Static coding windows in this prompt are forbidden because they become stale. The checked-in Master
-status snapshot and the team lead's matching `MASTER UPDATE COMPLETE` packet are the only current
-assignment/version authority. FND-03 is complete, and there is no scheduled FND-04 Wave.
-
-The current approved product order is Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated
-CMS acceptance. After that Gate, every remaining capability is `DISCUSSION_REQUIRED`; do not infer an
-owner, order, scope, or Slice ID from historical Phase tables. Require the later checked-in team
-decision before post-CMS implementation.
+이 Prompt는 상세 설계 승인표가 아니다. 제품 범위가 달라질 때만 승인받고, 범위 안의 구현
+세부사항은 작업자가 책임지고 완료한다.

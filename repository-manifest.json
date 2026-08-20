@@ -10,11 +10,11 @@
       "name": "urizo-final-master",
       "relativePath": "urizo-final-master",
       "remote": "https://github.com/urizo-final-org/urizo-final-master.git",
-      "role": "workspace-control-handoff-governance",
+      "role": "workspace-control-and-lightweight-governance",
       "owns": [
         "workspace manifest",
-        "latest handoff and traceability",
-        "team ownership and collision rules",
+        "current product scope and status",
+        "team and collision rules",
         "safe workspace bootstrap and preflight wrappers",
         "workspace editor template"
       ],

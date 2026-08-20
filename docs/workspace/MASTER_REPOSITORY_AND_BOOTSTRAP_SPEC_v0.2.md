@@ -15,7 +15,7 @@ AX-Module-Studio-Workspace/
 └── urizo-final-orchestrator/
 ```
 
-Master owns workspace governance, handoff, manifest, team collision rules, onboarding prompts, and safe wrappers. It does not own Source, contracts, Flyway SQL, Compose, Secrets, database data, or Docker Volumes. Backend remains the integrated runtime/bootstrap owner.
+Master owns the current scope, status, workspace governance, manifest, team collision rules, onboarding prompts, and safe wrappers. It does not own Source, contracts, Flyway SQL, Compose, Secrets, database data, or Docker Volumes. Backend remains the integrated runtime/bootstrap owner.
 
 ## 2. Published prerequisite
 

@@ -1,64 +1,45 @@
 # AX Module Studio Workspace Agent Rules
 
-## Workspace boundary
+## 저장소 경계
 
-- This parent folder is not a Git repository. Never create `.git` here.
-- `urizo-final-master/**` belongs to the Master control/handoff repository.
-- `urizo-final-frontend/**` belongs to the Frontend repository.
-- `urizo-final-backend/**` belongs to the Spring Backend repository.
-- `urizo-final-orchestrator/**` belongs to the Python LangGraph Coding Runtime repository.
-- Read all needed repositories, but commit/push/PR separately per `.git` with one shared Slice ID and cross-links.
+- 이 상위 폴더에는 `.git`을 만들지 않는다.
+- Master, Frontend, Backend, Orchestrator는 각각 독립 저장소다.
+- 여러 저장소를 변경하면 같은 Slice ID/work slug를 쓰고 Commit/PR은 분리한다.
 
-## Authority and ownership
+## 현재 기준
 
-- Begin with `urizo-final-master/docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md`, the latest implementation/team handoff, and the applicable repository `AGENTS.md`.
-- The first team product milestone is the complete CMS: delivered administrator Auth/RBAC plus the fixed `GENERAL_USER` target, members, menus, content/pages, boards, site design/template, Approval History/Site Release/Publish/Rollback, core Audit Log, and the end-user Renderer.
-- Execute Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated CMS acceptance. Treat all remaining capabilities as discussion-required backlog until a later team-lead Git decision assigns their order, owner, scope, and Slice IDs.
-- Product requirements come from the approved Project Spec and are not reduced to the current OpenAPI.
-- Backend owns public/coding contracts, Flyway, Spring API/Batch, Tool Gateway, integrated Compose, and Dev bootstrap.
-- Orchestrator owns only the Python Coding graph/checkpoint runtime.
-- Master owns manifest, handoff, traceability, ownership, and safe workspace wrappers; it never owns product source.
-
-## LLM onboarding behavior
-
-- On a natural-language setup/update request, do not make the teammate manually enter routine Git, PowerShell, Docker, Maven, Node, or Python commands.
-- Read Master `AGENTS.md` and its required handoff/team documents, then run the Master read-only preflight and explain the detected state.
-- Propose the exact network, local-runtime, authentication, installation, administrator, or reboot boundary and obtain explicit approval where required.
-- After approval, run the Master bootstrap wrapper with only the approved switches; stop for human Git/Docker login, MFA, administrator elevation, installation, reboot, or secret entry and resume verification afterward.
-- Use the generated `AX-Module-Studio.code-workspace` as the four-repository development view. Before work, report the assigned Slice ID, owner, dependencies, shared seams, and repository-specific PR order from the Master team roadmap.
-- Report `SETUP PASS` only after the v0.8 acceptance contract passes. Do not implement from a broad workstream request without one assigned Slice ID.
+- 먼저 `urizo-final-master/AGENTS.md`, 현재 CMS 최소 범위, 상태 Snapshot을 읽는다.
+- 제품 Source는 해당 Source 저장소에만 작성한다.
+- 현재 CMS 문서에 없는 기능은 구현하지 않는다.
+- 범위 안의 세부 구현은 자율적으로 진행한다.
+- 새로운 화면·기능·역할·워크플로·외부 연동이 필요하면 멈추고 팀장 승인을 요청한다.
+- 과거 CMS Spec, handoff, traceability, Wave, 업무분장은 복원하지 않는다.
 
 <!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->
-## Automatic local LLM and Notion policy
+## 자동 작업 정책
 
-- At the start of every local implementation task, automatically read `urizo-final-master/AGENTS.md`, `urizo-final-master/docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`, its required documents, and the applicable sibling repository `AGENTS.md` before planning or editing. Do not require the team lead to paste these rules into each prompt.
-- Detect and report the host OS and PowerShell version. Follow the Master multi-OS specification, use OS-neutral Repository paths, and never ask macOS/Linux users to run `powershell.exe`.
-- If the task fetches, pulls, or otherwise synchronizes Git, automatically re-read the updated Master `AGENTS.md`, the current LLM project-status snapshot, and task-relevant Master documents after synchronization and before planning or implementation. No separate teammate instruction is required.
-- Treat the team lead's `MASTER UPDATE COMPLETE` packet as the signal to synchronize, not as a substitute for Git evidence. Match its Snapshot version, Slice ID, Task version, worker, target repositories, and Master commit to the checked-in Master status snapshot.
-- Before implementation, return `MASTER CONTEXT PASS` with the recognized assignment and fetched Source `origin/dev` refs. Return `MASTER CONTEXT BLOCKED` and stop if the announcement, local Master commit, or assignment row differs.
-- Only Min Seungjun (`tmdwns0531`) controls Master writes and Notion MCP. Teammates read/pull Master and create Slice Branches, Commits, and PRs only in changed Frontend, Backend, or Orchestrator repositories.
-- Only Min Seungjun advances each worker's Slice `Task-Version` in Master and announces the checked-in version, next work, and Master commit. Teammates consume it read-only.
-- Interpret `깃 pull 해줘`, `전체 Git 최신화`, and `워크스페이스 최신화` as `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`: always scope Master plus all three Source repositories, with no automatic Branch switch, Rebase, conflict resolution, or local-change deletion.
-- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`. Never create or merge a PR targeting `main`.
-- `main` is reserved for periodic manual promotion by Min Seungjun and is outside routine local LLM and coding-agent workflows.
-- Team Branches, Commits, and PRs must contain the assigned Slice ID and confirmed GitHub ID according to `urizo-final-master/docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
-- Git is the implementation source of truth. Notion pages, Gantt charts, WBS databases, and timelines are secondary planning and reporting views.
-- Do not create, edit, delete, or otherwise synchronize any Notion content unless Min Seungjun (`tmdwns0531`) explicitly requests that Notion write in the current task. Git work, PR, merge, and status requests do not imply Notion-write authorization.
-- For an explicitly requested Notion synchronization, first fetch and verify the relevant canonical repositories, `origin/dev` commits, merged PRs, specifications, and validation evidence. Project that state into Notion; if the two conflict, Git is authoritative and the mismatch must be reported.
-- Teammates do not connect or use Notion MCP. Start from current Git and the assigned task packet: Slice ID, target repositories, scope, dependencies, and an optional team-lead-provided read-only snapshot.
-- Consume only a task-relevant read-only Notion snapshot explicitly supplied by the team lead. Never request Notion MCP, scrape the workspace, or block work because Notion is unavailable.
+- 구현 전 Master 현재 기준과 변경할 Source `AGENTS.md`를 읽고 할당된 범위와 저장소를 확인한다.
+- Codex와 Claude 모두 Master의 `Simple is best`, 범위 확장 승인 게이트, 공통 응답 형식을 따른다.
+- 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는 승인 전 절대 진행하지 않는다.
+- 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
+- `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
+  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인한다.
+- 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
+- Only Min Seungjun(`tmdwns0531`) writes Master. 팀원은 Master를 읽기 전용으로 사용한다.
+- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`.
+- `main` is reserved for periodic manual promotion by Min Seungjun.
+- Git이 구현 상태의 기준이다.
+- Notion은 Min Seungjun이 현재 요청에서 명시적으로 지시한 경우에만 쓴다.
 <!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->
 
-## Safety and Git
+## 작업·안전
 
-- Preserve all branch/HEAD/uncommitted state, databases, volumes, secrets, and running containers.
-- No automatic reset, clean, stash, checkout, database initialization, or volume deletion.
-- For a new assigned task, use a clean local `dev` fast-forwarded to `origin/dev`, then create the required local feature branch or a separate worktree. Preserve and report dirty, diverged, or local-only work instead of switching it automatically.
-- No secret values or full secret digests in prompts, chat, commands, logs, commits, or PRs.
-- Network/login/admin/reboot/credential/Prod/Cloud/SSH actions require explicit approval.
-- Team-member work uses latest `dev` → `feature/<confirmed-github-id>_<work-slug>_<version>` → PR to `dev`, approved by the `tmdwns0531` Master/Admin integration account.
-- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`. Generic Git, publish, or PR requests never authorize a `main` target.
-- `main` is reserved for periodic manual promotion by Min Seungjun. Local LLMs and coding agents never push to `main`, create or merge a PR targeting `main`, delete or recreate `main`, or otherwise advance it.
-- Team members never push directly to `dev`. The `tmdwns0531` Master/Admin account may use the intentional Repository Admin Ruleset bypass only to restore or integrate `dev`, merge validated owner changes into `dev`, and approve team PRs targeting `dev`.
-- Never force-push. Record validation evidence and the resulting SHA for every owner bypass operation.
-- Shared contracts, Flyway, app shell, common Error/Auth/Approval/Audit, Backend Compose/bootstrap, and Master manifest/handoff are serialized through the Integration/Contract owner.
+- 새 작업은 깨끗한 최신 `dev` 기반 Feature Branch나 별도 Worktree에서 시작한다.
+- Dirty, Diverged, local-only 작업을 자동 Reset, Clean, Stash, Checkout, Rebase하지 않는다.
+- DB, Docker Volume, Secret, 실행 중 Container를 보존한다.
+- Secret을 Prompt, Chat, 명령, Log, Commit, PR에 넣지 않는다.
+- Network, 로그인/MFA, 관리자 권한, 설치, 재부팅, Cloud/Prod/SSH는 명시적 승인 후 수행한다.
+- `dev/main` 직접 Push, `main` 대상 PR, Force Push, 자동 Merge를 금지한다.
+- 공개 계약, Flyway, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap은 공통 담당과 충돌을 먼저 확인한다.
+- DB 변경은 Flyway Revision을 예약하고 빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
+- 요청받지 않은 Push, PR, Merge, Notion 쓰기, 배포는 하지 않는다.
