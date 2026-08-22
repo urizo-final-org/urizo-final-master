@@ -27,6 +27,8 @@
 - 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에
   `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude `SessionStart` Hook을 함께 설치·갱신하고 결과를 확인한다.
 - 두 도구는 같은 Master 원문 로더를 사용하며 실패 시 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. Codex 최초 신뢰 확인은 팀원이 한 번 승인한다.
+- `CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은
+  `urizo-final-master/scripts/start-local-cms.ps1 -ApproveLocalMutation`으로 처리한다. 이미 정상이면 `spring-core`를 즉시 재사용하고, 최초 Image 준비는 `-ApproveNetwork`, Source 변경 반영은 `-Rebuild -ApproveNetwork`를 추가한다. CMS 실행 때문에 범위 밖 Coding Runtime을 기다리거나 임의 Docker 명령을 조합하지 않는다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Only Min Seungjun(`tmdwns0531`) writes Master. 팀원은 Master를 읽기 전용으로 사용한다.
 - Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`.
