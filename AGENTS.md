@@ -39,13 +39,27 @@
 - 테스트와 문서는 변경 위험과 시연 범위에 비례해 최소 충분 수준으로 작성한다.
 - 불가피하게 범위를 늘려야 하면 변경 전에 멈추고 `필요 이유 / 가장 작은 대안 / 영향`을 짧게 적어 팀장 승인을 요청한다.
 - Codex와 Claude는 같은 기준을 사용한다. 결과를 먼저 말하고 사람이 이해하기 쉬운 짧은 문장으로 답한다.
-- 단순 질문은 바로 답하고, 작업 상태·완료 보고는 아래 형식을 사용한다.
+- 단순 질문은 형식을 강제하지 않고 바로 답한다.
+- 코드·문서 변경이나 조사 완료 보고는 아래 공통 형식을 짧고 명료하게 사용한다.
 
 ```text
-결과: 완료 | 진행 중 | 차단
-핵심: <변경 또는 판단 1~3줄>
-검증: <확인 결과 또는 미실행 이유>
-다음: <다음 행동 1줄>
+상태: 완료 | 진행 중 | 차단
+
+결과:
+<완료한 결과 또는 판단 1~3줄>
+
+변경:
+- 변경 파일: 없음 | <주요 파일>
+- 범위 밖 변경: 없음 | <내용과 이유>
+
+검증:
+- 방법: <테스트·실행·문서/코드 대조 방법>
+- 결과: <통과·실패와 핵심 수치>
+- 미검증: 없음 | <미검증 항목과 이유>
+
+남은 사항:
+없음 | <남은 작업 또는 사람의 결정>
+
 승인: 없음 | <필요한 승인과 이유>
 ```
 
@@ -55,6 +69,9 @@
 - 팀장이 지정한 작업자, Slice ID/work slug, 저장소, 최소 완료 결과를 확인한다.
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
 - 지정이 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
+- 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에 `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude 프로젝트 Hook을 함께 설치·갱신하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다. 팀원에게 수동 명령 복사를 전가하지 않는다.
+- Codex와 Claude의 `SessionStart` Hook은 같은 로더로 Master 원문을 한 번만 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
+- Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
 
 ## 전체 Git 동기화
@@ -78,7 +95,7 @@ Master 쓰기는 Min Seungjun(`tmdwns0531`)만 담당한다. 팀원은 Master를
 ## Git 정책
 
 - 개발은 최신 `dev`에서 Feature Branch를 만들어 시작한다.
-- Team Branch, Commit, PR에는 지정된 Slice ID와 GitHub ID를 사용한다.
+- Branch, Commit, PR 제목·본문은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`의 한글 공통 형식을 사용하고 지정된 Slice ID 또는 work slug와 GitHub ID를 포함한다.
 - Every agent-created pull request in Master, Frontend, Backend, and Orchestrator targets `dev`.
 - `dev`와 `main`에 직접 Push하지 않는다.
 - `main` is the team lead's periodic manual promotion branch.

@@ -8,6 +8,8 @@ param(
 
     [switch]$ApproveLocalFullMutation,
 
+    [switch]$SyncLlmHooks,
+
     [switch]$WhatIf
 )
 
@@ -63,12 +65,104 @@ function Copy-TemplateIfAbsent {
         }
         return
     }
+
+    $targetParent = Split-Path -Parent $Target
+    if (-not (Test-Path -LiteralPath $targetParent -PathType Container)) {
+        if ($WhatIf) {
+            Write-Host "PLAN create template directory: $targetParent"
+        }
+        else {
+            New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
+            Write-Host "CREATED template directory: $targetParent"
+        }
+    }
     if ($WhatIf) {
         Write-Host "PLAN create template: $Target"
         return
     }
     Copy-Item -LiteralPath $Source -Destination $Target
     Write-Host "CREATED template: $Target"
+}
+
+function Sync-ManagedTemplateFile {
+    param(
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][string]$Target
+    )
+
+    $sourceContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Source
+    if (Test-Path -LiteralPath $Target -PathType Leaf) {
+        $targetContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Target
+        if ($sourceContent -eq $targetContent) {
+            Write-Host "UNCHANGED managed file: $Target"
+            return
+        }
+    }
+
+    if ($WhatIf) {
+        Write-Host "PLAN synchronize managed file: $Target"
+        return
+    }
+
+    $targetParent = Split-Path -Parent $Target
+    if (-not (Test-Path -LiteralPath $targetParent -PathType Container)) {
+        New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
+    }
+    [System.IO.File]::WriteAllText($Target, $sourceContent, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "SYNCHRONIZED managed file: $Target"
+}
+
+function Sync-ClaudeSessionStart {
+    param(
+        [Parameter(Mandatory = $true)][string]$Source,
+        [Parameter(Mandatory = $true)][string]$Target
+    )
+
+    $sourceConfig = Get-Content -Raw -Encoding UTF8 -LiteralPath $Source | ConvertFrom-Json
+    if (Test-Path -LiteralPath $Target -PathType Leaf) {
+        try {
+            $targetConfig = Get-Content -Raw -Encoding UTF8 -LiteralPath $Target | ConvertFrom-Json
+        }
+        catch {
+            throw "Claude project settings are not valid JSON; refusing to rewrite: $Target"
+        }
+    }
+    else {
+        $targetConfig = $sourceConfig
+    }
+
+    if ($null -eq $targetConfig -or $targetConfig -is [System.Array]) {
+        throw "Claude project settings must be one JSON object: $Target"
+    }
+    $hooksProperty = $targetConfig.PSObject.Properties['hooks']
+    if ($null -eq $hooksProperty -or $null -eq $hooksProperty.Value) {
+        $targetConfig | Add-Member -NotePropertyName hooks -NotePropertyValue ([pscustomobject]@{}) -Force
+    }
+    $targetConfig.hooks | Add-Member `
+        -NotePropertyName SessionStart `
+        -NotePropertyValue $sourceConfig.hooks.SessionStart `
+        -Force
+
+    $updatedContent = ($targetConfig | ConvertTo-Json -Depth 20) + [Environment]::NewLine
+    if (Test-Path -LiteralPath $Target -PathType Leaf) {
+        $targetContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Target
+        if ($updatedContent -eq $targetContent) {
+            Write-Host "UNCHANGED Claude SessionStart: $Target"
+            return
+        }
+    }
+
+    if ($WhatIf) {
+        Write-Host "PLAN synchronize Claude SessionStart: $Target"
+        return
+    }
+
+    $targetParent = Split-Path -Parent $Target
+    if (-not (Test-Path -LiteralPath $targetParent -PathType Container)) {
+        New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
+    }
+    [System.IO.File]::WriteAllText($Target, $updatedContent, [System.Text.UTF8Encoding]::new($false))
+    Write-Host "SYNCHRONIZED Claude SessionStart: $Target"
 }
 
 function Sync-ManagedTextBlock {
@@ -132,6 +226,56 @@ function Sync-ManagedTextBlock {
 
     [System.IO.File]::WriteAllText($Target, $updatedContent, [System.Text.UTF8Encoding]::new($false))
     Write-Host "SYNCHRONIZED managed policy: $Target"
+}
+
+function Sync-WorkspaceLlmConfiguration {
+    $templateRoot = Join-Path $masterRoot 'templates/workspace'
+    $agentTemplate = Join-Path $templateRoot 'AGENTS.md'
+    $workspaceAgent = Join-Path $WorkspaceRoot 'AGENTS.md'
+    if (-not (Test-Path -LiteralPath $workspaceAgent -PathType Leaf)) {
+        Copy-TemplateIfAbsent -Source $agentTemplate -Target $workspaceAgent
+    }
+    Sync-ManagedTextBlock `
+        -Source $agentTemplate `
+        -Target $workspaceAgent `
+        -BeginMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->' `
+        -EndMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
+
+    $claudeTemplate = Join-Path $templateRoot 'CLAUDE.md'
+    $workspaceClaude = Join-Path $WorkspaceRoot 'CLAUDE.md'
+    if (-not (Test-Path -LiteralPath $workspaceClaude -PathType Leaf)) {
+        Copy-TemplateIfAbsent -Source $claudeTemplate -Target $workspaceClaude
+    }
+    Sync-ManagedTextBlock `
+        -Source $claudeTemplate `
+        -Target $workspaceClaude `
+        -BeginMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:BEGIN -->' `
+        -EndMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->'
+
+    Sync-ManagedTemplateFile `
+        -Source (Join-Path $templateRoot 'codex/hooks.json') `
+        -Target (Join-Path $WorkspaceRoot '.codex/hooks.json')
+    Sync-ManagedTemplateFile `
+        -Source (Join-Path $templateRoot 'codex/hooks/session-start.ps1') `
+        -Target (Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1')
+
+    $isWindowsHost = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
+    $claudeSettingsName = if ($isWindowsHost) { 'settings.windows.json' } else { 'settings.unix.json' }
+    Sync-ClaudeSessionStart `
+        -Source (Join-Path $templateRoot "claude/$claudeSettingsName") `
+        -Target (Join-Path $WorkspaceRoot '.claude/settings.json')
+
+    if ($WhatIf) {
+        Write-Host 'LLM HOOK SETUP PLAN: Codex and Claude SessionStart synchronization was planned.'
+    }
+    else {
+        Write-Host 'LLM HOOK SETUP PASS: Codex and Claude use the shared AXMS SessionStart loader.'
+    }
+}
+
+if ($SyncLlmHooks) {
+    Sync-WorkspaceLlmConfiguration
+    exit 0
 }
 
 $plans = [System.Collections.Generic.List[object]]::new()
@@ -203,22 +347,7 @@ else {
 }
 
 $templateRoot = Join-Path $masterRoot 'templates/workspace'
-$agentTemplate = Join-Path $templateRoot 'AGENTS.md'
-$workspaceAgent = Join-Path $WorkspaceRoot 'AGENTS.md'
-Copy-TemplateIfAbsent -Source $agentTemplate -Target $workspaceAgent
-Sync-ManagedTextBlock `
-    -Source $agentTemplate `
-    -Target $workspaceAgent `
-    -BeginMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->' `
-    -EndMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
-$claudeTemplate = Join-Path $templateRoot 'CLAUDE.md'
-$workspaceClaude = Join-Path $WorkspaceRoot 'CLAUDE.md'
-Copy-TemplateIfAbsent -Source $claudeTemplate -Target $workspaceClaude
-Sync-ManagedTextBlock `
-    -Source $claudeTemplate `
-    -Target $workspaceClaude `
-    -BeginMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:BEGIN -->' `
-    -EndMarker '<!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->'
+Sync-WorkspaceLlmConfiguration
 Copy-TemplateIfAbsent -Source (Join-Path $templateRoot 'AX-Module-Studio.code-workspace') -Target (Join-Path $WorkspaceRoot 'AX-Module-Studio.code-workspace')
 
 if ($RunLocalFull) {

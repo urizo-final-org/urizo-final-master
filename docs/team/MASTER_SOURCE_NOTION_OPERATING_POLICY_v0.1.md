@@ -26,13 +26,32 @@ Main-Promotion: manual-team-lead-only
 - 여러 저장소를 변경하면 같은 Slice ID/work slug로 저장소별 Commit과 PR을 분리한다.
 - 로컬 변경, local-only Commit, Dirty·Diverged Branch를 자동 삭제·Reset·Stash·전환하지 않는다.
 
-권장 이름:
+Branch·Commit·PR 이름은 다음 형식을 사용한다.
 
 ```text
 Branch: feature/<github-id>_<work-slug>_<version>
-Commit: <type>(<SLICE-ID>/<github-id>): <result>
-PR: [<SLICE-ID>][<github-id>] <result>
+Commit: <type>(<slice-id-or-work-slug>/<github-id>): <한글 변경 결과>
+PR: [<slice-id-or-work-slug>][<github-id>] <한글 완료 결과>
 ```
+
+- 수동 Commit의 `type`은 `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `build`, `ci`, `style` 중 하나를 사용한다.
+- Slice ID가 확정되지 않았으면 배정된 work slug를 사용한다.
+- Commit·PR 제목과 본문은 한글로 작성한다. Type, ID, 코드 식별자, 경로, 명령, 제품·기술 고유명사는 영문을 허용한다.
+- 자동 생성 Merge/Revert Commit은 제목 패턴의 예외다.
+- 작은 오탈자·서식 변경을 제외한 수동 Commit은 아래 본문을 사용한다.
+
+```text
+변경:
+- 핵심 변경 내용
+
+검증:
+- 실행한 테스트와 결과
+
+관련:
+- 관련 PR, Flyway Revision 또는 없음
+```
+
+PR 본문은 저장소의 `.github/PULL_REQUEST_TEMPLATE.md`를 사용하며 `결과 / 변경 / 검증 / 연결·영향 / 확인`만 남긴다.
 
 ## 작업 배정
 

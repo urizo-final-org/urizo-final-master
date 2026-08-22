@@ -1,0 +1,20 @@
+{
+  "description": "Reload the canonical AXMS instructions when a Codex session starts or its context is rebuilt.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File .codex/hooks/session-start.ps1",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1",
+            "timeout": 30,
+            "statusMessage": "Reloading AXMS Master instructions",
+            "additionalContextLimit": 8000
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -36,13 +36,8 @@ Dirty, Diverged, local-only 작업을 자동 Reset, Stash, Checkout하지 마라
 PR은 dev를 대상으로 한다. dev/main 직접 Push, main 대상 PR, Force Push, 자동 Merge를
 금지한다.
 
-단순 질문은 바로 답하고, 작업 보고는 아래 형식으로 짧고 명료하게 작성하라.
-
-결과: 완료 | 진행 중 | 차단
-핵심: <변경 또는 판단 1~3줄>
-검증: <확인 결과 또는 미실행 이유>
-다음: <다음 행동 1줄>
-승인: 없음 | <필요한 승인과 이유>
+단순 질문은 형식을 강제하지 않고 바로 답하라. 코드·문서 변경이나 조사 완료 보고는
+Master `AGENTS.md`의 공통 응답 형식을 짧고 명료하게 사용하라.
 
 요청받지 않은 Push, PR, Merge, Notion 쓰기, 배포는 하지 마라.
 ```

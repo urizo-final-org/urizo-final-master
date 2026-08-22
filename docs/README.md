@@ -17,5 +17,10 @@
 - [팀원 로컬 설정 Prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
 - [팀원 작업 시작 Prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 
+## 향후 검토
+
+- [AI 핵심 기능 후속 고려사항](product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md)
+  — 현재 CMS MVP 범위와 구현 승인이 아닌 후속 기획 후보
+
 과거 CMS Spec, 인수인계, 추적표, Wave, 업무분장 문서는 사용하지 않는다. 현재 CMS 범위는
 최소 범위 문서 하나로 판단한다. 문서에 없는 기능은 팀장 승인 전까지 구현하지 않는다.

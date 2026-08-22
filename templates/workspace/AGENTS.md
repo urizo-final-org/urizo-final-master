@@ -24,6 +24,9 @@
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인한다.
+- 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에
+  `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude `SessionStart` Hook을 함께 설치·갱신하고 결과를 확인한다.
+- 두 도구는 같은 Master 원문 로더를 사용하며 실패 시 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. Codex 최초 신뢰 확인은 팀원이 한 번 승인한다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Only Min Seungjun(`tmdwns0531`) writes Master. 팀원은 Master를 읽기 전용으로 사용한다.
 - Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`.

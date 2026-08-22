@@ -1,14 +1,14 @@
 # AX Module Studio 현재 상태
 
-> Updated: 2026-08-20 (Asia/Seoul)
-> Snapshot-Version: `v1.1-light`
+> Updated: 2026-08-22 (Asia/Seoul)
+> Snapshot-Version: `v1.2-light`
 > Owner: Min Seungjun (`tmdwns0531`)
 
 ## 현재 기준
 
 - 제품 범위: [로컬 데모 CMS 최소 범위](../product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
 - Git·팀 운영: [Master·Source 운영 정책](MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-- 현재 우선순위: 검증된 축소 CMS 변경을 검토하고 Frontend·Backend PR로 연결한다.
+- 현재 우선순위: 검증을 마친 축소 CMS 변경을 Master·Frontend·Backend PR로 검토하고 `dev`에 반영한다.
 - 이전 CMS Spec, Wave, 업무분장, 추적표, 인수인계 이력은 현재 권한이 아니다.
 - 업무분장과 Slice 체계는 CMS 기본 기능 확인 후 굵직한 기능 단위로 다시 정한다.
 
@@ -27,12 +27,16 @@ Frontend와 Backend의 현재 canonical checkout에는 JPA/Spring Security/JWT �
 
 ## 구현 상태
 
-- 별도 Worktree의 `feature/tmdwns0531_axms-cms-local-demo-mvp_v0.1`에서 Frontend·Backend CMS 구현과 로컬 검증을 마쳤으며 아직 Commit·Push·PR 전이다.
+- Master·Frontend·Backend의 `feature/tmdwns0531_axms-cms-local-demo-mvp_v0.1` 기본 Commit은 원격 Feature Branch에 Push됐지만 아직 `origin/dev`에 Merge되지 않았다.
+- Frontend에는 템플릿 적용·미리보기와 페이지 범위 전용 자연어 관리 사이드 패널 목업을 반영했다.
+- Backend에는 CMS를 Controller·Service·Repository·DTO 계층으로 분리하고 업무 데이터 Repository를 Spring Data JPA로 전환했다.
 - 사용자 화면은 `/`, 관리자 화면은 `/admin`으로 분리했다.
 - 관리자 화면은 회원·메뉴·콘텐츠·게시판·템플릿 관리로 구성했다.
 - 메뉴는 정적 콘텐츠 또는 게시판과 연결하고, 템플릿은 Header/Footer·스타일·메인 대표 이미지·문구를 관리한다.
-- Frontend 테스트·타입 검사·빌드와 Backend 테스트·Flyway 반복 검증, Docker 로컬 시연을 통과했다.
-- 이 변경은 PR Merge 전까지 `origin/dev`의 canonical 완료 상태가 아니다.
+- 회원·세션과 메뉴·콘텐츠·게시판·게시글·템플릿은 JPA를 사용하며, CMS 업무 데이터의 `JdbcTemplate` 의존은 제거했다.
+- Frontend 테스트 15개·타입 검사·빌드와 Backend 전체 테스트 103개·Docker 이미지 패키징을 통과했다.
+- 최신 이미지로 Backend·Frontend·Nginx를 재기동하고 공개 화면·CMS 공개 API·관리자 로그인과 주요 조회 API를 확인했다.
+- 최신 로컬 변경을 Commit·Push하고 각 PR이 `dev`에 Merge되기 전까지 canonical 완료 상태가 아니다.
 - Orchestrator는 이번 수동 CMS 구현 대상이 아니며, 현재 업무분장·Wave·Task-Version은 확정하지 않았다.
 
 ## 구현 시작 조건
@@ -54,7 +58,7 @@ Frontend와 Backend의 현재 canonical checkout에는 JPA/Spring Security/JWT �
 
 ```text
 MASTER UPDATE COMPLETE
-Snapshot-Version: v1.1-light
+Snapshot-Version: v1.2-light
 Slice/Work-Slug: <assigned value>
 Task-Version: <assigned value or N/A>
 Worker: <name / GitHub ID>
