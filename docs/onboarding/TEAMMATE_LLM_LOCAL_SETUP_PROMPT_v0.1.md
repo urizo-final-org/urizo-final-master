@@ -24,8 +24,8 @@ AX Module Studio 팀 개발환경을 안전하게 구성하라.
 
 2. 상위 AX-Module-Studio-Workspace에는 .git을 만들지 마라.
 3. Master가 없다면 canonical Master를 먼저 clone하라.
-4. Master AGENTS.md와 그 문서가 지정한 최신 handoff, traceability,
-   team roadmap, bootstrap spec을 완독하라.
+4. Master AGENTS.md와 현재 CMS 최소 범위, 상태 Snapshot, bootstrap spec을 읽어라.
+   과거 handoff, traceability, Wave, 업무분장은 요구하거나 복원하지 마라.
 5. Master의 모델별 지시 라우팅, 다중 OS 로컬 개발 명세, 현재 인프라
    기준을 읽어라. Codex-compatible agent는 AGENTS.md, Claude Code는
    CLAUDE.md import를 통해 동일한 공통 규칙을 사용하라.

@@ -10,30 +10,27 @@ $required = @(
     'CLAUDE.md',
     'README.md',
     'repository-manifest.json',
+    '.github/PULL_REQUEST_TEMPLATE.md',
     'AX-Module-Studio.code-workspace',
     'docs/README.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.7.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v0.8.md',
-    'docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md',
-    'docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md',
-    'docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md',
-    'docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md',
+    'docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md',
     'docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md',
-    'docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md',
+    'docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md',
     'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
     'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md',
-    'docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
-    'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.1.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md',
     'docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md',
     'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md',
-    'docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md',
     'docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md',
     'templates/workspace/AGENTS.md',
     'templates/workspace/CLAUDE.md',
     'templates/workspace/AX-Module-Studio.code-workspace',
+    'templates/workspace/codex/hooks.json',
+    'templates/workspace/codex/hooks/session-start.ps1',
+    'templates/workspace/claude/settings.windows.json',
+    'templates/workspace/claude/settings.unix.json',
     'scripts/preflight-workspace.ps1',
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
@@ -46,14 +43,6 @@ foreach ($relative in $required) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Required scaffold file is missing: $relative"
     }
-}
-
-$projectSpec = Get-Content -Raw -Encoding UTF8 -LiteralPath (
-    Join-Path $masterRoot 'docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md'
-)
-if ($projectSpec -notmatch '4126D4FA9E98AFC81F1FD3053A0362FCB71D1975E6D5F880E7BD9F36A487DBC4' -or
-    $projectSpec -notmatch 'AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md') {
-    throw 'Preserved Project Spec must retain source provenance and current-decision precedence.'
 }
 
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'repository-manifest.json') | ConvertFrom-Json
@@ -94,6 +83,61 @@ foreach ($workspaceFile in @(
     }
 }
 
+$hookTemplatePath = Join-Path $masterRoot 'templates/workspace/codex/hooks.json'
+$hookConfig = Get-Content -Raw -Encoding UTF8 -LiteralPath $hookTemplatePath | ConvertFrom-Json
+$hookEventNames = @($hookConfig.hooks.PSObject.Properties.Name)
+$sessionStartRules = @($hookConfig.hooks.SessionStart)
+if ($hookEventNames.Count -ne 1 -or $hookEventNames[0] -ne 'SessionStart' -or
+    $sessionStartRules.Count -ne 1 -or
+    $sessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
+    throw 'Codex Hook template must contain only the approved SessionStart lifecycle rule.'
+}
+$sessionStartCommands = @($sessionStartRules[0].hooks)
+if ($sessionStartCommands.Count -ne 1 -or
+    $sessionStartCommands[0].type -ne 'command' -or
+    $sessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
+    $sessionStartCommands[0].commandWindows -notmatch 'session-start\.ps1' -or
+    $sessionStartCommands[0].additionalContextLimit -ne 8000) {
+    throw 'Codex SessionStart Hook must use one cross-platform command with the approved context limit.'
+}
+$sessionStartScriptPath = Join-Path $masterRoot 'templates/workspace/codex/hooks/session-start.ps1'
+$sessionStartScript = Get-Content -Raw -Encoding UTF8 -LiteralPath $sessionStartScriptPath
+if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
+    $sessionStartScript -notmatch 'stopReason\s*=\s*\$blockedReason' -or
+    $sessionStartScript -notmatch 'systemMessage\s*=\s*\$blockedReason') {
+    throw 'Codex SessionStart Hook must stop the turn with a visible reason when Master context loading fails.'
+}
+$missingWorkspaceRoot = Join-Path $masterRoot '__missing_axms_workspace__'
+$blockedOutput = @(& $sessionStartScriptPath -WorkspaceRoot $missingWorkspaceRoot) -join "`n"
+$blockedResult = $blockedOutput | ConvertFrom-Json
+if ($blockedResult.continue -ne $false -or
+    $blockedResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:' -or
+    $blockedResult.systemMessage -ne $blockedResult.stopReason) {
+    throw 'Codex SessionStart Hook failure response must be fail-closed JSON.'
+}
+
+foreach ($claudeSettingsRelative in @(
+    'templates/workspace/claude/settings.windows.json',
+    'templates/workspace/claude/settings.unix.json'
+)) {
+    $claudeSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot $claudeSettingsRelative) | ConvertFrom-Json
+    $claudeHookEventNames = @($claudeSettings.hooks.PSObject.Properties.Name)
+    $claudeSessionStartRules = @($claudeSettings.hooks.SessionStart)
+    if ($claudeHookEventNames.Count -ne 1 -or
+        $claudeHookEventNames[0] -ne 'SessionStart' -or
+        $claudeSessionStartRules.Count -ne 1 -or
+        $claudeSessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
+        throw "Claude Hook template must contain only the approved SessionStart lifecycle rule: $claudeSettingsRelative"
+    }
+    $claudeSessionStartCommands = @($claudeSessionStartRules[0].hooks)
+    if ($claudeSessionStartCommands.Count -ne 1 -or
+        $claudeSessionStartCommands[0].type -ne 'command' -or
+        $claudeSessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
+        $claudeSessionStartCommands[0].timeout -ne 30) {
+        throw "Claude SessionStart must call the shared AXMS loader once: $claudeSettingsRelative"
+    }
+}
+
 $managedPolicyBegin = '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->'
 $managedPolicyEnd = '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
 $workspaceAgentTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates/workspace/AGENTS.md')
@@ -129,6 +173,10 @@ if ($workspaceAgentTemplate -notmatch 'Master plus all three Source repositories
     throw 'Workspace AGENTS template must make four-repository synchronization the default pull scope.'
 }
 $masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'AGENTS.md')
+if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
+    $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
+    throw 'Master and Workspace AGENTS policies must require automatic Codex and Claude Hook synchronization after Master updates.'
+}
 $devOnlyPrPattern = 'Every agent-created (pull request|PR).*targets `dev`'
 $manualMainPattern = '`main` is (the team lead''s|reserved for) periodic manual promotion'
 if ($masterAgents -notmatch $devOnlyPrPattern -or
@@ -147,8 +195,16 @@ $operatingPolicy = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $mast
 if ($operatingPolicy -notmatch 'Task-Version' -or
     $operatingPolicy -notmatch 'MASTER CONTEXT BLOCKED' -or
     $operatingPolicy -notmatch 'Agent-PR-Base: dev' -or
-    $operatingPolicy -notmatch 'Main-Promotion: manual-team-lead-only') {
+    $operatingPolicy -notmatch 'Main-Promotion: manual-team-lead-only' -or
+    $operatingPolicy -notmatch 'Commit: <type>\(<slice-id-or-work-slug>/<github-id>\): <한글 변경 결과>' -or
+    $operatingPolicy -notmatch 'PR: \[<slice-id-or-work-slug>\]\[<github-id>\] <한글 완료 결과>') {
     throw 'Master operating policy must enforce worker-task version matching before implementation.'
+}
+$pullRequestTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot '.github/PULL_REQUEST_TEMPLATE.md')
+foreach ($requiredHeading in @('## 결과', '## 변경', '## 검증', '## 연결·영향', '## 확인')) {
+    if ($pullRequestTemplate -notmatch [regex]::Escape($requiredHeading)) {
+        throw "Master PR template is missing the common Korean heading: $requiredHeading"
+    }
 }
 $masterScriptText = (Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1' |
     Where-Object { $_.Name -ne 'validate-master-scaffold.ps1' } |
@@ -163,7 +219,12 @@ foreach ($windowsOnlyCrossPlatformPath in @(
 }
 
 $parseFailures = [System.Collections.Generic.List[string]]::new()
-foreach ($scriptFile in Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1') {
+$parseTargets = @(
+    Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1'
+) + @(
+    Get-Item -LiteralPath (Join-Path $masterRoot 'templates/workspace/codex/hooks/session-start.ps1')
+)
+foreach ($scriptFile in $parseTargets) {
     $tokens = $null
     $errors = $null
     [System.Management.Automation.Language.Parser]::ParseFile($scriptFile.FullName, [ref]$tokens, [ref]$errors) | Out-Null
@@ -200,6 +261,7 @@ foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend',
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
+Write-Host 'PASS: minimal fail-closed Codex and Claude SessionStart Hooks parsed and validated'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: four canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

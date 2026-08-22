@@ -1,36 +1,26 @@
-# AX Module Studio Master document index
+# AX Module Studio Master 문서
 
-## Current authority
+## 현재 필수 문서
 
-1. Teammate entry point: [one-click administrator CMS start guide](onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
-2. Current team decisions: [team checklist decision overlay](product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md)
-3. Auth/RBAC original MVP authority: [administrator Auth/RBAC MVP specification](product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)
-4. Later delivered boundary: [FND-03 completion and FND-04 retirement decision](product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md)
-5. Current LLM status/WBS: [LLM project status snapshot](team/LLM_PROJECT_STATUS_SNAPSHOT.md)
-6. Master·Source Git·Notion policy: [operating policy v0.1](team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-7. Product intent: [preserved cross-system Project Spec](product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md)
-8. Spring/Flyway/LangGraph responsibility overlay: the v0.2 architecture documents preserved in the Backend documentation set
-9. Current implementation checkpoint: [implementation/team handoff v1.0](handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md)
-10. Current implementation gap: [feature traceability matrix](traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
-11. Team execution: [vertical-slice ownership and roadmap](team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
-12. Multi-model routing: [LLM instruction routing](workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md)
-13. Windows/macOS/Linux rules: [team multi-OS specification](workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
-14. Current runtime versions/topology: [local infrastructure baseline](architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
-15. Workspace reproduction: [Master repository and bootstrap specification](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
-16. Teammate setup: [LLM local setup prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
-17. Slice start: [LLM work-start prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
+1. [로컬 데모 CMS 최소 범위](product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
+2. [현재 상태 Snapshot](team/LLM_PROJECT_STATUS_SNAPSHOT.md)
+3. [Master·Source Git·Notion 운영 정책](team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
+4. [Flyway 예약표](team/FLYWAY_RESERVATION_LEDGER.md)
+5. [저장소별 기술스택과 사용 근거](architecture/TECH_STACK_AND_RATIONALE_v0.1.md)
 
-If the current OpenAPI and the Product Spec differ, the difference is an implementation gap unless a
-later approved product decision explicitly changes the requirement. The team checklist decision
-overlay is the current authority for its stated scope. Infrastructure health and technical fixture E2E
-are evidence for their own scope only.
+## 작업 환경
 
-## Governance records
+- [다중 LLM 지침 Routing](workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md)
+- [팀 Multi-OS 로컬 개발](workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
+- [현재 로컬 인프라](architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
+- [Workspace Bootstrap](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+- [팀원 로컬 설정 Prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
+- [팀원 작업 시작 Prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 
-- [Flyway reservation ledger](team/FLYWAY_RESERVATION_LEDGER.md)
-- [Repository manifest](../repository-manifest.json)
-- [Workspace template](../templates/workspace/AX-Module-Studio.code-workspace)
+## 향후 검토
 
-## Historical preservation
+- [AI 핵심 기능 후속 고려사항](product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md)
+  — 현재 CMS MVP 범위와 구현 승인이 아닌 후속 기획 후보
 
-The earlier v0.6 handoff remains preserved in the original handoff package. Master v0.7 preserves the pre-publication checkpoint; v0.8 records the published remote and teammate-onboarding checkpoint; v0.9 records the approved Auth/RBAC MVP and updated Foundation execution gate; v1.0 records the merged reduced FND-03 result, multi-model/OS baseline, and retirement of the scheduled FND-04 Wave. Historical documents are not overwritten.
+과거 CMS Spec, 인수인계, 추적표, Wave, 업무분장 문서는 사용하지 않는다. 현재 CMS 범위는
+최소 범위 문서 하나로 판단한다. 문서에 없는 기능은 팀장 승인 전까지 구현하지 않는다.

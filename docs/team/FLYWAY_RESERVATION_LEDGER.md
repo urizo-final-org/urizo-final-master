@@ -13,7 +13,10 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 
 ## Active reservations
 
-None.
+| Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
+|---|---|---|---|---|---|---|---|
+| `20260819150845` | `RESERVED` | `axms-cms-local-demo-mvp` | `add_local_demo_cms_schema` | `tmdwns0531` | `2026-09-19T15:08:45Z` | pending | none |
+| `20260819165652` | `RESERVED` | `axms-cms-local-demo-mvp` | `map_site_navigation_and_home_template` | `tmdwns0531` | `2026-09-19T16:56:52Z` | pending | `20260819150845` |
 
 ## Reservation template
 

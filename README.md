@@ -1,52 +1,46 @@
 # AX Module Studio Master
 
-`urizo-final-master` is the workspace control and handoff repository for three independent canonical source repositories. It intentionally contains no product source and is not a monorepo.
+네 개의 독립 Git 저장소를 연결하는 경량 공통 기준 저장소다. 제품 Source는 보관하지 않는다.
 
 ```text
 AX-Module-Studio-Workspace/          # no .git
-├── urizo-final-master/             # governance, handoff, safe wrappers
-├── urizo-final-frontend/           # React
-├── urizo-final-backend/            # Spring, Flyway, contracts, integrated Compose
-└── urizo-final-orchestrator/        # Python LangGraph Coding Runtime
+├── urizo-final-master/
+├── urizo-final-frontend/
+├── urizo-final-backend/
+└── urizo-final-orchestrator/
 ```
 
-## Current checkpoint
+## 현재 기준
 
-The latest checkpoint is [implementation/team handoff v1.0](docs/handoff/AX_Module_Studio_IMPLEMENTATION_TEAM_HANDOFF_v1.0.md), with the later [team checklist decision overlay](docs/product/AX_Module_Studio_TEAM_CHECKLIST_DECISION_OVERLAY_v0.1.md) as the current product/execution authority. FND-03 production two-administrator-role login/role enforcement is merged in its reduced single-customer demonstration boundary; `GENERAL_USER`, Approval History, and the core Audit Log remain CMS milestone work. The approved order is Wave 3 CMS-01–04 in parallel, then CMS-05→06→07 and integrated CMS acceptance. Remaining public-data/RAG/Model Mapping, Coding/PathPolicy, natural-language CMS, and LLM DevOps order, owner, and scope are decided only at the post-CMS team-planning Gate. Later LLM DevOps retains exactly three dual-approval Gates: autonomous-coding result, PR creation, and deployment.
+- [로컬 데모 CMS 최소 범위](docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
+- [현재 상태 Snapshot](docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md)
+- [Master·Source 운영 정책](docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
+- [저장소별 기술스택과 사용 근거](docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md)
+- [문서 목록](docs/README.md)
 
-## Entry points
+이전 CMS Spec, 인수인계 이력, 추적표, Wave와 업무분장은 폐기했다. 현재 구현은 위 최소 범위를
+벗어나지 않는다. 범위 안의 세부 설계는 자율적으로 진행하고, 새로운 사용자 기능이나 시스템
+범위를 추가해야 할 때만 팀장 승인을 요청한다.
 
-- [팀원 원클릭 전체관리자 CMS 시작 가이드](docs/onboarding/TEAMMATE_ONE_CLICK_CMS_START_GUIDE_v0.1.md)
-- [Preserved cross-system product specification](docs/product/AX_Module_Studio_Vibe_Coding_Project_Spec_v1.0.md)
-- [Auth/RBAC MVP specification](docs/product/AX_Module_Studio_AUTH_RBAC_MVP_SPEC_v0.1.md)
-- [FND-03 completion/FND-04 retirement decision](docs/product/AX_Module_Studio_FND03_COMPLETION_SCOPE_DECISION_v0.1.md)
-- [Multi-model LLM routing](docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md)
-- [Team multi-OS local development](docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
-- [Current infrastructure baseline](docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
-- [Document index](docs/README.md)
-- [Feature traceability matrix](docs/traceability/FEATURE_TRACEABILITY_MATRIX_v0.1.md)
-- [Team ownership and roadmap](docs/team/TEAM_VERTICAL_SLICE_OWNERSHIP_AND_ROADMAP_v0.1.md)
-- [Master/bootstrap specification](docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
-- [Teammate LLM local setup prompt](docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
-- [Teammate LLM work-start prompt](docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
-- [Repository manifest](repository-manifest.json)
+## 유지하는 공통 기준
 
-## LLM-first teammate onboarding
+- [다중 LLM 지침 Routing](docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md)
+- [팀 Multi-OS 로컬 개발](docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
+- [현재 로컬 인프라](docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
+- [Workspace Bootstrap](docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+- [Flyway 예약표](docs/team/FLYWAY_RESERVATION_LEDGER.md)
+- [팀원 로컬 설정 Prompt](docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
+- [팀원 작업 시작 Prompt](docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 
-After the initial Master clone, open this repository in the coding agent and ask:
+## Workspace 명령
 
-```text
-AX Module Studio 팀 개발환경을 구성해줘.
+전체 동기화:
+
+```powershell
+.\scripts\sync-workspace.ps1 -ApproveNetwork
 ```
 
-Codex-compatible agents enter through `AGENTS.md`; Claude Code enters through `CLAUDE.md`, which imports the same authority. The shared rules instruct the LLM to read the current handoff and team assignment, detect Windows/macOS/Linux, run read-only preflight, explain approval boundaries, execute the version-managed bootstrap itself after approval, stop for required login/MFA/administrator/reboot/secret entry, and finish with workspace health verification. A teammate should not need to translate or copy routine setup commands manually. The initial Git clone/open and unavoidable interactive boundaries remain human actions.
-
-`깃 pull 해줘` means safe synchronization of all four repositories, not only the currently open one.
-Before a new task, each changed repository starts from a clean, current `dev`; feature work then uses the
-required local feature branch or a separate worktree. The synchronization flow never discards dirty or
-diverged work and never changes branches implicitly.
-
-Read-only checks:
+읽기 전용 확인:
 
 ```powershell
 .\scripts\preflight-workspace.ps1
@@ -54,13 +48,4 @@ Read-only checks:
 .\scripts\validate-master-scaffold.ps1
 ```
 
-On macOS/Linux the local LLM invokes the same scripts with PowerShell 7 (`pwsh`). On Windows it may use
-Windows PowerShell 5.1 or PowerShell 7 according to the multi-OS specification.
-
-Agent-executed one-command onboarding:
-
-```powershell
-.\scripts\bootstrap-workspace.ps1 -ApproveNetwork -RunLocalFull -ApproveLocalFullMutation
-```
-
-That command never pulls, checks out, resets, stashes, cleans, overwrites a non-empty non-repository directory, or deletes a database/volume. It stops at authentication, Docker/WSL installation, administrator, reboot, dirty-worktree, and credential boundaries.
+동기화는 로컬 변경을 삭제하거나 Branch를 자동 전환하지 않는다.

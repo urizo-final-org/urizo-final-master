@@ -1,6 +1,6 @@
 # AX Module Studio multi-model LLM instruction routing v0.1
 
-> Updated: 2026-08-18 (Asia/Seoul)
+> Updated: 2026-08-20 (Asia/Seoul)
 > Owner: Min Seungjun (`tmdwns0531`)
 > Scope: Codex-compatible GPT coding agents and Claude Code used by the five-person team
 
@@ -16,7 +16,7 @@ Project rules have one common source. They are not copied into separate GPT and 
 
 There is no separate `GPT.md`. `AGENTS.md` remains the GPT/Codex-compatible entry point. Claude Code
 does not automatically consume `AGENTS.md`, so the committed `CLAUDE.md` imports it with `@AGENTS.md`.
-This avoids divergent product, Git, safety, and WBS instructions.
+This avoids divergent product scope, Git, and safety instructions.
 
 ## 2. Required file layout
 
@@ -34,8 +34,8 @@ AX-Module-Studio-Workspace/              # not Git
 ```
 
 Team implementation starts from the common non-Git parent workspace after bootstrap. A Source-only
-checkout is not sufficient for automatic project/WBS awareness because it does not contain the Master
-status and handoff authority.
+checkout is not sufficient for automatic project-scope awareness because it does not contain the Master
+status and current-scope authority.
 
 ## 3. Common start sequence
 
@@ -44,12 +44,16 @@ Both model families must perform the same sequence:
 1. read the parent Workspace and Master instructions;
 2. run Master-first safe synchronization when asked to update Git;
 3. re-read the checked-in Master status snapshot and operating policy;
-4. match Snapshot version, Slice ID, Task version, worker, target repositories, and next Gate;
-5. read only the assigned Slice documents and applicable Source `AGENTS.md` files;
+4. match Snapshot version, assigned work slug, worker, target repositories, and approved scope;
+5. read the current CMS scope and applicable Source `AGENTS.md` files;
 6. return `MASTER CONTEXT PASS` or `MASTER CONTEXT BLOCKED` before implementation.
 
 Model identity never changes Repository ownership, approval boundaries, Git naming, Definition of Done,
 or Notion-write authority.
+
+Both model families also inherit the same `Simple is best` rule, scope-expansion approval gate, and
+short status-report format from Master `AGENTS.md`. These behaviors are not copied into model-specific
+files.
 
 ## 4. What may be model- or Source-repository-specific
 
@@ -61,7 +65,7 @@ Model-specific and Source-repository entry files may contain only:
 - the Source repository's stable scope and ownership boundary;
 - links to repository-local build, test, migration, or runtime documentation.
 
-They must not contain a private copy of role permissions, Slice ownership, WBS state, runtime versions,
+They must not contain a private copy of product scope, assignments, runtime versions,
 Git workflow, or safety rules. Those facts change over time and remain in their designated Master files.
 Source `AGENTS.md` files are therefore routing stubs, not secondary policy authorities. Source
 `CLAUDE.md` files import the corresponding `AGENTS.md` and add no duplicate common policy.
@@ -72,7 +76,7 @@ Source `AGENTS.md` files are therefore routing stubs, not secondary policy autho
   `LLM_PROJECT_STATUS_SNAPSHOT.md`.
 - `templates/workspace/AGENTS.md` and `templates/workspace/CLAUDE.md` contain managed blocks. The Master
   bootstrap synchronizes those blocks without replacing teammate custom text.
-- A model-routing change requires Master scaffold validation. A product or WBS change normally does not
+- A model-routing change requires Master scaffold validation. A product-scope change normally does not
   require editing `CLAUDE.md` because Claude imports the shared authority.
 
 ## 6. Acceptance

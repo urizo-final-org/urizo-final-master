@@ -1,29 +1,28 @@
-## Slice
+## 결과
 
-- Slice-ID:
-- Slice-Version:
-- Lead:
-- Repository: `master`
-- Connected source PRs:
+- 완료한 결과를 1~3줄로 작성합니다.
 
-## Scope
+## 변경
 
-- User/team outcome:
-- Master-owned files changed:
-- Product source copied into Master: `no`
+- 주요 변경:
+- 범위 밖 변경: 없음
 
-## Cross-repository state
+## 검증
 
-- Contract Version / N/A:
-- Migration Revision / N/A:
-- Depends On:
-- Merge Order:
-- Independently Mergeable: yes/no
+- 방법:
+- 결과:
+- 미검증: 없음
 
-## Safety and verification
+## 연결·영향
 
-- [ ] No secret, credential, raw prompt, local report, or full secret digest is included.
-- [ ] No source repository, Compose, Flyway SQL, or runtime data is duplicated into Master.
-- [ ] `scripts/validate-master-scaffold.ps1` passes.
-- [ ] Handoff/manifest claims match verified source PRs and SHAs.
-- [ ] Rollback/document supersession is described.
+- 관련 저장소 PR: 없음
+- Flyway Revision: 없음
+- 주의 사항: 없음
+
+## 확인
+
+- [ ] 대상 브랜치는 `dev`입니다.
+- [ ] 승인된 범위만 변경했습니다.
+- [ ] Secret과 로컬 전용 데이터가 포함되지 않았습니다.
+- [ ] 관련 테스트를 실행했습니다.
+- [ ] Master 저장소에 제품 Source를 복제하지 않았습니다.
