@@ -83,6 +83,18 @@
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - 동기화 후 Master Spec과 Snapshot을 다시 읽는다.
 
+## CMS 로컬 실행
+
+`CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은 임의 Docker 명령 조합이 아니라
+`scripts/start-local-cms.ps1` 한 경로로 처리한다.
+
+- 명시적인 로컬 실행 요청을 받으면 `-ApproveLocalMutation`을 사용한다.
+- 이미 CMS가 정상이면 기존 `spring-core` Container를 재사용하고 즉시 종료한다.
+- 중지 상태면 기존 Image로만 기동하며, 최초 실행처럼 Image가 없으면 Network 승인 후 `-ApproveNetwork`를 추가한다.
+- Source 변경을 Image에 반영해야 할 때만 `-Rebuild -ApproveNetwork`를 추가한다.
+- CMS 실행에서는 Coding Runtime 상태를 성공 조건으로 삼지 않는다. AI·Coding Runtime 통합 검증은 기존 `full` 절차를 별도로 사용한다.
+- 공통 Script가 정확한 원인으로 차단한 경우에만 해당 원인을 수정한다. Script를 우회해 직접 Build·Flyway·Compose 명령을 추측 실행하지 않는다.
+
 ## 소유권
 
 - Frontend: React UI와 브라우저 동작

@@ -35,6 +35,7 @@ $required = @(
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
     'scripts/health-workspace.ps1',
+    'scripts/start-local-cms.ps1',
     'scripts/validate-master-scaffold.ps1'
 )
 
@@ -176,6 +177,11 @@ $masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterR
 if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
     throw 'Master and Workspace AGENTS policies must require automatic Codex and Claude Hook synchronization after Master updates.'
+}
+if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -ApproveLocalMutation' -or
+    $masterAgents -notmatch 'scripts/start-local-cms\.ps1' -or
+    $masterAgents -notmatch 'spring-core') {
+    throw 'Master and Workspace AGENTS policies must route CMS local startup through the shared spring-core wrapper.'
 }
 $devOnlyPrPattern = 'Every agent-created (pull request|PR).*targets `dev`'
 $manualMainPattern = '`main` is (the team lead''s|reserved for) periodic manual promotion'

@@ -14,6 +14,7 @@
 - [팀 Multi-OS 로컬 개발](workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
 - [현재 로컬 인프라](architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
 - [Workspace Bootstrap](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+- CMS 빠른 로컬 실행: `scripts/start-local-cms.ps1`
 - [팀원 로컬 설정 Prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
 - [팀원 작업 시작 Prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)
 

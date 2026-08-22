@@ -53,6 +53,15 @@ The agent-executed wrapper is:
 
 Planning remains available through `-WhatIf`. A teammate should not be asked to copy routine commands manually when the agent can run them.
 
+축소 CMS의 일상적인 로컬 실행은 전체 Bootstrap을 반복하지 않고 다음 health-first Wrapper를 사용한다.
+
+```powershell
+.\scripts\start-local-cms.ps1 -ApproveLocalMutation
+```
+
+이미 정상인 `spring-core`는 즉시 재사용한다. 최초 Image 준비에는 `-ApproveNetwork`, Source 변경을
+Image에 반영할 때는 `-Rebuild -ApproveNetwork`를 추가한다. Coding Runtime은 CMS 실행 성공 조건이 아니다.
+
 ## 4. Safety behavior
 
 | Condition | Required behavior |
