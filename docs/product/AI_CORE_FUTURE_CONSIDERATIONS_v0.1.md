@@ -73,3 +73,115 @@ AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md를 따른다. 아래 기능을 
 - 새 화면·역할·상태·외부 연동·테이블을 만들기 전에 현재 범위와 최소 완료 기준을 승인한다.
 - 기존 Spring AI, PostgreSQL·pgvector, Valkey, Python LangGraph 기반을 우선 재사용한다.
 - 현재 축소 CMS의 완료 기준, API와 사용자·관리자 화면 동작을 임의로 변경하지 않는다.
+
+## 8. 팀 작업용 구조
+
+아래는 현재 리팩터링 기준의 작업 경계다. 미배정 기능의 Frontend 폴더나 실제 기능 코드는
+미리 만들지 않고, 내부회의에서 기능별 사용자 흐름과 최소 완료 기준을 확정한 뒤 추가한다.
+
+### Frontend
+
+```text
+src/
+├─ app/                         # App Shell, Router, Navigation
+├─ features/
+│  ├─ auth/                    # 현재 로그인·세션
+│  ├─ site/                    # 현재 사용자 화면
+│  ├─ cms/                     # 현재 CMS, 5번은 assistant 하위 경계
+│  ├─ knowledge/               # 2·3번 배정 후 추가
+│  ├─ coding/                  # 4번 배정 후 추가
+│  └─ orchestration/           # 6번 배정 후 추가
+├─ shared/api/                 # 공통 HTTP·오류·세션
+└─ styles/                     # 공통 Token·Style
+```
+
+### Spring Backend
+
+각 기능 경계 안에서 필요한 Spring MVC 계층만 사용한다. 모든 하위 폴더를 의무적으로 만들지 않는다.
+
+```text
+backend/
+├─ auth/                       # config/controller/dto/entity/repository/security/service
+├─ cms/                        # bootstrap/controller/dto/entity/repository/service
+│  └─ assistant/              # 5번 경계, 현재 package-info만 존재
+├─ knowledge/                  # 2·3번: controller/dto/service/repository + batch 등
+├─ coding/                     # 4번: controller/dto/service/repository + config/integration
+├─ orchestration/              # 6번 Spring 제어 경계, 현재 package-info만 존재
+├─ integration/
+│  ├─ ai/                     # 공통 AI Gateway·Provider Adapter
+│  └─ persistence/            # 공통 영속성 설정
+├─ core/web/                   # 최소 공통 Web 기능
+└─ health/                     # 상태 확인
+```
+
+`knowledge`와 `coding`의 현재 코드는 기존 기능을 이동한 기반이며 2~4번 신규 기능 완료를 뜻하지
+않는다. `cms/assistant`와 `orchestration`도 배정 전에는 뼈대만 유지한다.
+
+### 기능별 기본 소유 경계
+
+| 기능 | Frontend | Spring Backend | Python LangGraph |
+|---|---|---|---|
+| 2·3 도메인·RAG | `features/knowledge` | `knowledge` | 기본 대상 아님 |
+| 4 제한형 LLM DevOps | `features/coding` | `coding` | Coding 실행 Runtime |
+| 5 자연어 CMS | `features/cms/assistant` | `cms/assistant` → 기존 `cms` 사용 | 기본 대상 아님 |
+| 6 오케스트레이션 | `features/orchestration` | `orchestration` + `integration/ai` | 필요한 Coding 실행만 재사용 |
+
+## 9. 저장소 간 간략 흐름
+
+```mermaid
+flowchart LR
+    subgraph FE["Frontend"]
+        FC["app · auth · site<br/>CMS Core"]
+        F23["Knowledge UI<br/>2·3번"]
+        F4["Coding DevOps UI<br/>4번"]
+        F5["CMS Assistant<br/>5번"]
+        F6["Orchestration UI<br/>6번"]
+    end
+
+    subgraph BE["Spring Backend"]
+        BC["auth · core · cms<br/>기존 CMS Core"]
+        B23["knowledge<br/>2·3번"]
+        B4["coding<br/>4번"]
+        B5["cms/assistant<br/>5번"]
+        B6["orchestration<br/>6번"]
+        AI["integration/ai<br/>AI Gateway"]
+    end
+
+    PY["Python LangGraph Runtime<br/>4번 Coding 실행"]
+
+    FC --> BC
+    F23 --> B23
+    F4 --> B4
+    F5 --> B5
+    F6 --> B6
+    B23 --> AI
+    B5 --> BC
+    B5 --> AI
+    B6 --> B4
+    B6 --> AI
+    B4 -->|"Job 계약"| PY
+    PY -->|"상태·결과"| B4
+```
+
+- Spring Backend가 API·권한·Job 상태·Core DB의 기준이다.
+- Python LangGraph는 Coding 실행 흐름만 담당하고 Spring의 책임을 중복하지 않는다.
+- 기능 패키지는 필요한 경우 `integration/ai`를 사용하며, 공통 코드를 각 기능에 복제하지 않는다.
+
+## 10. 팀원 작업 흐름
+
+```mermaid
+flowchart LR
+    DEV["검증된 dev<br/>CMS Core"] --> WT["팀원별 Worktree<br/>Feature Branch"]
+    WT --> S1["하위 세부기능 구현"]
+    S1 --> TEST["단위·계약·통합 테스트"]
+    TEST --> PR["dev 대상 PR"]
+    PR --> CHECK["팀 회의·중간점검"]
+    CHECK --> MERGE["dev 병합"]
+    MERGE --> SYNC["다른 Worktree가<br/>검증된 Core 반영"]
+    SYNC --> S2["다음 세부기능"]
+```
+
+- 담당자와 작업 ID는 내부회의 후 배정한다.
+- 같은 기능의 저장소 변경은 같은 work slug를 쓰되 Branch·Commit·PR을 저장소별로 분리한다.
+- 공통 계약·Flyway·App Shell·실행 환경은 합의된 통합 작업에서만 변경한다.
+- 기능별 회귀 테스트를 통과한 작은 단위로 `dev`에 병합해 팀이 중간 점검한다.

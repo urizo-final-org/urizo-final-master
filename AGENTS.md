@@ -15,8 +15,10 @@
 2. `docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md`
 3. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
 4. 작업 저장소의 `AGENTS.md`
-5. DB 변경 시 `docs/team/FLYWAY_RESERVATION_LEDGER.md`
-6. 로컬 환경 작업 시 해당 Workspace·Infrastructure 문서
+5. 2~6번 후속 기능의 기획·설계·구조·구현 작업 시
+   `docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md`
+6. DB 변경 시 `docs/team/FLYWAY_RESERVATION_LEDGER.md`
+7. 로컬 환경 작업 시 해당 Workspace·Infrastructure 문서
 
 삭제된 과거 CMS Spec, Wave, 추적표, 업무분장, 인수인계 내용을 추측하거나 복원하지 않는다.
 
