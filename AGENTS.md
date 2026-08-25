@@ -68,9 +68,15 @@
 ## 작업 시작
 
 - 최신 Master Spec과 Snapshot, 적용 저장소 규칙을 확인한다.
-- 팀장이 지정한 작업자, Slice ID/work slug, 저장소, 최소 완료 결과를 확인한다.
+- 팀장이 지정한 저장소와 최소 완료 결과, 명시적으로 지정한 담당자·Slice ID를 확인한다.
+- GitHub ID를 따로 지정하지 않았으면 현재 PC의 `gh auth status` 설정 계정을 사용하고,
+  조직 멤버 전체 목록은 조회하지 않는다.
+- Slice ID/work slug를 따로 지정하지 않았고 최소 완료 결과가 명확하면
+  `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`에 따라 work slug를 자동 생성한다.
+- 명시된 담당자·GitHub ID·work slug가 있으면 자동값보다 우선한다. 현재 PC의 GitHub ID를
+  확인할 수 없거나 작업 범위가 불명확하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
-- 지정이 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
+- 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
 - 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에 `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude 프로젝트 Hook을 함께 설치·갱신하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다. 팀원에게 수동 명령 복사를 전가하지 않는다.
 - Codex와 Claude의 `SessionStart` Hook은 같은 로더로 Master 원문을 한 번만 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.

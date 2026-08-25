@@ -76,8 +76,10 @@ AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md를 따른다. 아래 기능을 
 
 ## 8. 팀 작업용 구조
 
-아래는 현재 리팩터링 기준의 작업 경계다. 미배정 기능의 Frontend 폴더나 실제 기능 코드는
-미리 만들지 않고, 내부회의에서 기능별 사용자 흐름과 최소 완료 기준을 확정한 뒤 추가한다.
+아래는 현재 리팩터링 기준의 작업 경계다. 담당자와 기능 경계가 정해지면 공통 구조 작업에서
+Frontend 경계 폴더만 먼저 만들 수 있다. 빈 폴더는 `.gitkeep`으로 추적하며, 이 뼈대는
+2~6번 기능 완료를 뜻하지 않는다. 실제 화면·계약·상태는 승인된 최소 완료 범위에 따라
+각 기능 담당자가 구현한다.
 
 ### Frontend
 
@@ -94,6 +96,24 @@ src/
 ├─ shared/api/                 # 공통 HTTP·오류·세션
 └─ styles/                     # 공통 Token·Style
 ```
+
+### Frontend 내부 가이드
+
+기능 폴더는 처음부터 모든 하위 구조를 만들지 않고 필요한 파일만 평평하게 시작한다.
+
+```text
+features/<feature>/
+├─ <Feature>Workspace.tsx      # Route 진입 화면이 필요할 때
+├─ api.ts                      # Backend 계약을 사용할 때
+├─ *.test.ts(x)                # 기능과 가까운 테스트
+└─ components/                 # 화면 분리가 실제로 필요할 때
+```
+
+- Route와 Navigation 등록은 `app`에서 관리한다.
+- 기능별 Backend 호출은 해당 기능의 `api.ts`에 두고 공통 HTTP·세션·오류 처리는 `shared/api`를 재사용한다.
+- 상태는 React 로컬 상태를 기본으로 하며 여러 화면이 공유할 때만 기능 전용 Store를 추가한다.
+- 공통 뼈대에는 샘플 데이터를 넣지 않는다. 계약이 정해진 뒤 기능 테스트 Fixture로 추가한다.
+- 위 파일과 폴더는 필요한 시점에만 만들며 모든 기능에 같은 세부 구조를 강제하지 않는다.
 
 ### Spring Backend
 
@@ -171,7 +191,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    DEV["검증된 dev<br/>CMS Core"] --> WT["팀원별 Worktree<br/>Feature Branch"]
+    DEV["검증된 dev<br/>CMS Core"] --> BASE["공통 기능 경계 확인<br/>필요시 뼈대 추가"]
+    BASE --> WT["팀원별 Worktree<br/>Feature Branch"]
     WT --> S1["하위 세부기능 구현"]
     S1 --> TEST["단위·계약·통합 테스트"]
     TEST --> PR["dev 대상 PR"]
@@ -182,6 +203,7 @@ flowchart LR
 ```
 
 - 담당자와 작업 ID는 내부회의 후 배정한다.
+- 공통 경계 PR은 폴더와 최소 가이드만 준비하며 실제 기능 구현은 담당자 Branch에서 진행한다.
 - 같은 기능의 저장소 변경은 같은 work slug를 쓰되 Branch·Commit·PR을 저장소별로 분리한다.
 - 공통 계약·Flyway·App Shell·실행 환경은 합의된 통합 작업에서만 변경한다.
 - 기능별 회귀 테스트를 통과한 작은 단위로 `dev`에 병합해 팀이 중간 점검한다.
