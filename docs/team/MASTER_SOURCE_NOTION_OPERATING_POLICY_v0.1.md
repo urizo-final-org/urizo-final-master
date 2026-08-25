@@ -55,12 +55,24 @@ PR 본문은 저장소의 `.github/PULL_REQUEST_TEMPLATE.md`를 사용하며 `�
 
 ## 작업 배정
 
-현재 Snapshot에 고정 업무분장이 없으면 팀장이 다음 네 항목만 지정한다.
+현재 Snapshot에 고정 업무분장이 없으면 팀장은 다음 최소 범위를 지정한다.
 
-- 작업자와 GitHub ID
-- Slice ID 또는 work slug
 - 변경 저장소
 - 이번 최소 완료 결과
+- 현재 PC 실행자와 다른 담당자가 맡는 경우 담당자와 GitHub ID
+- 공통 Slice ID가 이미 정해진 경우 해당 ID
+
+GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한다.
+
+- GitHub ID는 현재 PC의 `gh auth status` 설정 계정을 사용한다. 조직 멤버 전체 목록은 조회하지 않는다.
+- work slug는 승인된 최소 완료 결과를 소문자 영문·숫자·하이픈으로 정리해
+  `axms-<작업내용-kebab-case>` 형식으로 자동 생성한다.
+- Branch 이름은 기존 형식인 `feature/<github-id>_<work-slug>_<version>`을 유지한다.
+- 같은 저장소에서 같은 GitHub ID와 work slug가 이미 있으면 로컬·원격 Branch를 확인하고
+  사용하지 않은 가장 작은 Version으로 `v0.1`, `v0.2` 순서로 올린다.
+- 여러 저장소에 걸친 같은 작업은 동일한 work slug를 재사용하고 Commit과 PR만 저장소별로 분리한다.
+- 팀장이 담당자·GitHub ID·Slice ID/work slug를 명시하면 자동 생성값보다 우선한다.
+- 현재 PC의 GitHub ID를 확인할 수 없거나 최소 완료 결과가 모호하면 자동 생성하지 않고 확인을 요청한다.
 
 필요할 때만 `Task-Version`을 사용한다. 구현 전에 Snapshot과 지시가 일치하면
 `MASTER CONTEXT PASS`를 보고한다. 다르거나 범위 확장이 필요하면
