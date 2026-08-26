@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param()
 
 $ErrorActionPreference = 'Stop'
@@ -10,10 +10,17 @@ $required = @(
     'CLAUDE.md',
     'README.md',
     'repository-manifest.json',
+    '.github/CODEOWNERS',
     '.github/PULL_REQUEST_TEMPLATE.md',
     'AX-Module-Studio.code-workspace',
     'docs/README.md',
     'docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md',
+    'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md',
+    'docs/product/ai-core/02_DOMAIN_RAG_REPLACEMENT.md',
+    'docs/product/ai-core/03_RAG_QUALITY.md',
+    'docs/product/ai-core/04_LIMITED_LLM_DEVOPS.md',
+    'docs/product/ai-core/05_NATURAL_LANGUAGE_CMS.md',
+    'docs/product/ai-core/06_ORCHESTRATION_CONTROL.md',
     'docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md',
     'docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md',
     'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
@@ -108,6 +115,12 @@ if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
     $sessionStartScript -notmatch 'systemMessage\s*=\s*\$blockedReason') {
     throw 'Codex SessionStart Hook must stop the turn with a visible reason when Master context loading fails.'
 }
+if ($sessionStartScript -notmatch 'AI FEATURE SESSION CONTEXT' -or
+    $sessionStartScript -notmatch 'auth status --active --hostname github\.com' -or
+    $sessionStartScript -notmatch 'Tracked PR sync' -or
+    $sessionStartScript -notmatch 'Hook is read-only') {
+    throw 'SessionStart Hook must expose the current GitHub identity, assigned AI work, tracked PR sync, and read-only boundary.'
+}
 $missingWorkspaceRoot = Join-Path $masterRoot '__missing_axms_workspace__'
 $blockedOutput = @(& $sessionStartScriptPath -WorkspaceRoot $missingWorkspaceRoot) -join "`n"
 $blockedResult = $blockedOutput | ConvertFrom-Json
@@ -178,6 +191,12 @@ if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
     throw 'Master and Workspace AGENTS policies must require automatic Codex and Claude Hook synchronization after Master updates.'
 }
+$syncWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/sync-workspace.ps1')
+if ($syncWorkspaceScript -notmatch 'bootstrap-workspace\.ps1' -or
+    $syncWorkspaceScript -notmatch '-SyncLlmHooks' -or
+    $syncWorkspaceScript -notmatch 'CONTEXT RELOAD REQUIRED') {
+    throw 'Workspace synchronization must install both LLM Hooks automatically and require immediate active-session context reload.'
+}
 if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -ApproveLocalMutation' -or
     $masterAgents -notmatch 'scripts/start-local-cms\.ps1' -or
     $masterAgents -notmatch 'spring-core') {
@@ -205,6 +224,12 @@ if ($operatingPolicy -notmatch 'Task-Version' -or
     $operatingPolicy -notmatch 'Commit: <type>\(<slice-id-or-work-slug>/<github-id>\): <한글 변경 결과>' -or
     $operatingPolicy -notmatch 'PR: \[<slice-id-or-work-slug>\]\[<github-id>\] <한글 완료 결과>') {
     throw 'Master operating policy must enforce worker-task version matching before implementation.'
+}
+$aiWorktreePattern = '(?s)Source.{0,80}Work ID.{0,200}Worktree'
+if ($masterAgents -notmatch $aiWorktreePattern -or
+    $workspaceAgentTemplate -notmatch $aiWorktreePattern -or
+    $operatingPolicy -notmatch $aiWorktreePattern) {
+    throw 'Master, Workspace, and operating policies must require a Work ID-specific independent Worktree for AI Source implementation.'
 }
 $pullRequestTemplate = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot '.github/PULL_REQUEST_TEMPLATE.md')
 foreach ($requiredHeading in @('## 결과', '## 변경', '## 검증', '## 연결·영향', '## 확인')) {
@@ -267,7 +292,7 @@ foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend',
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
-Write-Host 'PASS: minimal fail-closed Codex and Claude SessionStart Hooks parsed and validated'
+Write-Host 'PASS: fail-closed Codex and Claude SessionStart Hooks with read-only AI work context'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: four canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

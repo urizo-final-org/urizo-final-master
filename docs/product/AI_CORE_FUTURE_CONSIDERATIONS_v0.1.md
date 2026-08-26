@@ -1,71 +1,34 @@
 # AX Module Studio AI 핵심 기능 후속 고려사항
 
-> 상태: 향후 제품 검토 후보
-> 목적: 축소 CMS 완료 후 검토할 AI 핵심 기능의 방향만 보존
+> 상태: 담당자 배정 완료 · 기능별 심층 조사와 방향 수립 중 · 중간점검 전
+> 목적: AI 핵심 기능의 공통 경계, 담당 문서와 팀 작업 흐름을 보존
 > 범위: 현재 CMS MVP 구현 기준이 아니며, 이 문서만으로 구현을 시작하지 않는다.
 
 현재 구현 범위는
 AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md를 따른다. 아래 기능을 시작하려면 기능별
 사용자 흐름, 권한, 데이터, 계약, 완료 기준을 별도 Spec으로 확정하고 구현 승인을 받아야 한다.
 
-## 2. 도메인·RAG 교체
+이 문서는 공통 기준만 관리한다. 기능별 기획, 방향, 작업 ID와 진행 상태는 담당 상세 문서에서
+관리하며 다른 담당자가 임의로 변경하지 않는다.
 
-- 최고관리자가 공공데이터 API URL·인증 Key·요청 Parameter·응답 매핑을 등록하고 교체한다.
-- Knowledge Build는 수집·파싱·정제·중복 제거·청킹·임베딩·Vector 적재·검색 평가 순서의
-  고정 Pipeline으로 실행한다.
-- Build마다 불변 Knowledge Version을 만들고, 승인된 Active Version Pointer만 전환한다.
-- 사용자 페이지의 챗봇과 검색은 서버가 선택한 Active Version만 사용하며 임의 Version을
-  조회하지 못하게 한다.
-- 최고관리자는 Build 실행·실패 재시도·평가 승인·활성화·직전 Version 복구를 담당한다.
-- 의미 기반 청킹 방식, 지원할 공공데이터 API 범주와 Key 보관 방식은 상세 기획에서 확정한다.
+## 2~6. 기능별 담당 및 상세 문서
 
-## 3. RAG 품질 개선
+| 기능 | 담당자 | GitHub ID | 상세 문서 |
+|---|---|---|---|
+| 2. 도메인·RAG 교체 | 민은지 | `emilyjjang-jpg` | [`02_DOMAIN_RAG_REPLACEMENT.md`](ai-core/02_DOMAIN_RAG_REPLACEMENT.md) |
+| 3. RAG 품질 개선 | 민은지 | `emilyjjang-jpg` | [`03_RAG_QUALITY.md`](ai-core/03_RAG_QUALITY.md) |
+| 4. 제한형 LLM DevOps | 장차윤 | `jcy644542` | [`04_LIMITED_LLM_DEVOPS.md`](ai-core/04_LIMITED_LLM_DEVOPS.md) |
+| 5. 자연어 CMS 관리 | 이재욱 | `LEEJAEWOOK1` | [`05_NATURAL_LANGUAGE_CMS.md`](ai-core/05_NATURAL_LANGUAGE_CMS.md) |
+| 6. 오케스트레이션 제어 | 민승준 | `tmdwns0531` | [`06_ORCHESTRATION_CONTROL.md`](ai-core/06_ORCHESTRATION_CONTROL.md) |
 
-- Freshness, 수집 완전성, 필수 필드 누락률·중복률, Chunk 생성률, Embedding률,
-  Vector Sync율과 Retrieval Hit@K·MRR·Citation·Refusal 결과를 Version 단위로 관리한다.
-- 45일은 초기 검토값으로만 두고, 실제 경고 기준은 API 갱신주기와 데이터 특성에 맞게
-  설정할 수 있도록 검토한다.
-- 품질 저하 가능성을 관리자에게 경고하고 원인을 수집·매핑·청킹·임베딩·검색 평가 단계로
-  나누어 보여준다.
-- 일반관리자는 경고와 평가 근거를 확인해 최고관리자에게 재빌드를 요청하고, 최고관리자는
-  최신 API 데이터로 새 Version을 Build·평가·활성화한다.
-- 알림 전달 방식, 요청·처리 상태와 Golden Question 관리 위치는 상세 기획에서 확정한다.
+### 4·6번 공통 확정 경계
 
-## 4. 제한형 LLM DevOps
-
-- 자연어 요청을 분석해 코딩 가능한 범위인지 판정한 뒤 격리 Worktree에서 Patch를 만들고,
-  허용된 Test·Secret Scan·Path 검증·Diff·Preview를 수행한다.
-- 자율코딩 결과, PR 생성, 배포의 세 Gate에서 서로 다른 GENERAL_ADMIN과
-  SUPER_ADMIN의 이중 승인을 요구하는 방안을 기본 후보로 둔다.
-- 최고관리자가 Repository별 쓰기 허용 경로를 PathPolicy Version으로 관리하고,
-  인증·보안·Secret·Migration 등 고정 Denylist는 허용할 수 없게 한다.
-- 검증과 승인은 정확한 Candidate SHA·Policy·Test 결과에 결합하며 Patch가 바뀌면
-  기존 승인을 무효화한다.
-- 자동 Merge와 운영 자동 배포는 기본 범위에 포함하지 않고, 로컬 오픈소스 모델과
-  Fine-tuning은 핵심 Pipeline 검증 후 장기 후보로 둔다.
-- 분석·코딩·리뷰 Agent 역할과 단계별 승인 위치는 상세 기획에서 확정한다.
-
-## 5. 자연어 CMS 관리
-
-- 일반관리자가 자연어로 메뉴, 콘텐츠·페이지와 사용자 화면 템플릿 변경을 요청할 수 있게 한다.
-- LLM은 임의 HTML·CSS·JavaScript를 실행하지 않고 MenuSpec, PageSpec,
-  SiteTemplateSpec 같은 구조화 Draft만 생성한다.
-- 기존 Renderer, 허용 Component·Template Variant·Design Token·데이터 연결 범위 안에서만
-  변경하고 Schema·접근성·권한 검증과 Desktop·Mobile Preview를 거친다.
-- 자연어 CMS 변경은 메뉴·콘텐츠·템플릿 관리이며 새로운 애플리케이션 기능 추가와 구분한다.
-- 게시 승인, Version·복구 범위와 상세 Guardrail은 후속 Spec에서 확정한다.
-
-## 6. 오케스트레이션 제어
-
-- 최고관리자가 OpenAI·Claude·Gemini 등 검증된 Provider의 Key와 작업별 Model Mapping을
-  관리하는 방안을 검토한다. Key 원문은 저장 후 다시 표시하지 않는다.
-- Python LangGraph Runtime은 고정 State Machine, Checkpoint, 재시도와 관리자 승인
-  Interrupt를 담당하고, Spring Backend와 Core DB가 권한·Job 상태의 기준이 된다.
-- 최고관리자가 Pipeline 작업에 Agent 역할을 배치하는 기능은 후보로 두되, 단계 순서를
-  임의 재배선하는 자유 오케스트레이션보다 승인된 Workflow와 Tool Allowlist를 우선한다.
-- OpenAI·Claude·Gemini Provider 세 개가 곧 Agent 세 개를 의미하지 않는다. Agent 역할,
-  Provider·Model 선택과 3-Agent 구성 여부를 분리해 상세 기획에서 확정한다.
-- Agent는 DB·Shell·Secret에 직접 접근하지 않고 승인된 Tool Gateway만 사용한다.
+- LLM DevOps는 4번 상세 문서에 확정된 요구사항 분석·코딩·코드 리뷰 3-Agent 흐름을 사용한다.
+- 최고관리자가 Provider Key를 등록하고 각 Agent 단계에 사용할 Provider·Model을 매핑한다.
+- 4번 담당자는 DevOps 단계·승인·코딩 결과의 의미를, 6번 담당자는 Provider·Model·Agent 매핑과
+  오케스트레이션·모니터링을 결정한다. 공통 계약 변경은 두 담당자가 함께 확인한다.
+- Frontend의 현재 `AI 운영 > Agent 관리`, Provider·Model 관리, LLM DevOps와 승인 관리 Mock UI를 기준으로
+  검토하되 실제 Route·API·상태 구현은 담당 기능의 승인된 범위에서 진행한다.
 
 ## 7. 후속 결정 원칙
 
@@ -76,10 +39,9 @@ AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md를 따른다. 아래 기능을 
 
 ## 8. 팀 작업용 구조
 
-아래는 현재 리팩터링 기준의 작업 경계다. 담당자와 기능 경계가 정해지면 공통 구조 작업에서
-Frontend 경계 폴더만 먼저 만들 수 있다. 빈 폴더는 `.gitkeep`으로 추적하며, 이 뼈대는
-2~6번 기능 완료를 뜻하지 않는다. 실제 화면·계약·상태는 승인된 최소 완료 범위에 따라
-각 기능 담당자가 구현한다.
+아래는 현재 리팩터링 기준의 작업 경계다. Frontend 기능 경계는 준비됐으며, 빈 폴더는
+`.gitkeep`으로 추적한다. 이 뼈대는 2~6번 기능 완료를 뜻하지 않는다. 실제 화면·계약·상태는
+승인된 최소 완료 범위에 따라 각 기능 담당자가 구현한다.
 
 ### Frontend
 
@@ -90,9 +52,9 @@ src/
 │  ├─ auth/                    # 현재 로그인·세션
 │  ├─ site/                    # 현재 사용자 화면
 │  ├─ cms/                     # 현재 CMS, 5번은 assistant 하위 경계
-│  ├─ knowledge/               # 2·3번 배정 후 추가
-│  ├─ coding/                  # 4번 배정 후 추가
-│  └─ orchestration/           # 6번 배정 후 추가
+│  ├─ knowledge/               # 2·3번 경계 준비
+│  ├─ coding/                  # 4번 경계 준비
+│  └─ orchestration/           # 6번 경계 준비
 ├─ shared/api/                 # 공통 HTTP·오류·세션
 └─ styles/                     # 공통 Token·Style
 ```
@@ -135,7 +97,7 @@ backend/
 ```
 
 `knowledge`와 `coding`의 현재 코드는 기존 기능을 이동한 기반이며 2~4번 신규 기능 완료를 뜻하지
-않는다. `cms/assistant`와 `orchestration`도 배정 전에는 뼈대만 유지한다.
+않는다. `cms/assistant`와 `orchestration`도 승인된 최소 완료 범위가 정해질 때까지 뼈대만 유지한다.
 
 ### 기능별 기본 소유 경계
 
@@ -191,19 +153,38 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    DEV["검증된 dev<br/>CMS Core"] --> BASE["공통 기능 경계 확인<br/>필요시 뼈대 추가"]
-    BASE --> WT["팀원별 Worktree<br/>Feature Branch"]
-    WT --> S1["하위 세부기능 구현"]
+    ASSIGN["담당자 배정 완료"] --> RESEARCH["기능별 심층 조사<br/>방향 수립"]
+    RESEARCH --> CHECK["팀 중간점검"]
+    CHECK --> SCOPE["사용자 흐름·계약<br/>최소 완료 기준 확정"]
+    SCOPE --> UNIT["담당자가 하위 작업<br/>단위 결정"]
+    UNIT --> START["작업 시작 시<br/>Work ID·slug 제안"]
+    START --> RECORD["동의 후 작업 목록과<br/>진행 상태 등록"]
+    RECORD --> WT["검증된 dev 기반 Worktree<br/>Feature Branch"]
+    WT --> S1["세부기능 구현"]
     S1 --> TEST["단위·계약·통합 테스트"]
-    TEST --> PR["dev 대상 PR"]
-    PR --> CHECK["팀 회의·중간점검"]
-    CHECK --> MERGE["dev 병합"]
-    MERGE --> SYNC["다른 Worktree가<br/>검증된 Core 반영"]
+    TEST --> LINK["PR 생성 시<br/>문서 연결 제안"]
+    LINK --> PR["dev 대상 PR"]
+    PR --> DAILY["일일 팀 중간점검<br/>기능 담당자·팀 검토"]
+    DAILY --> MERGE["dev 병합"]
+    MERGE --> TRACK["다음 SessionStart에서<br/>병합 결과 자동 현행화"]
+    TRACK --> SYNC["다른 Worktree가<br/>검증된 Core 반영"]
     SYNC --> S2["다음 세부기능"]
 ```
 
-- 담당자와 작업 ID는 내부회의 후 배정한다.
-- 공통 경계 PR은 폴더와 최소 가이드만 준비하며 실제 기능 구현은 담당자 Branch에서 진행한다.
+- 담당자 배정은 완료됐으며 현재 각 담당자가 심층 조사와 방향 수립을 진행한다.
+- 하위 작업을 어디부터 어디까지 나눌지는 해당 기능 담당자가 결정한다.
+- Work ID 하나는 작업 시작 제안부터 PR 생성까지의 한 주기다. 같은 PR에 들어가는 구현·테스트·문서·수정은
+  한 Work ID 아래 여러 작업으로 목록화하고, 독립된 다음 결과물이나 다음 PR부터 새 Work ID를 사용한다.
+- 실제 새 작업 지시를 받았는데 사용할 Work ID가 없으면 LLM이 기능별 `AI02-001`~`AI06-001` 다음 번호와
+  work slug를 한 번 제안한다. 담당자가 동의하면 작업 목록과 진행 상태를 담당 상세 문서에 기록한다.
+- 조사·분석과 기능 MD 수정만이면 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후 저장소별
+  최신 `origin/dev` 기반 독립 Worktree와 Feature Branch에서 시작한다. 같은 PR은 재사용하고 다음 독립 PR은 새로 만든다.
+- 각 기능의 내용은 해당 담당자가 최종 판단하며, 다른 담당자의 기능 문서를 임의로 변경하지 않는다.
+- 공통 경계는 준비됐으며 실제 기능 구현은 중간점검과 최소 완료 기준 확정 후 담당자 Branch에서 진행한다.
 - 같은 기능의 저장소 변경은 같은 work slug를 쓰되 Branch·Commit·PR을 저장소별로 분리한다.
+- PR 생성 시 LLM은 해당 Work ID에 PR 정보를 연결할지 한 번 제안한다. 동의해 PR 링크가 기록되면
+  이후 SessionStart에서 실제 GitHub 상태를 확인하고 병합 결과를 추가 질문 없이 현행화한다.
+- Hook은 현재 GitHub ID, 담당 기능, 진행 Work ID와 추적할 PR을 LLM에 알려주며 기능 문서를 직접 수정하지 않는다.
+  전체 Commit 이력은 Git과 GitHub를 기준으로 조회하고 기능 문서에 중복 보관하지 않는다.
 - 공통 계약·Flyway·App Shell·실행 환경은 합의된 통합 작업에서만 변경한다.
-- 기능별 회귀 테스트를 통과한 작은 단위로 `dev`에 병합해 팀이 중간 점검한다.
+- 기능별 회귀 테스트를 통과한 작은 단위로 `dev`에 병합해 팀이 통합 점검한다.

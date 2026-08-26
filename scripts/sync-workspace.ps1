@@ -285,6 +285,17 @@ foreach ($repository in $manifest.repositories | Where-Object { $_.name -ne 'uri
     Sync-Repository -Repository $repository | Out-Null
 }
 
+$bootstrapScript = Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1'
+if (-not (Test-Path -LiteralPath $bootstrapScript -PathType Leaf)) {
+    throw 'Workspace bootstrap script is missing after Master synchronization.'
+}
+if ($WhatIf) {
+    & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks -WhatIf
+}
+else {
+    & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks
+}
+
 $blockedCount = @($results | Where-Object Status -eq 'BLOCKED').Count
 $warningCount = @($results | Where-Object Status -eq 'WARN').Count
 $summary = [pscustomobject]@{
@@ -301,7 +312,7 @@ if ($AsJson) {
 }
 else {
     $results | Format-Table -AutoSize -Wrap
-    Write-Host 'RELOAD REQUIRED: re-read Master AGENTS.md, operating policy, and LLM project-status snapshot before implementation.'
+    Write-Host 'CONTEXT RELOAD REQUIRED: the active LLM must re-read Master AGENTS.md, operating policy, and project-status snapshot. The synchronized Hook applies on the next startup, resume, clear, or compact.'
     Write-Host "BLOCKED=$blockedCount WARN=$warningCount"
 }
 

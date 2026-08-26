@@ -16,7 +16,7 @@
 3. `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`
 4. 작업 저장소의 `AGENTS.md`
 5. 2~6번 후속 기능의 기획·설계·구조·구현 작업 시
-   `docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md`
+   `docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md`와 배정된 기능 상세 문서
 6. DB 변경 시 `docs/team/FLYWAY_RESERVATION_LEDGER.md`
 7. 로컬 환경 작업 시 해당 Workspace·Infrastructure 문서
 
@@ -77,10 +77,27 @@
   확인할 수 없거나 작업 범위가 불명확하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
 - 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
-- 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에 `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude 프로젝트 Hook을 함께 설치·갱신하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다. 팀원에게 수동 명령 복사를 전가하지 않는다.
+- `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 확인한 뒤
+  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 자동 실행해 Codex·Claude Hook을 함께 갱신한다.
+  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`부터 적용한다.
+- 신규 Workspace 설정이나 표준 동기화 스크립트를 거치지 않은 수동 Master 갱신 후에는 활성 LLM이 구현 전에
+  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다.
 - Codex와 Claude의 `SessionStart` Hook은 같은 로더로 Master 원문을 한 번만 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
+
+## AI 핵심 기능 작업
+
+- 2~6번 작업은 현재 PC의 GitHub ID를 담당자 표와 대조하고 공통 문서와 배정된 상세 문서를 읽은 뒤
+  `AI FEATURE CONTEXT PASS`를 보고한다. 담당자가 아니면 해당 기능 문서를 수정하지 않는다.
+- 실제 새 작업에 사용할 Work ID가 없으면 다음 Work ID와 work slug를 한 번 제안하고,
+  담당자 동의 후 상세 문서에 작업 목록과 상태를 기록한다.
+- 조사·분석과 기능 MD 수정만으로 끝나는 작업은 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후
+  저장소별 최신 `origin/dev` 기반 독립 Worktree와 해당 Feature Branch에서 시작하며 기존 Worktree를 건드리지 않는다.
+  같은 Work ID의 같은 PR 작업은 기존 Worktree를 재사용하고, 독립된 다음 PR은 새 Work ID와 새 Worktree를 사용한다.
+- Work ID 하나는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
+  기록된 PR은 다음 `SessionStart`에서 병합 결과를 추가 질문 없이 현행화한다. Hook은 읽기 전용이다.
+- 상세 채번·기록 규칙은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`만 따른다.
 
 ## 전체 Git 동기화
 
@@ -88,6 +105,7 @@
 `scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다.
 
 - Master 먼저, 이어서 Frontend·Backend·Orchestrator를 확인한다.
+- Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화한다.
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - 동기화 후 Master Spec과 Snapshot을 다시 읽는다.
 
@@ -110,7 +128,9 @@
 - Orchestrator: Python LangGraph Coding Runtime
 - Master: 현재 제품 범위, 공통 Git/팀 정책, 상태 Snapshot, Workspace 도구
 
-Master 쓰기는 Min Seungjun(`tmdwns0531`)만 담당한다. 팀원은 Master를 읽기 전용으로 사용한다.
+Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. AI 핵심 기능 담당자는
+`docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정할 수 있다.
+다른 기능 문서와 Master 공통 파일은 읽기 전용으로 사용한다.
 
 ## Git 정책
 

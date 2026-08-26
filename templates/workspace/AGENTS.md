@@ -24,13 +24,22 @@
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인한다.
-- 신규 Workspace 설정 또는 Master 동기화 직후 활성 LLM은 구현 전에
-  `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행해 Codex·Claude `SessionStart` Hook을 함께 설치·갱신하고 결과를 확인한다.
+- 표준 Workspace 최신화는 Master와 Source 확인 뒤
+  `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 자동 실행해 Codex·Claude `SessionStart` Hook을 함께 갱신한다.
+  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`부터 적용한다.
+- 신규 Workspace 설정이나 수동 Master 갱신처럼 표준 최신화를 거치지 않았을 때만 활성 LLM이 Hook 동기화를 직접 실행한다.
 - 두 도구는 같은 Master 원문 로더를 사용하며 실패 시 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. Codex 최초 신뢰 확인은 팀원이 한 번 승인한다.
 - `CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은
   `urizo-final-master/scripts/start-local-cms.ps1 -ApproveLocalMutation`으로 처리한다. 이미 정상이면 `spring-core`를 즉시 재사용하고, 최초 Image 준비는 `-ApproveNetwork`, Source 변경 반영은 `-Rebuild -ApproveNetwork`를 추가한다. CMS 실행 때문에 범위 밖 Coding Runtime을 기다리거나 임의 Docker 명령을 조합하지 않는다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
-- Only Min Seungjun(`tmdwns0531`) writes Master. 팀원은 Master를 읽기 전용으로 사용한다.
+- Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. AI 핵심 기능 담당자는
+  `urizo-final-master/docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정한다.
+- 2~6번 작업에서는 현재 PC GitHub ID와 담당자 표를 대조해 공통 문서와 배정된 상세 문서를 읽고
+  `AI FEATURE CONTEXT PASS`를 보고한다. 새 작업의 Work ID·work slug는 작업 시작 전에 한 번 제안한다.
+- 조사·분석과 기능 MD 수정만이면 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후 저장소별
+  최신 `origin/dev` 기반 독립 Worktree에서 시작한다. 같은 PR은 재사용하고 다음 독립 PR은 새 Work ID와 Worktree를 쓴다.
+- Work ID는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
+  기록된 PR은 다음 `SessionStart`에서 현행화한다. Hook은 읽기 전용이며 상세 규칙은 Master 운영 정책을 따른다.
 - Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`.
 - `main` is reserved for periodic manual promotion by Min Seungjun.
 - Git이 구현 상태의 기준이다.
