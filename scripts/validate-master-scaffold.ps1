@@ -133,6 +133,7 @@ if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
 if ($sessionStartScript -notmatch 'AI FEATURE SESSION CONTEXT' -or
     $sessionStartScript -notmatch 'auth status --active --hostname github\.com' -or
     $sessionStartScript -notmatch "ErrorActionPreference = 'Continue'" -or
+    $sessionStartScript -notmatch 'instructionFiles\.Remove\(\$masterAgentsPath\)' -or
     $sessionStartScript -notmatch 'Tracked PR sync' -or
     $sessionStartScript -notmatch 'Hook is read-only') {
     throw 'SessionStart Hook must expose the current GitHub identity, assigned AI work, tracked PR sync, and read-only boundary.'
@@ -151,8 +152,9 @@ if ($postPullScript -notmatch '\bgit\(' -and $postPullScript -notmatch 'gitPullP
     throw 'Post-pull Hook must detect Git pull from tool input.'
 }
 if ($postPullScript -notmatch 'session-start\.ps1' -or
-    $postPullScript -match 'sync-workspace\.ps1') {
-    throw 'Post-pull Hook must reuse the shared AGENTS loader without forcing workspace synchronization.'
+    $postPullScript -notmatch '\$PSScriptRoot' -or
+    $postPullScript -match 'Find-WorkspaceRoot|sync-workspace\.ps1') {
+    throw 'Post-pull Hook must derive the managed Workspace path and reuse the shared AGENTS loader without extra discovery or synchronization.'
 }
 
 foreach ($claudeSettingsRelative in @(

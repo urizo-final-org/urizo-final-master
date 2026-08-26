@@ -28,23 +28,23 @@ if (Test-Path -LiteralPath (Join-Path $WorkspaceRoot '.git')) {
     throw 'The shared workspace must not be a Git repository.'
 }
 
-if (-not $FrontendSourceRoot) {
-    $FrontendSourceRoot = Join-Path $WorkspaceRoot 'urizo-final-frontend'
+if (-not $RestoreImageOnly) {
+    if (-not $FrontendSourceRoot) {
+        $FrontendSourceRoot = Join-Path $WorkspaceRoot 'urizo-final-frontend'
+    }
+    if (-not (Test-Path -LiteralPath $FrontendSourceRoot -PathType Container)) {
+        throw "Frontend source root does not exist: $FrontendSourceRoot"
+    }
+    $FrontendSourceRoot = (Resolve-Path -LiteralPath $FrontendSourceRoot).Path
 }
-if (-not (Test-Path -LiteralPath $FrontendSourceRoot -PathType Container)) {
-    throw "Frontend source root does not exist: $FrontendSourceRoot"
-}
-$FrontendSourceRoot = (Resolve-Path -LiteralPath $FrontendSourceRoot).Path
 
 $backendRunner = Join-Path $WorkspaceRoot 'urizo-final-backend/scripts/start-frontend-live.ps1'
 if (-not (Test-Path -LiteralPath $backendRunner -PathType Leaf)) {
     throw 'Backend start-frontend-live.ps1 is missing. Synchronize Backend dev before Frontend live development.'
 }
 
-$runnerArguments = @{
-    FrontendSourceRoot = $FrontendSourceRoot
-    WaitTimeoutSeconds = $WaitTimeoutSeconds
-}
+$runnerArguments = @{ WaitTimeoutSeconds = $WaitTimeoutSeconds }
+if ($FrontendSourceRoot) { $runnerArguments.FrontendSourceRoot = $FrontendSourceRoot }
 if ($ApproveLocalMutation) { $runnerArguments.ApproveLocalMutation = $true }
 if ($RestoreImageOnly) { $runnerArguments.RestoreImageOnly = $true }
 

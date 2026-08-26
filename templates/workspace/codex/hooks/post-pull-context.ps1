@@ -26,27 +26,6 @@ function Get-NestedValue {
     return $cursor
 }
 
-function Find-WorkspaceRoot {
-    param([Parameter(Mandatory = $true)][string]$StartPath)
-
-    if (-not (Test-Path -LiteralPath $StartPath -PathType Container)) {
-        return $null
-    }
-    $cursor = (Resolve-Path -LiteralPath $StartPath).Path
-    while ($true) {
-        if ((Test-Path -LiteralPath (Join-Path $cursor 'AGENTS.md') -PathType Leaf) -and
-            (Test-Path -LiteralPath (Join-Path $cursor 'urizo-final-master/AGENTS.md') -PathType Leaf)) {
-            return $cursor
-        }
-
-        $parent = Split-Path -Parent $cursor
-        if (-not $parent -or $parent -eq $cursor) {
-            return $null
-        }
-        $cursor = $parent
-    }
-}
-
 $hookInputText = [Console]::In.ReadToEnd()
 if ([string]::IsNullOrWhiteSpace($hookInputText)) {
     exit 0
@@ -94,18 +73,7 @@ if ($null -ne $exitCode -and [int]$exitCode -ne 0) {
 }
 
 if ([string]::IsNullOrWhiteSpace($WorkspaceRoot)) {
-    $eventWorkingDirectory = Get-NestedValue -InputObject $hookInput -Path @('cwd')
-    $startPath = if ($eventWorkingDirectory -is [string] -and $eventWorkingDirectory) {
-        $eventWorkingDirectory
-    }
-    else {
-        (Get-Location).Path
-    }
-    $WorkspaceRoot = Find-WorkspaceRoot -StartPath $startPath
-}
-
-if ([string]::IsNullOrWhiteSpace($WorkspaceRoot)) {
-    exit 0
+    $WorkspaceRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 }
 
 $contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'

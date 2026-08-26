@@ -172,7 +172,8 @@ try {
 
     $instructionFiles = [System.Collections.Generic.List[string]]::new()
     $instructionFiles.Add((Join-Path $WorkspaceRoot 'AGENTS.md'))
-    $instructionFiles.Add((Join-Path $WorkspaceRoot 'urizo-final-master/AGENTS.md'))
+    $masterAgentsPath = Join-Path $WorkspaceRoot 'urizo-final-master/AGENTS.md'
+    $instructionFiles.Add($masterAgentsPath)
 
     $currentPath = (Get-Location).Path
     if ($currentPath.StartsWith($WorkspaceRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -182,6 +183,11 @@ try {
             if (Test-Path -LiteralPath $candidate -PathType Leaf) {
                 $resolvedCandidate = (Resolve-Path -LiteralPath $candidate).Path
                 if ($resolvedCandidate -notin $instructionFiles) {
+                    $masterHeading = (Get-Content -Encoding UTF8 -TotalCount 1 -LiteralPath $masterAgentsPath).Trim()
+                    $candidateHeading = (Get-Content -Encoding UTF8 -TotalCount 1 -LiteralPath $resolvedCandidate).Trim()
+                    if ($candidateHeading -eq $masterHeading) {
+                        [void]$instructionFiles.Remove($masterAgentsPath)
+                    }
                     $instructionFiles.Add($resolvedCandidate)
                 }
                 break
