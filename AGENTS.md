@@ -78,11 +78,10 @@
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
 - 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
 - `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 확인한 뒤
-  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 자동 실행해 Codex·Claude Hook을 함께 갱신한다.
-  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`와 성공한 `git pull` 뒤 적용한다.
+  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`로 Codex·Claude Hook을 갱신하고 현재 세션에 Master 기준을 다시 주입한다.
 - 신규 Workspace 설정이나 표준 동기화 스크립트를 거치지 않은 수동 Master 갱신 후에는 활성 LLM이 구현 전에
   `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다.
-- Codex와 Claude의 `SessionStart`와 Pull 감지 `PostToolUse` Hook은 같은 로더로 Workspace·Master·현재 저장소 `AGENTS.md`를 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
+- Codex와 Claude Hook은 같은 AGENTS 로더를 사용한다. 원문을 불러오지 못하면 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다.
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
 
