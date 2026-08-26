@@ -12,6 +12,18 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|Shell|PowerShell|exec_command|functions\\.exec)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File .codex/hooks/post-pull-context.ps1",
+            "timeout": 30
+          }
+        ]
+      }
     ]
   }
 }

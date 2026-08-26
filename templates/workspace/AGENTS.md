@@ -22,12 +22,14 @@
 - Codex와 Claude 모두 Master의 `Simple is best`, 범위 확장 승인 게이트, 공통 응답 형식을 따른다.
 - 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는 승인 전 절대 진행하지 않는다.
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
-- `깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
-  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인한다.
-- 표준 Workspace 최신화는 Master와 Source 확인 뒤
-  `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 자동 실행해 Codex·Claude `SessionStart` Hook을 함께 갱신한다.
-  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`부터 적용한다.
-- 신규 Workspace 설정이나 수동 Master 갱신처럼 표준 최신화를 거치지 않았을 때만 활성 LLM이 Hook 동기화를 직접 실행한다.
+- `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
+  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
+- 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있으며, 성공한 Pull은 Codex·Claude `PostToolUse` Hook이 감지해
+  `SessionStart`와 같은 AGENTS 로더를 다시 실행한다.
+- 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 전체 실행 Script, Frontend Watch·HMR, 그 외 격리 Service 갱신 중
+  적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
+- 신규 Workspace 설정이나 수동 Master 갱신처럼 표준 최신화를 거치지 않았을 때만 활성 LLM이
+  `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 직접 실행한다.
 - 두 도구는 같은 Master 원문 로더를 사용하며 실패 시 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. Codex 최초 신뢰 확인은 팀원이 한 번 승인한다.
 - `CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은
   `urizo-final-master/scripts/start-local-cms.ps1 -ApproveLocalMutation`으로 처리한다. 이미 정상이면 `spring-core`를 즉시 재사용하고, 최초 Image 준비는 `-ApproveNetwork`, Source 변경 반영은 `-Rebuild -ApproveNetwork`를 추가한다. CMS 실행 때문에 범위 밖 Coding Runtime을 기다리거나 임의 Docker 명령을 조합하지 않는다.

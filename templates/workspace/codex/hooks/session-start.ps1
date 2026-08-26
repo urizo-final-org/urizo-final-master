@@ -51,8 +51,15 @@ function Get-GitHubIdentity {
         }
     }
 
-    $statusLines = @(& $ghCommand.Source auth status --active --hostname github.com 2>&1)
-    $statusExitCode = $LASTEXITCODE
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $statusLines = @(& $ghCommand.Source auth status --active --hostname github.com 2>&1)
+        $statusExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     $statusText = ($statusLines | ForEach-Object { $_.ToString() }) -join "`n"
     $accountMatch = [regex]::Match(
         $statusText,
@@ -165,7 +172,8 @@ try {
 
     $instructionFiles = [System.Collections.Generic.List[string]]::new()
     $instructionFiles.Add((Join-Path $WorkspaceRoot 'AGENTS.md'))
-    $instructionFiles.Add((Join-Path $WorkspaceRoot 'urizo-final-master/AGENTS.md'))
+    $masterAgentsPath = Join-Path $WorkspaceRoot 'urizo-final-master/AGENTS.md'
+    $instructionFiles.Add($masterAgentsPath)
 
     $currentPath = (Get-Location).Path
     if ($currentPath.StartsWith($WorkspaceRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -175,6 +183,11 @@ try {
             if (Test-Path -LiteralPath $candidate -PathType Leaf) {
                 $resolvedCandidate = (Resolve-Path -LiteralPath $candidate).Path
                 if ($resolvedCandidate -notin $instructionFiles) {
+                    $masterHeading = (Get-Content -Encoding UTF8 -TotalCount 1 -LiteralPath $masterAgentsPath).Trim()
+                    $candidateHeading = (Get-Content -Encoding UTF8 -TotalCount 1 -LiteralPath $resolvedCandidate).Trim()
+                    if ($candidateHeading -eq $masterHeading) {
+                        [void]$instructionFiles.Remove($masterAgentsPath)
+                    }
                     $instructionFiles.Add($resolvedCandidate)
                 }
                 break

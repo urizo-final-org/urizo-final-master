@@ -108,11 +108,12 @@ function Sync-ManagedTemplateFile {
     if (-not (Test-Path -LiteralPath $targetParent -PathType Container)) {
         New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
     }
-    [System.IO.File]::WriteAllText($Target, $sourceContent, [System.Text.UTF8Encoding]::new($false))
+    $writeUtf8Bom = [System.IO.Path]::GetExtension($Target) -eq '.ps1'
+    [System.IO.File]::WriteAllText($Target, $sourceContent, [System.Text.UTF8Encoding]::new($writeUtf8Bom))
     Write-Host "SYNCHRONIZED managed file: $Target"
 }
 
-function Sync-ClaudeSessionStart {
+function Sync-ClaudeManagedHooks {
     param(
         [Parameter(Mandatory = $true)][string]$Source,
         [Parameter(Mandatory = $true)][string]$Target
@@ -142,18 +143,22 @@ function Sync-ClaudeSessionStart {
         -NotePropertyName SessionStart `
         -NotePropertyValue $sourceConfig.hooks.SessionStart `
         -Force
+    $targetConfig.hooks | Add-Member `
+        -NotePropertyName PostToolUse `
+        -NotePropertyValue $sourceConfig.hooks.PostToolUse `
+        -Force
 
     $updatedContent = ($targetConfig | ConvertTo-Json -Depth 20) + [Environment]::NewLine
     if (Test-Path -LiteralPath $Target -PathType Leaf) {
         $targetContent = Get-Content -Raw -Encoding UTF8 -LiteralPath $Target
         if ($updatedContent -eq $targetContent) {
-            Write-Host "UNCHANGED Claude SessionStart: $Target"
+            Write-Host "UNCHANGED Claude managed Hooks: $Target"
             return
         }
     }
 
     if ($WhatIf) {
-        Write-Host "PLAN synchronize Claude SessionStart: $Target"
+        Write-Host "PLAN synchronize Claude managed Hooks: $Target"
         return
     }
 
@@ -162,7 +167,7 @@ function Sync-ClaudeSessionStart {
         New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
     }
     [System.IO.File]::WriteAllText($Target, $updatedContent, [System.Text.UTF8Encoding]::new($false))
-    Write-Host "SYNCHRONIZED Claude SessionStart: $Target"
+    Write-Host "SYNCHRONIZED Claude managed Hooks: $Target"
 }
 
 function Sync-ManagedTextBlock {
@@ -258,18 +263,21 @@ function Sync-WorkspaceLlmConfiguration {
     Sync-ManagedTemplateFile `
         -Source (Join-Path $templateRoot 'codex/hooks/session-start.ps1') `
         -Target (Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1')
+    Sync-ManagedTemplateFile `
+        -Source (Join-Path $templateRoot 'codex/hooks/post-pull-context.ps1') `
+        -Target (Join-Path $WorkspaceRoot '.codex/hooks/post-pull-context.ps1')
 
     $isWindowsHost = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
     $claudeSettingsName = if ($isWindowsHost) { 'settings.windows.json' } else { 'settings.unix.json' }
-    Sync-ClaudeSessionStart `
+    Sync-ClaudeManagedHooks `
         -Source (Join-Path $templateRoot "claude/$claudeSettingsName") `
         -Target (Join-Path $WorkspaceRoot '.claude/settings.json')
 
     if ($WhatIf) {
-        Write-Host 'LLM HOOK SETUP PLAN: Codex and Claude SessionStart synchronization was planned.'
+        Write-Host 'LLM HOOK SETUP PLAN: Codex and Claude SessionStart plus Git-pull context synchronization was planned.'
     }
     else {
-        Write-Host 'LLM HOOK SETUP PASS: Codex and Claude use the shared AXMS SessionStart loader.'
+        Write-Host 'LLM HOOK SETUP PASS: Codex and Claude use the shared AXMS loader at SessionStart and after Git pull.'
     }
 }
 
