@@ -35,13 +35,13 @@
 
 ## 하위 작업 기록
 
-현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을
-아래처럼 한 체크리스트로 묶고, 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
+#### `AI06-001` · Agent 설정 메뉴 정리
 
-```markdown
-#### `<Work ID>` · `<작업명>`
-- [ ] `<같은 PR에 포함할 작업>`
-```
+- [x] 별도 `Agent 관리` 사이드바 메뉴 숨김
+- [x] Provider·Model 통합 화면의 사이드바 메뉴명을 `Agent 설정`으로 변경
+- [x] 기존 Route와 상세 화면 제목을 유지하고 Frontend 회귀 테스트 확인
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|
+| `AI06-001` | `axms-ai06-001-agent-settings-menu` | 담당 기능 MD 작업 등록 | Master | 변경 완료·PR 전 | `feature/tmdwns0531_axms-ai06-001-agent-settings-menu_v0.1` | - | - | - |
+| `AI06-001` | `axms-ai06-001-agent-settings-menu` | Agent 설정 메뉴 정리 | Frontend | 구현 완료·PR 전 | `feature/tmdwns0531_axms-ai06-001-agent-settings-menu_v0.1` | - | - | - |
