@@ -51,8 +51,15 @@ function Get-GitHubIdentity {
         }
     }
 
-    $statusLines = @(& $ghCommand.Source auth status --active --hostname github.com 2>&1)
-    $statusExitCode = $LASTEXITCODE
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $statusLines = @(& $ghCommand.Source auth status --active --hostname github.com 2>&1)
+        $statusExitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     $statusText = ($statusLines | ForEach-Object { $_.ToString() }) -join "`n"
     $accountMatch = [regex]::Match(
         $statusText,

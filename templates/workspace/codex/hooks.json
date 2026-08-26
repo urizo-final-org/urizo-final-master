@@ -1,5 +1,5 @@
 {
-  "description": "Reload canonical AXMS instructions and compact AI feature work context when a Codex session starts or its context is rebuilt.",
+  "description": "Reload canonical AXMS instructions when a Codex session starts, its context is rebuilt, or a Git pull completes.",
   "hooks": {
     "SessionStart": [
       {
@@ -11,7 +11,22 @@
             "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1",
             "timeout": 30,
             "statusMessage": "Reloading AXMS Master and AI work context",
-            "additionalContextLimit": 8000
+            "additionalContextLimit": 32768
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Bash|Shell|PowerShell|exec_command|functions\\.exec)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File .codex/hooks/post-pull-context.ps1",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\post-pull-context.ps1",
+            "timeout": 30,
+            "statusMessage": "Reloading AXMS context after Git pull",
+            "additionalContextLimit": 32768
           }
         ]
       }

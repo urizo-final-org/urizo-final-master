@@ -79,10 +79,10 @@
 - 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
 - `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 확인한 뒤
   `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 자동 실행해 Codex·Claude Hook을 함께 갱신한다.
-  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`부터 적용한다.
+  활성 LLM은 같은 턴에 Master 기준을 다시 읽고, 새 Hook은 다음 `startup`·`resume`·`clear`·`compact`와 성공한 `git pull` 뒤 적용한다.
 - 신규 Workspace 설정이나 표준 동기화 스크립트를 거치지 않은 수동 Master 갱신 후에는 활성 LLM이 구현 전에
   `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다.
-- Codex와 Claude의 `SessionStart` Hook은 같은 로더로 Master 원문을 한 번만 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
+- Codex와 Claude의 `SessionStart`와 Pull 감지 `PostToolUse` Hook은 같은 로더로 Workspace·Master·현재 저장소 `AGENTS.md`를 불러온다. 원문을 불러오지 못하면 자동 재시도하지 않고 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. 원인을 수정한 뒤 새 세션이나 `clear`/`resume`으로 다시 시작한다.
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
 
@@ -99,15 +99,21 @@
   기록된 PR은 다음 `SessionStart`에서 병합 결과를 추가 질문 없이 현행화한다. Hook은 읽기 전용이다.
 - 상세 채번·기록 규칙은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`만 따른다.
 
-## 전체 Git 동기화
+## Git Pull과 전체 동기화
 
-`깃 pull 해줘`, `전체 Git 최신화`, `워크스페이스 최신화`는
-`scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다.
+`전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
+`scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다. 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있다.
 
 - Master 먼저, 이어서 Frontend·Backend·Orchestrator를 확인한다.
 - Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화한다.
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
-- 동기화 후 Master Spec과 Snapshot을 다시 읽는다.
+- Codex·Claude `PostToolUse` Hook은 성공한 `git pull`을 감지하면 기존 공통 로더로
+  Workspace·Master·현재 저장소 `AGENTS.md`를 활성 세션에 다시 주입한다.
+- 활성 LLM은 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 아래 세 실행 모드 중 적용 대상을 판단하고
+  `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
+  1. 최초 실행·전체 재기동은 전체 실행 Script
+  2. Frontend 일반 UI/UX 변경은 Watch·HMR
+  3. 그 외 격리 변경은 필요한 Image와 Container만 갱신한 뒤 전체 Health 확인
 
 ## CMS 로컬 실행
 
@@ -119,7 +125,24 @@
 - 중지 상태면 기존 Image로만 기동하며, 최초 실행처럼 Image가 없으면 Network 승인 후 `-ApproveNetwork`를 추가한다.
 - Source 변경을 Image에 반영해야 할 때만 `-Rebuild -ApproveNetwork`를 추가한다.
 - CMS 실행에서는 Coding Runtime 상태를 성공 조건으로 삼지 않는다. AI·Coding Runtime 통합 검증은 기존 `full` 절차를 별도로 사용한다.
-- 공통 Script가 정확한 원인으로 차단한 경우에만 해당 원인을 수정한다. Script를 우회해 직접 Build·Flyway·Compose 명령을 추측 실행하지 않는다.
+- 공통 Script가 정확한 원인으로 차단한 경우에만 해당 원인을 수정한다. 전체 실행 실패를 임의 Docker 명령으로 우회하지 않는다.
+
+이미 건강한 CMS의 격리된 부분 변경은 전체 실행과 구분한다.
+
+- DB·Flyway·Compose·Network·Secret에 영향이 없고 변경 Service가 명확할 때만 해당 Image와 Container를 갱신한다.
+- Backend가 제공하는 버전 관리된 부분 실행 Script가 있으면 우선 사용한다. 없으면 적용 Compose와 정확한 Service를 확인한 뒤 대상만 갱신한다.
+- 부분 갱신은 DB·Volume을 변경하지 않으며 완료 후 전체 `spring-core` Health를 확인한다.
+
+### Frontend Live 개발
+
+- 건강한 CMS에서 일반적인 React·CSS·정적 Asset 수정은 Image 재빌드 대신
+  `scripts/start-frontend-live.ps1 -FrontendSourceRoot <활성 Frontend Worktree> -ApproveLocalMutation`을 사용한다.
+- 한 번에 하나의 활성 Work ID·Frontend Worktree만 Watch 대상으로 연결한다. Worktree를 바꾸기 전에 기존 Watch를 종료한다.
+- Watch는 `src`, `public`, `index.html`만 실행 중인 Frontend Container에 동기화하며 Git·Secret·`node_modules`는 동기화하지 않는다.
+- `package.json`, Lockfile, Dockerfile, Vite·Nginx 설정, Backend, DB 또는 공통 환경 변경은 Live 대상이 아니다.
+- Watch는 `Ctrl+C`로 종료한 뒤 같은 Script에 `-RestoreImageOnly`를 사용해 Image-only Frontend를 복원한다.
+  정상 Shell 종료 시 Script도 복원을 시도하며, `-RestoreImageOnly`는 이미 복원된 상태에서 반복 실행해도 안전하다.
+- PR 전에는 Live를 종료하고 실제 Image Build, Frontend 테스트·타입 검사와 전체 Health를 통과한다.
 
 ## 소유권
 

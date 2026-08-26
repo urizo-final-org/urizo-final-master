@@ -36,6 +36,7 @@ $required = @(
     'templates/workspace/AX-Module-Studio.code-workspace',
     'templates/workspace/codex/hooks.json',
     'templates/workspace/codex/hooks/session-start.ps1',
+    'templates/workspace/codex/hooks/post-pull-context.ps1',
     'templates/workspace/claude/settings.windows.json',
     'templates/workspace/claude/settings.unix.json',
     'scripts/preflight-workspace.ps1',
@@ -95,18 +96,32 @@ $hookTemplatePath = Join-Path $masterRoot 'templates/workspace/codex/hooks.json'
 $hookConfig = Get-Content -Raw -Encoding UTF8 -LiteralPath $hookTemplatePath | ConvertFrom-Json
 $hookEventNames = @($hookConfig.hooks.PSObject.Properties.Name)
 $sessionStartRules = @($hookConfig.hooks.SessionStart)
-if ($hookEventNames.Count -ne 1 -or $hookEventNames[0] -ne 'SessionStart' -or
+if ($hookEventNames.Count -ne 2 -or
+    $hookEventNames -notcontains 'SessionStart' -or
+    $hookEventNames -notcontains 'PostToolUse' -or
     $sessionStartRules.Count -ne 1 -or
     $sessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
-    throw 'Codex Hook template must contain only the approved SessionStart lifecycle rule.'
+    throw 'Codex Hook template must contain the approved SessionStart and Git-pull PostToolUse rules.'
 }
 $sessionStartCommands = @($sessionStartRules[0].hooks)
 if ($sessionStartCommands.Count -ne 1 -or
     $sessionStartCommands[0].type -ne 'command' -or
     $sessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
     $sessionStartCommands[0].commandWindows -notmatch 'session-start\.ps1' -or
-    $sessionStartCommands[0].additionalContextLimit -ne 8000) {
+    $sessionStartCommands[0].additionalContextLimit -ne 32768) {
     throw 'Codex SessionStart Hook must use one cross-platform command with the approved context limit.'
+}
+$postToolUseRules = @($hookConfig.hooks.PostToolUse)
+$postToolUseCommands = if ($postToolUseRules.Count -eq 1) { @($postToolUseRules[0].hooks) } else { @() }
+if ($postToolUseRules.Count -ne 1 -or
+    $postToolUseRules[0].matcher -notmatch 'Bash' -or
+    $postToolUseRules[0].matcher -notmatch 'exec_command' -or
+    $postToolUseCommands.Count -ne 1 -or
+    $postToolUseCommands[0].type -ne 'command' -or
+    $postToolUseCommands[0].command -notmatch 'post-pull-context\.ps1' -or
+    $postToolUseCommands[0].commandWindows -notmatch 'post-pull-context\.ps1' -or
+    $postToolUseCommands[0].additionalContextLimit -ne 32768) {
+    throw 'Codex PostToolUse Hook must inspect shell commands and reload context only after Git pull.'
 }
 $sessionStartScriptPath = Join-Path $masterRoot 'templates/workspace/codex/hooks/session-start.ps1'
 $sessionStartScript = Get-Content -Raw -Encoding UTF8 -LiteralPath $sessionStartScriptPath
@@ -117,6 +132,7 @@ if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
 }
 if ($sessionStartScript -notmatch 'AI FEATURE SESSION CONTEXT' -or
     $sessionStartScript -notmatch 'auth status --active --hostname github\.com' -or
+    $sessionStartScript -notmatch "ErrorActionPreference = 'Continue'" -or
     $sessionStartScript -notmatch 'Tracked PR sync' -or
     $sessionStartScript -notmatch 'Hook is read-only') {
     throw 'SessionStart Hook must expose the current GitHub identity, assigned AI work, tracked PR sync, and read-only boundary.'
@@ -129,6 +145,15 @@ if ($blockedResult.continue -ne $false -or
     $blockedResult.systemMessage -ne $blockedResult.stopReason) {
     throw 'Codex SessionStart Hook failure response must be fail-closed JSON.'
 }
+$postPullScriptPath = Join-Path $masterRoot 'templates/workspace/codex/hooks/post-pull-context.ps1'
+$postPullScript = Get-Content -Raw -Encoding UTF8 -LiteralPath $postPullScriptPath
+if ($postPullScript -notmatch '\bgit\(' -and $postPullScript -notmatch 'gitPullPattern') {
+    throw 'Post-pull Hook must detect Git pull from tool input.'
+}
+if ($postPullScript -notmatch 'session-start\.ps1' -or
+    $postPullScript -match 'sync-workspace\.ps1') {
+    throw 'Post-pull Hook must reuse the shared AGENTS loader without forcing workspace synchronization.'
+}
 
 foreach ($claudeSettingsRelative in @(
     'templates/workspace/claude/settings.windows.json',
@@ -137,11 +162,12 @@ foreach ($claudeSettingsRelative in @(
     $claudeSettings = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot $claudeSettingsRelative) | ConvertFrom-Json
     $claudeHookEventNames = @($claudeSettings.hooks.PSObject.Properties.Name)
     $claudeSessionStartRules = @($claudeSettings.hooks.SessionStart)
-    if ($claudeHookEventNames.Count -ne 1 -or
-        $claudeHookEventNames[0] -ne 'SessionStart' -or
+    if ($claudeHookEventNames.Count -ne 2 -or
+        $claudeHookEventNames -notcontains 'SessionStart' -or
+        $claudeHookEventNames -notcontains 'PostToolUse' -or
         $claudeSessionStartRules.Count -ne 1 -or
         $claudeSessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
-        throw "Claude Hook template must contain only the approved SessionStart lifecycle rule: $claudeSettingsRelative"
+        throw "Claude Hook template must contain the approved SessionStart and Git-pull PostToolUse rules: $claudeSettingsRelative"
     }
     $claudeSessionStartCommands = @($claudeSessionStartRules[0].hooks)
     if ($claudeSessionStartCommands.Count -ne 1 -or
@@ -149,6 +175,16 @@ foreach ($claudeSettingsRelative in @(
         $claudeSessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
         $claudeSessionStartCommands[0].timeout -ne 30) {
         throw "Claude SessionStart must call the shared AXMS loader once: $claudeSettingsRelative"
+    }
+    $claudePostToolUseRules = @($claudeSettings.hooks.PostToolUse)
+    $claudePostToolUseCommands = if ($claudePostToolUseRules.Count -eq 1) { @($claudePostToolUseRules[0].hooks) } else { @() }
+    if ($claudePostToolUseRules.Count -ne 1 -or
+        $claudePostToolUseRules[0].matcher -notmatch 'Bash' -or
+        $claudePostToolUseCommands.Count -ne 1 -or
+        $claudePostToolUseCommands[0].type -ne 'command' -or
+        $claudePostToolUseCommands[0].command -notmatch 'post-pull-context\.ps1' -or
+        $claudePostToolUseCommands[0].timeout -ne 30) {
+        throw "Claude PostToolUse must call the shared Git-pull context detector once: $claudeSettingsRelative"
     }
 }
 
@@ -187,6 +223,19 @@ if ($workspaceAgentTemplate -notmatch 'Master plus all three Source repositories
     throw 'Workspace AGENTS template must make four-repository synchronization the default pull scope.'
 }
 $masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'AGENTS.md')
+$fullSyncAliases = @('전체 Git 최신화', '워크스페이스 최신화')
+foreach ($pullAlias in $fullSyncAliases) {
+    if ($workspaceAgentTemplate -notmatch [regex]::Escape($pullAlias) -or
+        $masterAgents -notmatch [regex]::Escape($pullAlias)) {
+        throw "Master and Workspace AGENTS policies must route explicit full synchronization through sync-workspace.ps1: $pullAlias"
+    }
+}
+if ($workspaceAgentTemplate -notmatch 'PostToolUse' -or
+    $masterAgents -notmatch 'PostToolUse' -or
+    $workspaceAgentTemplate -notmatch '적용 모드를 LLM이 판단' -or
+    $masterAgents -notmatch '적용 대상을 판단') {
+    throw 'Master and Workspace AGENTS policies must reload AGENTS after Git pull and leave runtime-mode selection to the LLM.'
+}
 if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
     throw 'Master and Workspace AGENTS policies must require automatic Codex and Claude Hook synchronization after Master updates.'
@@ -194,8 +243,17 @@ if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -
 $syncWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/sync-workspace.ps1')
 if ($syncWorkspaceScript -notmatch 'bootstrap-workspace\.ps1' -or
     $syncWorkspaceScript -notmatch '-SyncLlmHooks' -or
-    $syncWorkspaceScript -notmatch 'CONTEXT RELOAD REQUIRED') {
-    throw 'Workspace synchronization must install both LLM Hooks automatically and require immediate active-session context reload.'
+    $syncWorkspaceScript -notmatch '\.codex/hooks/session-start\.ps1' -or
+    $syncWorkspaceScript -notmatch 'ACTIVE SESSION CONTEXT RELOAD PASS' -or
+    $syncWorkspaceScript -notmatch 'LOCAL RUNTIME CONTEXT PASS' -or
+    $workspaceAgentTemplate -notmatch 'LOCAL RUNTIME CONTEXT PASS' -or
+    $masterAgents -notmatch 'LOCAL RUNTIME CONTEXT PASS') {
+    throw 'Workspace synchronization must install both LLM Hooks and reuse the shared SessionStart loader for immediate active-session context reload.'
+}
+$bootstrapWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1')
+if ($bootstrapWorkspaceScript -notmatch 'GetExtension\(\$Target\)' -or
+    $bootstrapWorkspaceScript -notmatch 'UTF8Encoding\]::new\(\$writeUtf8Bom\)') {
+    throw 'Workspace bootstrap must write managed PowerShell Hook files with a UTF-8 BOM for Windows PowerShell compatibility.'
 }
 if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -ApproveLocalMutation' -or
     $masterAgents -notmatch 'scripts/start-local-cms\.ps1' -or
@@ -292,7 +350,7 @@ foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend',
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
-Write-Host 'PASS: fail-closed Codex and Claude SessionStart Hooks with read-only AI work context'
+Write-Host 'PASS: fail-closed Codex and Claude AGENTS reload at SessionStart and after Git pull'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: four canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

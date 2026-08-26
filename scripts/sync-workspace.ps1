@@ -296,12 +296,30 @@ else {
     & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks
 }
 
+$activeContext = @()
+$activeContextReloaded = $false
+if (-not $WhatIf) {
+    $contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'
+    if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
+        throw 'Shared SessionStart context loader is missing after LLM Hook synchronization.'
+    }
+
+    $activeContext = @(& $contextLoader -WorkspaceRoot $WorkspaceRoot)
+    $activeContextText = $activeContext -join [Environment]::NewLine
+    $activeContextFirstLine = @($activeContextText -split "`r?`n", 2)[0].Trim()
+    if ([string]::IsNullOrWhiteSpace($activeContextText) -or $activeContextFirstLine -ne 'MASTER CONTEXT PASS') {
+        throw 'Shared SessionStart context loader did not return a valid MASTER CONTEXT PASS payload.'
+    }
+    $activeContextReloaded = $true
+}
+
 $blockedCount = @($results | Where-Object Status -eq 'BLOCKED').Count
 $warningCount = @($results | Where-Object Status -eq 'WARN').Count
 $summary = [pscustomobject]@{
     observedAt = [DateTimeOffset]::Now.ToString('o')
     workspaceRoot = $WorkspaceRoot
     masterReady = $true
+    activeContextReloaded = $activeContextReloaded
     blocked = $blockedCount
     warnings = $warningCount
     results = $results
@@ -312,7 +330,11 @@ if ($AsJson) {
 }
 else {
     $results | Format-Table -AutoSize -Wrap
-    Write-Host 'CONTEXT RELOAD REQUIRED: the active LLM must re-read Master AGENTS.md, operating policy, and project-status snapshot. The synchronized Hook applies on the next startup, resume, clear, or compact.'
+    if ($activeContextReloaded) {
+        Write-Host 'ACTIVE SESSION CONTEXT RELOAD PASS: the synchronized SessionStart loader was reused immediately after workspace synchronization.'
+        $activeContext | Write-Output
+    }
+    Write-Host 'LOCAL RUNTIME CONTEXT PASS REQUIRED: report the full-script, Frontend Watch/HMR, and isolated-service update modes from the reloaded context. The lifecycle Hook continues to apply on startup, resume, clear, or compact.'
     Write-Host "BLOCKED=$blockedCount WARN=$warningCount"
 }
 
