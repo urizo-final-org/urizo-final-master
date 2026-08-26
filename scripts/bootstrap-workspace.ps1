@@ -275,7 +275,7 @@ function Sync-WorkspaceLlmConfiguration {
 
 if ($SyncLlmHooks) {
     Sync-WorkspaceLlmConfiguration
-    exit 0
+    return
 }
 
 $plans = [System.Collections.Generic.List[object]]::new()

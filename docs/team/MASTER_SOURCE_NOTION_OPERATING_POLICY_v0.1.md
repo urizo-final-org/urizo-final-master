@@ -5,8 +5,11 @@
 
 ## 권한
 
-- Master 쓰기와 공통 기준 변경은 Min Seungjun만 수행한다.
-- 팀원은 Master를 읽고, 배정받은 Source 저장소의 Feature Branch와 PR만 만든다.
+- Master 공통 기준과 공통 문서는 Min Seungjun만 수정한다.
+- AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정된 상세 문서만
+  Feature Branch와 `dev` 대상 PR로 수정한다. 기능 내용의 최종 판단은 해당 담당자가 맡는다.
+- 다른 담당자의 기능 문서와 Master 공통 파일은 수정하지 않는다. 기능 간 공통 경계 변경은
+  관련 담당자와 Min Seungjun이 함께 확인한다.
 - Notion은 팀장이 현재 요청에서 명시한 경우에만 쓴다.
 - 코드 작업, PR, Merge, 상태 보고는 Notion 쓰기를 자동 승인하지 않는다.
 
@@ -74,6 +77,34 @@ GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한�
 - 팀장이 담당자·GitHub ID·Slice ID/work slug를 명시하면 자동 생성값보다 우선한다.
 - 현재 PC의 GitHub ID를 확인할 수 없거나 최소 완료 결과가 모호하면 자동 생성하지 않고 확인을 요청한다.
 
+### AI 기능 하위 작업 ID
+
+- 2~6번 기능의 하위 작업 단위와 범위는 해당 기능 담당자가 정한다.
+- Work ID는 기능별로 `AI02-001`, `AI03-001`, `AI04-001`, `AI05-001`, `AI06-001`처럼 독립 채번한다.
+- work slug는 `axms-ai<기능번호>-<순번>-<작업내용-kebab-case>` 형식을 사용한다.
+- Branch는 기존 형식에 따라 `feature/<github-id>_<work-slug>_<version>`으로 만든다.
+- Work ID 하나는 `작업 시작 제안 → 작업 → PR 생성`까지의 한 작업 주기다.
+- 같은 PR에 포함되는 구현·테스트·문서·리뷰 수정은 한 Work ID 아래 여러 작업으로 목록화한다.
+  독립적으로 검토·병합할 다음 결과물이나 다음 PR부터 새 Work ID를 사용한다.
+- 실제 새 작업 지시를 받았는데 사용할 Work ID가 없으면 LLM이 담당 기능 문서의 마지막 번호를 확인해
+  다음 Work ID와 work slug를 한 번 제안한다. 담당자가 동의하면 작업 목록과 `진행 예정` 또는 `진행 중`으로 기록한다.
+- 이미 지정됐거나 진행 중인 Work ID가 같은 작업을 포함하면 다시 묻지 않고 해당 ID를 재사용한다.
+- 조사·분석과 기능 MD 수정만으로 끝나는 작업은 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후
+  저장소별 최신 `origin/dev` 기반 독립 Worktree와 Feature Branch에서 시작하고 기존 Worktree를 보존한다.
+- 같은 Work ID의 같은 PR 작업은 기존 Worktree를 재사용한다. 독립된 다음 결과물이나 다음 PR은
+  새 Work ID와 새 Worktree를 사용한다.
+- `_v0.1`은 Branch Version이다. 같은 Work ID를 계속하면 기존 Branch를 재사용하고, 같은 저장소에서
+  Branch를 새로 만들어야 할 때만 충돌하지 않는 다음 Version을 사용한다.
+- 여러 저장소에 걸친 같은 하위 작업은 동일한 Work ID와 work slug를 사용한다.
+- Work ID 아래에는 담당자가 정한 세부 작업 목록을 두고, 추적표에는 work slug, 작업 요약, 저장소,
+  상태, Branch, Push, PR과 `dev` 병합 정보를 저장소별 한 행으로 기록한다.
+- PR 생성 시 LLM이 해당 Work ID에 PR 정보를 연결할지 한 번 제안한다. 동의하면 실제 PR 링크·상태·생성일과
+  확인된 원격 Branch·최근 Push SHA·일자를 함께 기록하며, 이 PR 링크를 이후 자동 동기화 동의로 본다.
+- PR 링크가 기록된 작업은 다음 `SessionStart`에서 LLM이 실제 GitHub 상태를 확인한다. 병합됐다면 추가 질문 없이
+  Merge SHA·일자와 완료 상태를 갱신한다. Hook은 담당 기능과 동기화 대상을 알릴 뿐 문서를 직접 수정하지 않는다.
+- PR 연결을 동의하지 않은 작업은 자동 추적하지 않는다. 기능 문서 기록 유무를 GitHub Action 병합 조건으로 강제하지 않는다.
+- LLM은 로컬 추측값이 아니라 Git·GitHub에서 확인한 값만 반영하며 전체 Commit 이력을 문서에 복제하지 않는다.
+
 필요할 때만 `Task-Version`을 사용한다. 구현 전에 Snapshot과 지시가 일치하면
 `MASTER CONTEXT PASS`를 보고한다. 다르거나 범위 확장이 필요하면
 `MASTER CONTEXT BLOCKED`를 보고하고 멈춘다.
@@ -90,6 +121,7 @@ urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork
 ```
 
 - Master를 먼저 확인하고 이어서 Source 세 저장소를 모두 확인한다.
+- Master 확인 후 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화하고 활성 LLM은 현재 턴에 Master 기준을 다시 읽는다.
 - 깨끗한 `dev`만 `origin/dev`로 Fast-forward한다.
 - Feature Branch는 Branch를 바꾸거나 `dev`를 자동 Merge/Rebase하지 않는다.
 - Dirty, Diverged, Upstream 없음, Origin 불일치는 변경하지 않고 보고한다.

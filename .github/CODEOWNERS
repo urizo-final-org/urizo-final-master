@@ -1,0 +1,9 @@
+# Master common files
+* @tmdwns0531
+
+# AI core feature documents: feature owner + Master reviewer
+/docs/product/ai-core/02_DOMAIN_RAG_REPLACEMENT.md @emilyjjang-jpg @tmdwns0531
+/docs/product/ai-core/03_RAG_QUALITY.md @emilyjjang-jpg @tmdwns0531
+/docs/product/ai-core/04_LIMITED_LLM_DEVOPS.md @jcy644542 @tmdwns0531
+/docs/product/ai-core/05_NATURAL_LANGUAGE_CMS.md @LEEJAEWOOK1 @tmdwns0531
+/docs/product/ai-core/06_ORCHESTRATION_CONTROL.md @tmdwns0531
