@@ -112,7 +112,7 @@ if ($sessionStartCommands.Count -ne 1 -or
     throw 'Codex SessionStart Hook must use one cross-platform command with the approved context limit.'
 }
 $postToolUseRules = @($hookConfig.hooks.PostToolUse)
-$postToolUseCommands = if ($postToolUseRules.Count -eq 1) { @($postToolUseRules[0].hooks) } else { @() }
+$postToolUseCommands = @(if ($postToolUseRules.Count -eq 1) { @($postToolUseRules[0].hooks) } else { @() })
 if ($postToolUseRules.Count -ne 1 -or
     $postToolUseRules[0].matcher -notmatch 'Bash' -or
     $postToolUseRules[0].matcher -notmatch 'exec_command' -or
@@ -157,6 +157,64 @@ if ($postPullScript -notmatch 'session-start\.ps1' -or
     throw 'Post-pull Hook must derive the managed Workspace path and reuse the shared AGENTS loader without extra discovery or synchronization.'
 }
 
+function Invoke-PostPullValidationCase {
+    param(
+        [Parameter(Mandatory = $true)]$HookInput
+    )
+
+    $inputJson = $HookInput | ConvertTo-Json -Depth 12 -Compress
+    $powerShellExecutable = (Get-Process -Id $PID).Path
+    return @($inputJson | & $powerShellExecutable -NoProfile -File $postPullScriptPath -WorkspaceRoot $missingWorkspaceRoot) -join "`n"
+}
+
+$directPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
+    tool_input = [ordered]@{ cmd = 'git pull --ff-only' }
+    tool_response = [ordered]@{ exit_code = 0 }
+})
+$directPullResult = $directPullOutput | ConvertFrom-Json
+if ($directPullResult.continue -ne $false -or
+    $directPullResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:') {
+    throw 'Post-pull Hook must detect a successful direct exec_command Git pull.'
+}
+
+$functionsExecPullInput = 'const r = await tools.exec_command({ cmd: "git pull --ff-only", workdir: "C:\\repo" }); text(JSON.stringify(r));'
+$functionsExecSuccessResponse = [ordered]@{
+    output = @(
+        [ordered]@{ type = 'input_text'; text = 'Script completed' },
+        [ordered]@{ type = 'input_text'; text = '{"exit_code":0,"output":"Already up to date.\\n"}' }
+    )
+}
+$functionsExecPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
+    tool_input = $functionsExecPullInput
+    tool_response = $functionsExecSuccessResponse
+})
+$functionsExecPullResult = $functionsExecPullOutput | ConvertFrom-Json
+if ($functionsExecPullResult.continue -ne $false -or
+    $functionsExecPullResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:') {
+    throw 'Post-pull Hook must detect a successful Git pull nested in functions.exec.'
+}
+
+$functionsExecSearchOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
+    tool_input = 'const r = await tools.exec_command({ cmd: "rg -n \"git pull\" .", workdir: "C:\\repo" }); text(r.output);'
+    tool_response = $functionsExecSuccessResponse
+})
+if (-not [string]::IsNullOrWhiteSpace($functionsExecSearchOutput)) {
+    throw 'Post-pull Hook must not treat a Git-pull search string as an executed Git pull.'
+}
+
+$functionsExecFailedPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
+    tool_input = $functionsExecPullInput
+    tool_response = [ordered]@{
+        output = @(
+            [ordered]@{ type = 'input_text'; text = 'Script completed' },
+            [ordered]@{ type = 'input_text'; text = '{"exit_code":1,"output":"Pull failed.\\n"}' }
+        )
+    }
+})
+if (-not [string]::IsNullOrWhiteSpace($functionsExecFailedPullOutput)) {
+    throw 'Post-pull Hook must not reload context after a failed Git pull nested in functions.exec.'
+}
+
 foreach ($claudeSettingsRelative in @(
     'templates/workspace/claude/settings.windows.json',
     'templates/workspace/claude/settings.unix.json'
@@ -179,7 +237,7 @@ foreach ($claudeSettingsRelative in @(
         throw "Claude SessionStart must call the shared AXMS loader once: $claudeSettingsRelative"
     }
     $claudePostToolUseRules = @($claudeSettings.hooks.PostToolUse)
-    $claudePostToolUseCommands = if ($claudePostToolUseRules.Count -eq 1) { @($claudePostToolUseRules[0].hooks) } else { @() }
+    $claudePostToolUseCommands = @(if ($claudePostToolUseRules.Count -eq 1) { @($claudePostToolUseRules[0].hooks) } else { @() })
     if ($claudePostToolUseRules.Count -ne 1 -or
         $claudePostToolUseRules[0].matcher -notmatch 'Bash' -or
         $claudePostToolUseCommands.Count -ne 1 -or
@@ -352,7 +410,7 @@ foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend',
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
-Write-Host 'PASS: fail-closed Codex and Claude AGENTS reload at SessionStart and after Git pull'
+Write-Host 'PASS: fail-closed AGENTS reload after direct/functions.exec Git pull with failure and search guards'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: four canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

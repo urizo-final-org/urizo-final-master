@@ -58,17 +58,59 @@ foreach ($path in @(
     }
 }
 
+$execCommandPattern = '(?s)\btools\.exec_command\s*\(\s*\{\s*cmd\s*:\s*(?<literal>"(?:\\.|[^"\\])*")'
+foreach ($candidate in @($commandCandidates)) {
+    foreach ($match in [regex]::Matches($candidate, $execCommandPattern)) {
+        try {
+            $nestedCommand = $match.Groups['literal'].Value | ConvertFrom-Json
+        }
+        catch {
+            continue
+        }
+        if ($nestedCommand -is [string] -and -not [string]::IsNullOrWhiteSpace($nestedCommand)) {
+            $commandCandidates.Add($nestedCommand)
+        }
+    }
+}
+
 $commandText = $commandCandidates -join [Environment]::NewLine
 $gitPullPattern = '(?im)(?:^|(?:&&|\|\||[;&|])\s*)git(?:\.exe)?(?:\s+--?[^\s]+(?:\s+[^\s]+)?)*\s+pull(?:\s|$)'
 if ([string]::IsNullOrWhiteSpace($commandText) -or $commandText -notmatch $gitPullPattern) {
     exit 0
 }
 
-$exitCode = Get-NestedValue -InputObject $hookInput -Path @('tool_response', 'exit_code')
-if ($null -eq $exitCode) {
-    $exitCode = Get-NestedValue -InputObject $hookInput -Path @('tool_response', 'exitCode')
+$exitCodes = [System.Collections.Generic.List[int]]::new()
+foreach ($path in @(
+    @('tool_response', 'exit_code'),
+    @('tool_response', 'exitCode')
+)) {
+    $exitCode = Get-NestedValue -InputObject $hookInput -Path $path
+    if ($null -ne $exitCode) {
+        $exitCodes.Add([int]$exitCode)
+    }
 }
-if ($null -ne $exitCode -and [int]$exitCode -ne 0) {
+
+$functionsExecOutput = Get-NestedValue -InputObject $hookInput -Path @('tool_response', 'output')
+if ($null -ne $functionsExecOutput) {
+    foreach ($item in @($functionsExecOutput)) {
+        $responseText = if ($item -is [string]) { $item } else { Get-NestedValue -InputObject $item -Path @('text') }
+        if ($responseText -isnot [string] -or -not $responseText.Trim().StartsWith('{')) {
+            continue
+        }
+        try {
+            $embeddedResponse = $responseText | ConvertFrom-Json
+        }
+        catch {
+            continue
+        }
+        $embeddedExitCode = Get-NestedValue -InputObject $embeddedResponse -Path @('exit_code')
+        if ($null -ne $embeddedExitCode) {
+            $exitCodes.Add([int]$embeddedExitCode)
+        }
+    }
+}
+
+if (@($exitCodes | Where-Object { $_ -ne 0 }).Count -gt 0) {
     exit 0
 }
 
