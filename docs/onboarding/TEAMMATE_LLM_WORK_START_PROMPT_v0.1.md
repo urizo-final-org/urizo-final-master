@@ -28,8 +28,11 @@ MASTER CONTEXT PASS 또는 정확한 MASTER CONTEXT BLOCKED를 선언하라.
 `Simple is best`를 적용하라. 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는
 승인 전 절대 진행하지 마라. 범위 확대가 불가피하면 필요 이유, 가장 작은 대안, 영향을 먼저 보고하라.
 
-공개 계약, Flyway, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap처럼 다른 작업에
-영향을 주는 공용 파일은 Integration/Contract 담당과 충돌 여부를 먼저 확인하라.
+공개 계약, Flyway Schema, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap처럼 다른 작업에
+영향을 주는 공용 변경은 현재 `dev`와 진행 중인 의존 작업의 충돌 여부를 먼저 확인하라.
+DB 변경이 필요하면 Flyway Ledger와 Backend Migration 파일명을 확인하고 현재 UTC의
+`yyyyMMddHHmmssSSS` 17자리 Revision을 중복 없이 생성해 자기 작업 행을 즉시 `RESERVED`로 기록하라.
+예약 자체에는 Min Seungjun 또는 Integration/Contract 담당자의 승인을 요청하지 말고, 같은 작업의 기존 예약은 재사용하라.
 
 Dirty, Diverged, local-only 작업을 자동 Reset, Stash, Checkout하지 마라. 깨끗한 최신 dev
 기반 Feature Branch 또는 별도 Worktree를 사용하라. 저장소별 Commit/PR을 분리하고 모든

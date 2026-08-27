@@ -150,9 +150,10 @@
 - Orchestrator: Python LangGraph Coding Runtime
 - Master: 현재 제품 범위, 공통 Git/팀 정책, 상태 Snapshot, Workspace 도구
 
-Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. AI 핵심 기능 담당자는
-`docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정할 수 있다.
-다른 기능 문서와 Master 공통 파일은 읽기 전용으로 사용한다.
+Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. 단,
+`docs/team/FLYWAY_RESERVATION_LEDGER.md`의 자기 작업 예약 행 추가와 상태 갱신은 팀원별 LLM 자율 기록 예외다.
+AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정할 수 있다.
+다른 기능 문서와 다른 사람의 Flyway 예약 행은 읽기 전용으로 사용한다.
 
 ## Git 정책
 
@@ -167,11 +168,14 @@ Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한
 
 ## 공통 변경
 
-공개 계약, Flyway, Frontend Router/App Shell, 공통 Auth/Error, Backend Compose·Bootstrap처럼
-여러 작업에 영향을 주는 파일은 Integration/Contract 담당과 충돌 여부를 먼저 확인한다.
+공개 계약, Flyway Schema, Frontend Router/App Shell, 공통 Auth/Error, Backend Compose·Bootstrap처럼
+여러 작업에 영향을 주는 변경은 현재 `dev`와 진행 중인 의존 작업을 기준으로 충돌 여부를 먼저 확인한다.
 
-DB 변경은 SQL 작성 전에 Master Flyway Ledger에 UTC 14자리 Revision을 예약하고,
-빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
+DB 변경이 필요하다고 판단한 LLM은 SQL 작성 전에 Master Flyway Ledger와 Backend Migration 파일명을 확인하고
+현재 UTC의 `yyyyMMddHHmmssSSS` 17자리 Revision을 생성한다. 중복이면 새 시각으로 다시 생성하며,
+자기 작업 예약 행을 즉시 `RESERVED`로 기록한다. 이 예약에는 Min Seungjun 또는 Integration/Contract 담당자의
+별도 승인이 필요하지 않다. 기존 14자리 Revision과 같은 작업에 이미 예약된 Revision은 그대로 재사용한다.
+이후 빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
 
 ## Notion
 
