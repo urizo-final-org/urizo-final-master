@@ -34,8 +34,9 @@
 - `CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은
   `urizo-final-master/scripts/start-local-cms.ps1 -ApproveLocalMutation`으로 처리한다. 이미 정상이면 `spring-core`를 즉시 재사용하고, 최초 Image 준비는 `-ApproveNetwork`, Source 변경 반영은 `-Rebuild -ApproveNetwork`를 추가한다. CMS 실행 때문에 범위 밖 Coding Runtime을 기다리거나 임의 Docker 명령을 조합하지 않는다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
-- Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. AI 핵심 기능 담당자는
-  `urizo-final-master/docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정한다.
+- Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. 단, 팀원별 LLM은
+  `urizo-final-master/docs/team/FLYWAY_RESERVATION_LEDGER.md`에 자기 작업 예약 행을 추가하고 상태를 갱신할 수 있다.
+  AI 핵심 기능 담당자는 `urizo-final-master/docs/product/ai-core/`에서 자신에게 배정된 상세 문서만 Feature Branch와 `dev` 대상 PR로 수정한다.
 - 2~6번 작업에서는 현재 PC GitHub ID와 담당자 표를 대조해 공통 문서와 배정된 상세 문서를 읽고
   `AI FEATURE CONTEXT PASS`를 보고한다. 새 작업의 Work ID·work slug는 작업 시작 전에 한 번 제안한다.
 - 조사·분석과 기능 MD 수정만이면 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후 저장소별
@@ -56,6 +57,8 @@
 - Secret을 Prompt, Chat, 명령, Log, Commit, PR에 넣지 않는다.
 - Network, 로그인/MFA, 관리자 권한, 설치, 재부팅, Cloud/Prod/SSH는 명시적 승인 후 수행한다.
 - `dev/main` 직접 Push, `main` 대상 PR, Force Push, 자동 Merge를 금지한다.
-- 공개 계약, Flyway, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap은 공통 담당과 충돌을 먼저 확인한다.
-- DB 변경은 Flyway Revision을 예약하고 빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
+- 공개 계약, Flyway Schema, App Shell/Router, 공통 Auth/Error, Compose/Bootstrap은 현재 `dev`와 의존 작업의 충돌을 먼저 확인한다.
+- DB 변경은 LLM이 Flyway Ledger와 Backend Migration 파일명을 확인한 뒤 UTC `yyyyMMddHHmmssSSS` Revision을
+  중복 없이 생성하고 자기 작업을 즉시 `RESERVED`로 기록한다. 예약 자체에는 별도 사람 승인이 필요하지 않다.
+  기존 예약은 재사용하고 빈 DB·기존 DB·반복 실행·Runtime DDL 거부를 확인한다.
 - 요청받지 않은 Push, PR, Merge, Notion 쓰기, 배포는 하지 않는다.

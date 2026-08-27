@@ -5,7 +5,8 @@
 
 ## 권한
 
-- Master 공통 기준과 공통 문서는 Min Seungjun만 수정한다.
+- Master 공통 기준과 공통 문서는 Min Seungjun만 수정한다. 단, Flyway 예약표의 자기 작업 예약 행 추가와
+  상태 갱신은 인증된 팀원별 LLM이 수행할 수 있다.
 - AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정된 상세 문서만
   Feature Branch와 `dev` 대상 PR로 수정한다. 기능 내용의 최종 판단은 해당 담당자가 맡는다.
 - 다른 담당자의 기능 문서와 Master 공통 파일은 수정하지 않는다. 기능 간 공통 경계 변경은
@@ -76,6 +77,17 @@ GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한�
 - 여러 저장소에 걸친 같은 작업은 동일한 work slug를 재사용하고 Commit과 PR만 저장소별로 분리한다.
 - 팀장이 담당자·GitHub ID·Slice ID/work slug를 명시하면 자동 생성값보다 우선한다.
 - 현재 PC의 GitHub ID를 확인할 수 없거나 최소 완료 결과가 모호하면 자동 생성하지 않고 확인을 요청한다.
+
+## Flyway 자율 예약
+
+- DB Schema 변경이 필요하다고 판단한 LLM은 SQL 작성 전에 최신 Master Flyway Ledger와 Backend Migration 파일명을 확인한다.
+- 같은 작업에 유효한 예약이 없으면 현재 UTC의 `yyyyMMddHHmmssSSS` 17자리 Revision을 생성한다.
+  이미 존재하는 값이면 새 시각으로 다시 생성하고, 기존 14자리 Revision은 변경하거나 재발급하지 않는다.
+- 현재 GitHub ID를 Owner로 자기 작업 행을 `RESERVED` 상태로 즉시 추가한다. 예약 생성과 확정에는
+  Min Seungjun 또는 Integration/Contract 담당자의 별도 승인이 필요하지 않다.
+- 팀원별 LLM은 자기 예약 행의 `PR_OPEN`, `MERGED`, `ABANDONED` 상태만 갱신하며 다른 사람의 행과 Ledger 정책은 수정하지 않는다.
+- 같은 작업은 기존 Revision을 재사용하고, 예약 번호를 Backend PR 본문에도 기록한다.
+- 예약표 변경도 Master Feature Branch와 `dev` 대상 PR 원칙을 따르며 직접 Push·자동 Merge 권한을 의미하지 않는다.
 
 ### AI 기능 하위 작업 ID
 
