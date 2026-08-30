@@ -55,14 +55,15 @@ foreach ($relative in $required) {
 }
 
 $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'repository-manifest.json') | ConvertFrom-Json
-if (@($manifest.repositories).Count -ne 4) {
-    throw 'Repository manifest must contain exactly four sibling repositories.'
+if (@($manifest.repositories).Count -ne 5) {
+    throw 'Repository manifest must contain exactly five sibling repositories.'
 }
 $expectedRemotes = @(
     'https://github.com/urizo-final-org/urizo-final-master.git',
     'https://github.com/urizo-final-org/urizo-final-frontend.git',
     'https://github.com/urizo-final-org/urizo-final-backend.git',
-    'https://github.com/urizo-final-org/urizo-final-orchestrator.git'
+    'https://github.com/urizo-final-org/urizo-final-orchestrator.git',
+    'https://github.com/urizo-final-org/urizo-final-mcp-server.git'
 )
 foreach ($remote in $expectedRemotes) {
     if ($remote -notin @($manifest.repositories.remote)) {
@@ -73,7 +74,12 @@ foreach ($remote in $expectedRemotes) {
 if ($manifest.publishedBaseline.status -ne 'remote-published') {
     throw 'Manifest published baseline must be marked remote-published.'
 }
-$sourceNames = @('urizo-final-frontend', 'urizo-final-backend', 'urizo-final-orchestrator')
+$sourceNames = @(
+    'urizo-final-frontend',
+    'urizo-final-backend',
+    'urizo-final-orchestrator',
+    'urizo-final-mcp-server'
+)
 foreach ($sourceName in $sourceNames) {
     $integrationSha = $manifest.publishedBaseline.sourceIntegrationRefs.$sourceName
     $releaseSha = $manifest.publishedBaseline.sourceReleaseRefs.$sourceName
@@ -87,8 +93,8 @@ foreach ($workspaceFile in @(
     (Join-Path $masterRoot 'templates/workspace/AX-Module-Studio.code-workspace')
 )) {
     $workspace = Get-Content -Raw -Encoding UTF8 -LiteralPath $workspaceFile | ConvertFrom-Json
-    if (@($workspace.folders).Count -ne 4) {
-        throw "Workspace template must contain four folders: $workspaceFile"
+    if (@($workspace.folders).Count -ne 5) {
+        throw "Workspace template must contain five folders: $workspaceFile"
     }
 }
 
@@ -279,8 +285,8 @@ if ($masterClaude -notmatch '(?m)^@AGENTS\.md\r?$') {
 if ($workspaceAgentTemplate -notmatch 'scripts/sync-workspace\.ps1') {
     throw 'Workspace AGENTS template must route shared Git synchronization through sync-workspace.ps1.'
 }
-if ($workspaceAgentTemplate -notmatch 'Master plus all three Source repositories') {
-    throw 'Workspace AGENTS template must make four-repository synchronization the default pull scope.'
+if ($workspaceAgentTemplate -notmatch 'Master plus all four Source repositories') {
+    throw 'Workspace AGENTS template must make five-repository synchronization the default pull scope.'
 }
 $masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'AGENTS.md')
 $fullSyncAliases = @('전체 Git 최신화', '워크스페이스 최신화')
@@ -402,7 +408,11 @@ foreach ($pattern in $forbiddenPatterns) {
     }
 }
 
-foreach ($forbiddenDirectory in @('urizo-final-frontend', 'urizo-final-backend', 'urizo-final-orchestrator')) {
+foreach ($forbiddenDirectory in @(
+        'urizo-final-frontend',
+        'urizo-final-backend',
+        'urizo-final-orchestrator',
+        'urizo-final-mcp-server')) {
     if (Test-Path -LiteralPath (Join-Path $masterRoot $forbiddenDirectory)) {
         throw "Source repository copy is forbidden inside Master: $forbiddenDirectory"
     }
@@ -412,7 +422,7 @@ Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
 Write-Host 'PASS: fail-closed AGENTS reload after direct/functions.exec Git pull with failure and search guards'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
-Write-Host 'PASS: four canonical repository remotes'
+Write-Host 'PASS: five canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'
 Write-Host 'PASS: no forbidden destructive command patterns'
 Write-Host 'PASS: no source repository copy inside Master'

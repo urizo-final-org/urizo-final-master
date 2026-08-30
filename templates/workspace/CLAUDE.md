@@ -10,6 +10,6 @@
   Claude-only copy of product scope, Git, approval, runtime, or safety policy.
 - Before changing a Source Repository, read its applicable `AGENTS.md` and the assigned Slice documents
   routed by Master.
-- Treat the four sibling folders as independent Git repositories. Backend remains the integrated runtime
+- Treat the five sibling folders as independent Git repositories. Backend remains the integrated runtime
   root; Master remains read-only for teammates.
 <!-- AXMS-MANAGED-CLAUDE-ROUTING:END -->

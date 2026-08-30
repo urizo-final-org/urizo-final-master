@@ -3,7 +3,8 @@
     { "name": "Master", "path": "urizo-final-master" },
     { "name": "Frontend", "path": "urizo-final-frontend" },
     { "name": "Backend", "path": "urizo-final-backend" },
-    { "name": "Orchestrator", "path": "urizo-final-orchestrator" }
+    { "name": "Orchestrator", "path": "urizo-final-orchestrator" },
+    { "name": "MCP Server", "path": "urizo-final-mcp-server" }
   ],
   "settings": {
     "git.autoRepositoryDetection": "subFolders",

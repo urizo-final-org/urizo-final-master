@@ -1,13 +1,14 @@
 # AX Module Studio Master
 
-네 개의 독립 Git 저장소를 연결하는 경량 공통 기준 저장소다. 제품 Source는 보관하지 않는다.
+다섯 개의 독립 Git 저장소를 연결하는 경량 공통 기준 저장소다. 제품 Source는 보관하지 않는다.
 
 ```text
 AX-Module-Studio-Workspace/          # no .git
 ├── urizo-final-master/
 ├── urizo-final-frontend/
 ├── urizo-final-backend/
-└── urizo-final-orchestrator/
+├── urizo-final-orchestrator/
+└── urizo-final-mcp-server/
 ```
 
 ## 현재 기준

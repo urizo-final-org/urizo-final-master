@@ -200,9 +200,9 @@ urizo-final-mcp-server
 
 ## 진행 상태
 
-- 현재: AI06-008 Job–Profile Version 바인딩과 `jobId` 전용 Queue·Claim·production Snapshot Runner를 Backend PR #16과 Orchestrator PR #9로 `dev` 병합 완료
-- 완료 범위: Spring 소유 Job의 불변 `profileVersionId`, DB 권위 Claim Context, 중복·재시도 안정성, AI06-007 Snapshot 읽기와 production 실행 연결
-- 다음 게이트: AI06-009는 미착수이며 공통 Approval·Check·Guardrail 상태/보안 계약의 별도 승인 전 시작하지 않는다. MCP 실연동도 후속 Work ID로 유지한다.
+- 현재: AI06-010 단일 MCP 플랫폼 부트스트랩을 MCP Server PR #1과 Backend PR #21로 `dev` 병합하고 전체 회귀·production Image·실제 왕복 검증을 완료했다.
+- 완료 범위: 기존 Approval·Checkpoint Runtime을 유지하면서 신규 `urizo-final-mcp-server`, 빈 생산 Catalog, 고정 Tool 이름 Allowlist, 서비스 토큰 인증과 Spring의 조건부 discovery/`tools/list` Client를 추가했다.
+- 다음 게이트: 실제 Coding·CMS Tool Handler와 기존 CodingToolService 전환은 AI04/AI05 담당 범위다. AI06 공통 플랫폼은 새 Handler·Tool·DB 계약을 선행 확장하지 않는다.
 
 ## 하위 작업 기록
 
@@ -252,6 +252,19 @@ urizo-final-mcp-server
 - [x] Orchestrator production Snapshot Runner, 중복·재시도·terminal replay와 안전한 ACK/NACK 경계 구현·검증
 - [x] Backend PR #16 (`620f09b2032c616daec035fe393469e6092fde35`)과 Orchestrator PR #9 (`e411fbbfffa85635b9969aa1ce09c38e9d5d6248`) `dev` 병합
 
+### `AI06-009` · Approval·Check·Guardrail Runtime
+
+- [x] Spring 소유 승인·반려 상태 전이와 동일 Job·Profile Version·Checkpoint 재개 계약 구현
+- [x] 공통 Start·Guardrail·Check·Approval·End Handler와 production Registry 연결
+- [x] Backend PR #19 (`9f0b529e4e0d702b7d30c95db3e48d838097e531`)과 Orchestrator PR #10 (`8ffdace39ed91309f67759f65238ce50f3a5f324`) `dev` 병합·종료 검증
+
+### `AI06-010` · MCP 공통 플랫폼 부트스트랩
+
+- [x] 신규 단일 Repository·Service 생성 승인과 Work ID 범위 확정
+- [x] `common` Catalog·인증과 빈 `coding`·`cms` 확장 Package, 단일 `/mcp` Service 구현
+- [x] Backend 고정 Allowlist와 discovery/`tools/list` 왕복, 전체 회귀·Image 검증
+- [x] MCP Server PR #1 (`e6595aeaeda5a98512004ee3252cc1b02067feec`)과 Backend PR #21 (`e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`) `dev` 병합
+
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|
 | `AI06-001` | `axms-ai06-001-agent-settings-menu` | 담당 기능 MD 작업 등록 | Master | 변경 완료·PR 전 | `feature/tmdwns0531_axms-ai06-001-agent-settings-menu_v0.1` | - | - | - |
@@ -263,3 +276,5 @@ urizo-final-mcp-server
 | `AI06-006` | `axms-ai06-006-snapshot-runner-compat` | Snapshot Runner 호환 경로 | Orchestrator | `dev` 병합 완료 | `feature/tmdwns0531_axms-ai06-006-snapshot-runner-compat_v0.1` | `1faae3b96fa4c95b2be2ca0c049b54ec09e837ed` | [#7](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/7) · 병합 완료 | `8c139060a0a3709a32ea6d18464382d9f7d6485f` |
 | `AI06-007` | `axms-ai06-007-profile-version-read-contract` | Profile Version 저장·내부 읽기 계약 | Backend, Orchestrator | `dev` 병합 완료 | `feature/tmdwns0531_axms-ai06-007-profile-version-read-contract_v0.1` | Backend `64714e064517dffe37c277832eac917f31e6df6d` / Orchestrator `e3ebaed3b3cb9476f456feb60a917c5e87be2d4e` | Backend [#15](https://github.com/urizo-final-org/urizo-final-backend/pull/15) / Orchestrator [#8](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/8) · 병합 완료 | Backend `3c59ab10e433ed097ffd884fc08fffda9b9afb5e` / Orchestrator `29a7ae5f123b57717f2d383e8123a5e0cc89bac8` |
 | `AI06-008` | `axms-ai06-008-job-snapshot-binding` | Job–Profile Version 고정·jobId Queue·production Snapshot Runner | Backend, Orchestrator | `dev` 병합 완료 | `feature/tmdwns0531_axms-ai06-008-job-snapshot-binding_v0.1` | Backend `c357a5adef49b6795306dd579620fe08f5582a29` / Orchestrator `db80060772187149634c7eff52f38332ddacf812` | Backend [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) / Orchestrator [#9](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/9) · 병합 완료 | Backend `620f09b2032c616daec035fe393469e6092fde35` / Orchestrator `e411fbbfffa85635b9969aa1ce09c38e9d5d6248` |
+| `AI06-009` | `axms-ai06-009-approval-check-guardrail-runtime` | Approval·Check·Guardrail과 Checkpoint 재개 | Backend, Orchestrator | `dev` 병합·종료 검증 완료 | 저장소별 AI06-009 Feature Branch | Backend `a6c8dcfd1461597d721ac19d2f7936906df6d935` / Orchestrator `2f34b7e1185b9466822aef9e835ec6a1d71683e4` | Backend [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) / Orchestrator [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10) · 병합 완료 | Backend `9f0b529e4e0d702b7d30c95db3e48d838097e531` / Orchestrator `8ffdace39ed91309f67759f65238ce50f3a5f324` |
+| `AI06-010` | `axms-ai06-010-mcp-common-platform-bootstrap` | 단일 MCP Service·Catalog와 Spring 왕복 | MCP Server, Backend, Master | Source `dev` 병합 완료·Master 현행화 | `feature/tmdwns0531_axms-ai06-010-mcp-common-platform-bootstrap_v0.1` | MCP `8a91fd3416c80f5d46072700abb6f23ce877481d` / Backend `b64c9e6d595a556113ece3a7988d0df057ee048d` | MCP Server [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1) / Backend [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21) · 병합 완료 | MCP `e6595aeaeda5a98512004ee3252cc1b02067feec` / Backend `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e` |
