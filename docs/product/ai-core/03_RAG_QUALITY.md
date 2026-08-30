@@ -25,6 +25,25 @@
 - 현재: 품질 기준·대시보드·Scheduler 방향 심층 조사
 - 다음: 팀 중간점검 후 지표와 최소 완료 기준 확정
 
+## 2026-08-30 공통 Queue·Job 계약 제안
+
+> 제안 출처: 6번 Agent 설정 연계 협의
+> 상태: 담당자 검토·확정 필요
+> 범위: Agent 설정이 아니라 3번의 장시간 품질 재평가·재빌드 Job 명세에만 적용
+
+- 품질 재평가·재빌드가 장시간 실행될 때만 기존 Product Queue의 Job Type으로 추가한다. 별도 Quality Queue를 먼저 만들지 않는다.
+- Job 상태의 기준은 PostgreSQL로 두고 Valkey에는 불변 jobId만 저장한다.
+- DB Job·Outbox, 멱등 처리, stateVersion, Worker Lease·Heartbeat와 시작 복구 계약을 2번 Product Job과 함께 재사용한다.
+- 짧은 지표 조회와 Dashboard 조회는 동기 API로 유지하고 Queue에 넣지 않는다.
+- 이 기능은 현재 Agent Node Profile의 직접 소비자가 아니다. 평가 기술과 지표 선택은 3번 담당자가 독립적으로 결정한다.
+
+### 담당자 확인 항목
+
+- [ ] RAG_QUALITY_BUILD 또는 RAG_REBUILD Job Type이 실제로 필요한 실행 시간·복구 조건
+- [ ] 재평가와 재빌드를 같은 Job으로 묶을지 분리할지
+- [ ] 실패·재시도와 Knowledge Version 활성화 차단 기준
+- [ ] 기존 Product Queue·Outbox 복구 계약 재사용 여부
+
 ## 하위 작업 기록
 
 현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을

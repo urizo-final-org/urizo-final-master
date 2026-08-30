@@ -24,6 +24,25 @@
 - 현재: 기능 범위와 구현 방향 심층 조사
 - 다음: 팀 중간점검 후 사용자 흐름·계약·최소 완료 기준 확정
 
+## 2026-08-30 공통 Queue·Job 계약 제안
+
+> 제안 출처: 6번 Agent 설정 연계 협의
+> 상태: 담당자 검토·확정 필요
+> 범위: Agent 설정이 아니라 2번의 비동기 Queue·Job 명세에만 적용
+
+- Product Queue는 하나의 Lane으로 유지하고 Connector 동기화와 Knowledge Build를 서로 다른 Job Type으로 구분할지 검토한다.
+- Job 상태의 기준은 PostgreSQL로 두고 Valkey에는 Job 전체 데이터가 아니라 불변 `jobId`만 저장한다.
+- DB Job과 Outbox, 멱등 처리, `stateVersion`, Worker Lease·Heartbeat와 시작 시 `QUEUED` Job 복구를 공통 계약으로 재사용한다.
+- Connector Sync와 Knowledge Build를 항상 별도 Job으로 나누는 것은 확정하지 않는다. 사용자 요청·재시도·활성화 경계를 담당자가 정한 뒤 가장 작은 Job Type만 둔다.
+- 이 기능은 현재 Agent Node Profile의 직접 소비자가 아니다. 향후 Agent 실행이 실제 요구될 때만 6번 Profile 계약을 별도 협의한다.
+
+### 담당자 확인 항목
+
+- [ ] `CONNECTOR_SYNC`, `KNOWLEDGE_BUILD` Job Type 분리 필요 여부
+- [ ] Job별 입력·완료·실패·재시도 기준
+- [ ] Build 성공과 Knowledge Version 활성화의 분리 여부
+- [ ] 기존 Product Queue·Outbox 복구 계약 재사용 여부
+
 ## 하위 작업 기록
 
 현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을
