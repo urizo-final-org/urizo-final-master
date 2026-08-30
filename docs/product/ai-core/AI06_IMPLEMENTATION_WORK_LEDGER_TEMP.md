@@ -1,6 +1,6 @@
 # AI06 구현 작업 임시 원장
 
-> 상태: AI06-010 MCP·Backend `dev` 병합 완료·Master 현행화
+> 상태: AI04-002 `[제안]` 최소 수직 실행 연결 보완 완료 · Source Draft PR 검토 대기
 > 작성 기준일: 2026-08-30
 > 용도: Work ID별 범위·검증·PR·Merge 결과를 이어 가기 위한 임시 실행 원장
 > 종료 처리: 구현 캠페인이 끝나면 확정 결과만 `06_ORCHESTRATION_CONTROL.md`에 반영하고 이 파일은 삭제한다.
@@ -35,6 +35,7 @@
 - Orchestrator AI06-009 PR [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10)은 Head SHA `2f34b7e1185b9466822aef9e835ec6a1d71683e4`, Merge SHA `8ffdace39ed91309f67759f65238ce50f3a5f324`로 `dev`에 병합됐다.
 - MCP Server AI06-010 PR [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1)은 Head SHA `8a91fd3416c80f5d46072700abb6f23ce877481d`, Merge SHA `e6595aeaeda5a98512004ee3252cc1b02067feec`으로 `dev`에 병합됐다.
 - Backend AI06-010 PR [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21)은 Head SHA `b64c9e6d595a556113ece3a7988d0df057ee048d`, Merge SHA `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`으로 `dev`에 병합됐다. 두 PR 모두 관리자 개별 bypass만 사용했고 Ruleset은 변경하지 않았다.
+- Master AI06-010 PR [#22](https://github.com/urizo-final-org/urizo-final-master/pull/22)는 Head SHA `5a77955e21c62caf2be30896636d4b6c4ec42ab3`, Merge SHA `8ba1714912a9d0d8da6b87b760ddbb4495913a63`으로 `dev`에 병합됐다.
 
 ## 3. 제안 Work ID
 
@@ -47,8 +48,8 @@
 | 4 | `AI06-007` / `axms-ai06-007-profile-version-read-contract` | Backend, Orchestrator | Spring이 활성 Versioned Snapshot JSON을 보관·조회하고 Orchestrator가 Job에 고정된 Version을 읽는 최소 API/Client를 구현한다. | API 계약, Version 불변성, 없는/비활성 Version 거부, 양 저장소 회귀 통과 | **시작 전 협의**: 공통 Profile Table/Flyway·API 계약 확정 | `dev` 병합 완료 · Backend #15 / Orchestrator #8 |
 | 5 | `AI06-008` / `axms-ai06-008-job-snapshot-binding` | Backend, Orchestrator | Job 생성 시 `profileVersionId`를 고정하고 Queue에는 `jobId`만 전달하며, Claim/Runner가 Spring 기준 Snapshot을 가져와 실행하도록 연결한다. | Queue Payload 최소성, Job-Version 불변성, 재전달 멱등성, 로컬 통합 회귀 통과 | 공통 Job/Event 계약 변경 승인 완료 | `dev` 병합 완료 · Backend #16 / Orchestrator #9 |
 | 6 | `AI06-009` / `axms-ai06-009-approval-check-guardrail-runtime` | Backend, Orchestrator | 등록된 Result Port를 기준으로 공통 Approval·Check·Guardrail과 Checkpoint 재개 경로를 일반화한다. 기능별 정책 내용은 넣지 않는다. | 승인·반려·Check 실패·재개·중복 Callback·우회 방지 테스트, 통합 회귀 통과 | `AI06-008` 병합 후, 공통 상태/보안 계약 확인 뒤 진행 | `dev` 병합·종료 검증 완료 · Backend #19 / Orchestrator #10 |
-| 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend, Master | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | 신규 저장소·Service 생성 승인 완료 | Source `dev` 병합 완료 · MCP #1 / Backend #21 · Master 현행화 |
-| 8 | `AI04-001` / `axms-ai04-001-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 4번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
+| 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend, Master | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | 신규 저장소·Service 생성 승인 완료 | `dev` 병합·현행화 완료 · MCP #1 / Backend #21 / Master #22 |
+| 8 | `AI04-002` / `axms-ai04-002-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 흐름만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `[제안]` 구현 완료 · Draft PR Backend #22 / Orchestrator #11 / MCP #2 |
 | 9 | `AI05-001` / `axms-ai05-001-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 5번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
 | 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | 후속·게이트 |
 | 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | 후속·미시작 |
@@ -109,12 +110,47 @@
 
 ## 6. 현재 다음 행동
 
-- AI06-010 MCP Server #1과 Backend #21은 `dev` 병합을 완료했고, Master의 저장소 목록·Workspace 도구·공통 AI 기록을 최종 현행화한다.
-- 다음 기능 구현에서도 생산 Tool Catalog는 명시적 AI04/AI05 Tool 승인 전까지 비워 두며, 공통 계약 변경은 별도 Work ID와 승인 게이트를 따른다.
+- AI06-010 MCP Server #1, Backend #21, Master #22의 `dev` 병합과 공통 기록 현행화를 완료했다.
+- `AI04-002 / axms-ai04-002-coding-handler-integration`은 사용자가 승인한 `[제안]` 흐름에 한해 Backend·Orchestrator·MCP Server 최소 구현과 Draft PR 생성을 완료했고, Backend AI04 Stage Executor를 통한 Model→Tool→Result 수직 실행 연결을 보완했다.
+- 생산 Tool Catalog에는 제안 범위의 Coding Tool 7개만 등록했다. 새로운 Handler·Tool 공통 계약, Result Port, Snapshot Schema, 공통 Job/Profile/Approval Schema와 보안 경계 변경은 계속 별도 승인 게이트를 따른다.
+- Orchestrator Production Snapshot Handler는 Spring Stage API에서 새 결과를 생성한 뒤 기존 Backend Result API로 저장하며, 준비된 Result만 소비하던 Executor는 테스트·호환 용도로만 남겼다.
+
+### AI04-002 · Coding Handler 연동 `[제안]` 구현
+
+- 상태: `[제안]` 최소 수직 실행 연결 보완 완료 · 3개 Source Draft PR 검토 대기
+- Work ID / work slug: `AI04-002` / `axms-ai04-002-coding-handler-integration`
+- 승인 기준: 2026-08-30 사용자 구두 합의를 기능 확정이 아닌 `[제안]` 노드 템플릿으로 적용하며, 4번 담당자 `jcy644542`가 이후 직접 변경·기능 테스트한다.
+- 시작 기준: Backend `37e8f413` / Orchestrator `8ffdace39` / MCP Server `e6595aea`
+- Worktree/Branch: 저장소별 최신 `origin/dev` 기반 독립 Worktree / `feature/tmdwns0531_axms-ai04-002-coding-handler-integration_v0.1`
+- 구현 Checkpoint:
+  - [x] 요구사항 분석·코딩 가능성 검증 → 일반관리자 승인 → 코딩 → 코드리뷰 → 미리보기 → PR 요청 → GitHub 최고관리자 수동 승인 → CMS 일반관리자 승인 → 최고관리자 배포 승인 → 배포 순서
+  - [x] 리뷰 반려 시 코딩·리뷰를 총 3회까지 반복하고, 미리보기 반려 시 요구사항 분석으로 돌아가 전체 Pipeline을 총 3회까지 반복
+  - [x] Backend의 기능 소유 Job/Candidate/Attempt/Result/Approval, Orchestrator 14-node 제안 Graph·Handler, MCP Coding Tool 7개 연결
+  - [x] 최신 code candidate → passed review → preview 후보 연결, 상태 Version·재시도 멱등성·Result 동시성·역할/승인 주체 검증
+  - [x] AI04 전용 Stage Executor가 제한된 최대 8회 Model↔Tool 루프에서 기존 MCP 7-tool allowlist만 호출하고 Tool 결과를 다음 Model 입력으로 환류
+  - [x] Orchestrator Production Executor가 Stage 결과를 기존 Result Port/Backend Result API에 저장하고 동일 resultId 재전달 시 저장 결과를 재사용
+- 검증 결과:
+  - Backend 보완 집중 테스트 통과, Product 전체 회귀에서 기준선 CRLF 1개 제외 178개 통과·환경 게이트 4개 Skip, Control에서 같은 CRLF 1개 제외 174개 통과·환경 게이트 4개 Skip, 두 실행 JAR Build 통과
+  - Control 원형 회귀에서 추가로 관찰된 `JwtTokenProviderTest.aModifiedSignatureNeverDecodes` 1회 실패는 단독 즉시 재실행과 Product 회귀에서 통과해 비결정적 기준선으로 분리했다.
+  - Backend runtime production Image는 저장소의 opt-in CA Secret 경로로 Build 통과했으며 인증서 내용은 Image·로그·Git에 포함하지 않았다.
+  - Orchestrator 전체 151개·`compileall` 통과, Stage API POST→기존 Result PUT 연결 및 Backend Model→Tool 결과 환류 테스트 통과
+  - MCP 전체 29개 통과·Windows symlink 권한 1개 Skip, `compileall`·보호 경로/경쟁 조건·diff/secret 검증 통과
+  - Backend·Orchestrator staged `git diff --check`, 두 변경 저장소의 고신뢰 credential 패턴 검사 통과
+- Commit / Draft PR:
+  - Backend `4a497a601b6f7febb8c19f79c3d3f6d860329189` / [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22)
+  - Orchestrator `fa1e9ab274b12d4c7090d36fb01109cbad07113a` / [#11](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/11)
+  - MCP Server `b21d69564fa8d7a62eec4e20fb1299c47c744f44` / [#2](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/2)
+- PR 상태: 모두 `dev` 대상 Draft이며 Ready 전환·Ruleset 우회·병합은 하지 않았다.
+- 남은 차단/결정:
+  - 실제 Provider·사전 준비 MCP Workspace·DB를 함께 사용한 live Production Job 실행은 로컬 CMS를 건드리지 않는 이번 보완 조건에 따라 수행하지 않았다. 자동 검증 범위는 Model→Tool 결과 환류와 Stage API→기존 Result 저장 계약이다.
+  - Orchestrator·MCP Production Image Build는 `files.pythonhosted.org` 인증서 `UnknownIssuer` 환경 오류로 완료하지 못했다. Backend의 최초 무-Secret Build도 Maven Central PKIX에서 같은 환경 문제를 보였고 안전한 opt-in CA Secret 적용 시 통과했다. TLS 검증 완화는 사용하지 않았다.
+  - MCP Workspace는 Production에서 UID 10001이 쓸 수 있는 사전 준비된 하위 Git Workspace를 mount해야 하며, clone/provision 계약은 이번 범위 밖이다.
+  - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동은 하지 않았다.
+  - 4번 담당자의 제안 노드 템플릿 확정·기능 테스트와 Source PR 리뷰가 다음 승인 게이트다.
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
 
-- 상태: MCP Server·Backend `dev` 병합 완료 / Master 현행화
+- 상태: MCP Server·Backend·Master `dev` 병합·현행화 완료
 - 시작 기준: Backend `9f0b529e4e0d702b7d30c95db3e48d838097e531` / Master `d500096c28fd09fb9bbc9f5c3d0bc1046e76dd70` / MCP 신규 Repository
 - Worktree/Branch: 저장소별 격리 Worktree / `feature/tmdwns0531_axms-ai06-010-mcp-common-platform-bootstrap_v0.1`
 - 변경 저장소·Package: MCP `common`·`coding`·`cms`, Backend `integration.ai.mcp`, Master Workspace manifest·AI06 기록
@@ -128,8 +164,8 @@
   - Spring 실제 `server/discover`·`tools/list` 왕복 1개 통과, Backend 집중 14개 통과
   - Backend Product 전체 145개·Control 전체 141개에서 실패·오류 0, 환경 게이트 각 3개 Skip, 두 JAR Build 통과
   - dev/preview Compose config, Backend PowerShell parse, 세 저장소 diff check와 staged credential scan 통과
-- PR: MCP Server [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1) / Backend [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21) · 병합 완료
-- dev Merge SHA: MCP `e6595aeaeda5a98512004ee3252cc1b02067feec` / Backend `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`
+- PR: MCP Server [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1) / Backend [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21) / Master [#22](https://github.com/urizo-final-org/urizo-final-master/pull/22) · 병합 완료
+- dev Merge SHA: MCP `e6595aeaeda5a98512004ee3252cc1b02067feec` / Backend `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e` / Master `8ba1714912a9d0d8da6b87b760ddbb4495913a63`
 - 후속 위험/결정:
   - 실제 Coding·CMS Tool Handler, 기존 CodingToolService 전환, Frontend와 새 DB/Flyway는 후속 AI04/AI05 범위다.
   - 실행 중인 로컬 CMS는 재빌드·재기동하지 않는다.
