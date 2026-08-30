@@ -31,6 +31,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260830025553074` | `MERGED` | `axms-ai06-008-job-snapshot-binding` | `bind_coding_job_to_profile_version` | `tmdwns0531` | `2026-09-30T02:55:53Z` | [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) | `20260830013135942` |
 | `20260830073257815` | `MERGED` | `axms-ai04-001-runner` | `create_coding_runner_task_queue` | `jcy644542` | `2026-09-29T07:32:57Z` | [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18) | `20260830025553074` |
 | `20260830074952891` | `MERGED` | `axms-ai06-009-approval-check-guardrail-runtime` | `grant_coding_approval_transition_read` | `tmdwns0531` | `2026-09-29T07:49:52Z` | [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) | `20260830073257815` |
+| `20260830111238338` | `PR_OPEN` | `axms-ai04-002-coding-handler-integration` | `create_coding_handler_results` | `tmdwns0531` | `2026-09-29T11:12:38Z` | [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22) | `20260830074952891` |
 
 ## Reservation template
 
