@@ -1,6 +1,6 @@
 # AI06 구현 작업 임시 원장
 
-> 상태: AI06-009 `dev` 병합·종료 검증 완료
+> 상태: AI06-010 MCP·Backend `dev` 병합 완료·Master 현행화
 > 작성 기준일: 2026-08-30
 > 용도: Work ID별 범위·검증·PR·Merge 결과를 이어 가기 위한 임시 실행 원장
 > 종료 처리: 구현 캠페인이 끝나면 확정 결과만 `06_ORCHESTRATION_CONTROL.md`에 반영하고 이 파일은 삭제한다.
@@ -33,6 +33,8 @@
 - Backend AI04-001 Runner PR [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18)은 Head SHA `2ce33fa55976a5ccac15f06f944e14ae2ed140b6`, Merge SHA `55b382c889d4bbe39a0ecd8b80d2bd4e51c77c53`으로 `dev`에 병합됐다.
 - Backend AI06-009 PR [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19)은 Head SHA `a6c8dcfd1461597d721ac19d2f7936906df6d935`, Merge SHA `9f0b529e4e0d702b7d30c95db3e48d838097e531`으로 `dev`에 병합됐다. Merge Commit의 첫 Parent는 #18 Merge SHA라 Flyway 순서를 보존한다.
 - Orchestrator AI06-009 PR [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10)은 Head SHA `2f34b7e1185b9466822aef9e835ec6a1d71683e4`, Merge SHA `8ffdace39ed91309f67759f65238ce50f3a5f324`로 `dev`에 병합됐다.
+- MCP Server AI06-010 PR [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1)은 Head SHA `8a91fd3416c80f5d46072700abb6f23ce877481d`, Merge SHA `e6595aeaeda5a98512004ee3252cc1b02067feec`으로 `dev`에 병합됐다.
+- Backend AI06-010 PR [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21)은 Head SHA `b64c9e6d595a556113ece3a7988d0df057ee048d`, Merge SHA `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`으로 `dev`에 병합됐다. 두 PR 모두 관리자 개별 bypass만 사용했고 Ruleset은 변경하지 않았다.
 
 ## 3. 제안 Work ID
 
@@ -45,7 +47,7 @@
 | 4 | `AI06-007` / `axms-ai06-007-profile-version-read-contract` | Backend, Orchestrator | Spring이 활성 Versioned Snapshot JSON을 보관·조회하고 Orchestrator가 Job에 고정된 Version을 읽는 최소 API/Client를 구현한다. | API 계약, Version 불변성, 없는/비활성 Version 거부, 양 저장소 회귀 통과 | **시작 전 협의**: 공통 Profile Table/Flyway·API 계약 확정 | `dev` 병합 완료 · Backend #15 / Orchestrator #8 |
 | 5 | `AI06-008` / `axms-ai06-008-job-snapshot-binding` | Backend, Orchestrator | Job 생성 시 `profileVersionId`를 고정하고 Queue에는 `jobId`만 전달하며, Claim/Runner가 Spring 기준 Snapshot을 가져와 실행하도록 연결한다. | Queue Payload 최소성, Job-Version 불변성, 재전달 멱등성, 로컬 통합 회귀 통과 | 공통 Job/Event 계약 변경 승인 완료 | `dev` 병합 완료 · Backend #16 / Orchestrator #9 |
 | 6 | `AI06-009` / `axms-ai06-009-approval-check-guardrail-runtime` | Backend, Orchestrator | 등록된 Result Port를 기준으로 공통 Approval·Check·Guardrail과 Checkpoint 재개 경로를 일반화한다. 기능별 정책 내용은 넣지 않는다. | 승인·반려·Check 실패·재개·중복 Callback·우회 방지 테스트, 통합 회귀 통과 | `AI06-008` 병합 후, 공통 상태/보안 계약 확인 뒤 진행 | `dev` 병합·종료 검증 완료 · Backend #19 / Orchestrator #10 |
-| 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | **자동 진행 금지**: 신규 저장소·Service 생성 승인 필요 | 제안·게이트 |
+| 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend, Master | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | 신규 저장소·Service 생성 승인 완료 | Source `dev` 병합 완료 · MCP #1 / Backend #21 · Master 현행화 |
 | 8 | `AI04-001` / `axms-ai04-001-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 4번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
 | 9 | `AI05-001` / `axms-ai05-001-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 5번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
 | 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | 후속·게이트 |
@@ -107,8 +109,30 @@
 
 ## 6. 현재 다음 행동
 
-- AI06-009 Backend [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19)와 Orchestrator [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10)은 `dev` 병합과 종료 검증을 완료했다.
-- 다음 공통 플랫폼 작업은 AI06-010이지만 신규 MCP Repository·Service 생성이 필요하므로 별도 승인 전 자동 진입하지 않는다.
+- AI06-010 MCP Server #1과 Backend #21은 `dev` 병합을 완료했고, Master의 저장소 목록·Workspace 도구·공통 AI 기록을 최종 현행화한다.
+- 다음 기능 구현에서도 생산 Tool Catalog는 명시적 AI04/AI05 Tool 승인 전까지 비워 두며, 공통 계약 변경은 별도 Work ID와 승인 게이트를 따른다.
+
+### AI06-010 · MCP 공통 플랫폼 부트스트랩
+
+- 상태: MCP Server·Backend `dev` 병합 완료 / Master 현행화
+- 시작 기준: Backend `9f0b529e4e0d702b7d30c95db3e48d838097e531` / Master `d500096c28fd09fb9bbc9f5c3d0bc1046e76dd70` / MCP 신규 Repository
+- Worktree/Branch: 저장소별 격리 Worktree / `feature/tmdwns0531_axms-ai06-010-mcp-common-platform-bootstrap_v0.1`
+- 변경 저장소·Package: MCP `common`·`coding`·`cms`, Backend `integration.ai.mcp`, Master Workspace manifest·AI06 기록
+- 구현 Checkpoint:
+  - [x] 공식 MCP Python SDK 기반 단일 인증 Streamable HTTP `/mcp`와 빈 생산 Catalog
+  - [x] Backend 고정 Allowlist·조건부 Client와 실제 discovery/`tools/list` 왕복
+  - [x] Core DB 접근 부재, 양 저장소 전체 회귀·production Image·diff/secret 검증
+- 검증 명령·결과:
+  - MCP Python 단위 테스트 11개와 `compileall` 통과, frozen lock production Image Build 통과
+  - MCP Image를 non-root `10001:10001`, read-only rootfs, `no-new-privileges`, localhost 격리 포트로 실행해 readiness `READY`, 빈 Tool Catalog, 미인증 `401` 확인
+  - Spring 실제 `server/discover`·`tools/list` 왕복 1개 통과, Backend 집중 14개 통과
+  - Backend Product 전체 145개·Control 전체 141개에서 실패·오류 0, 환경 게이트 각 3개 Skip, 두 JAR Build 통과
+  - dev/preview Compose config, Backend PowerShell parse, 세 저장소 diff check와 staged credential scan 통과
+- PR: MCP Server [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1) / Backend [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21) · 병합 완료
+- dev Merge SHA: MCP `e6595aeaeda5a98512004ee3252cc1b02067feec` / Backend `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`
+- 후속 위험/결정:
+  - 실제 Coding·CMS Tool Handler, 기존 CodingToolService 전환, Frontend와 새 DB/Flyway는 후속 AI04/AI05 범위다.
+  - 실행 중인 로컬 CMS는 재빌드·재기동하지 않는다.
 
 ### AI06-009 · Approval·Check·Guardrail Runtime
 

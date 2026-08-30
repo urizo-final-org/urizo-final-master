@@ -21,6 +21,7 @@ AX Module Studio 팀 개발환경을 안전하게 구성하라.
      urizo-final-frontend/
      urizo-final-backend/
      urizo-final-orchestrator/
+     urizo-final-mcp-server/
 
 2. 상위 AX-Module-Studio-Workspace에는 .git을 만들지 마라.
 3. Master가 없다면 canonical Master를 먼저 clone하라.

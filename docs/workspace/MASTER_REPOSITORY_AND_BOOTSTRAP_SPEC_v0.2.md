@@ -2,7 +2,7 @@
 
 ## 1. Decision
 
-Use four sibling Git repositories under one non-Git parent:
+Use five sibling Git repositories under one non-Git parent:
 
 ```text
 AX-Module-Studio-Workspace/
@@ -12,7 +12,8 @@ AX-Module-Studio-Workspace/
 ├── urizo-final-master/
 ├── urizo-final-frontend/
 ├── urizo-final-backend/
-└── urizo-final-orchestrator/
+├── urizo-final-orchestrator/
+└── urizo-final-mcp-server/
 ```
 
 Master owns the current scope, status, workspace governance, manifest, team collision rules, onboarding prompts, and safe wrappers. It does not own Source, contracts, Flyway SQL, Compose, Secrets, database data, or Docker Volumes. Backend remains the integrated runtime/bootstrap owner.

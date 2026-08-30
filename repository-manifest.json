@@ -79,6 +79,25 @@
         "Git or Docker final credentials",
         "final Tool authorization"
       ]
+    },
+    {
+      "name": "urizo-final-mcp-server",
+      "relativePath": "urizo-final-mcp-server",
+      "remote": "https://github.com/urizo-final-org/urizo-final-mcp-server.git",
+      "role": "single-mcp-tool-runtime",
+      "owns": [
+        "single MCP service and Streamable HTTP endpoint",
+        "common tool catalog and authentication boundary",
+        "coding and cms package extension slots",
+        "Python image and dependency lock"
+      ],
+      "mustNotOwn": [
+        "public API",
+        "Core DB access or DDL",
+        "Provider keys",
+        "Spring Job or domain state",
+        "final Tool authorization"
+      ]
     }
   ],
   "branches": {
@@ -87,17 +106,19 @@
     "featurePattern": "feature/<confirmed-github-id>_<work-slug>_<version>"
   },
   "publishedBaseline": {
-    "observedAt": "2026-08-12T14:33:41+09:00",
+    "observedAt": "2026-08-30T19:28:00+09:00",
     "status": "remote-published",
     "sourceIntegrationRefs": {
-      "urizo-final-frontend": "4579800b0319180f4c1cbe77a7435f57d9a71d6a",
-      "urizo-final-backend": "1687b3cce51532c2e54723383af2a50518a5fdd8",
-      "urizo-final-orchestrator": "eaeb3a380035e8ddb13e42fb1877baabd9f57549"
+      "urizo-final-frontend": "9ec93aef012e653aae9f62e5c8e4b988d2495d92",
+      "urizo-final-backend": "e736f7e8a4c87718bb0659b38591ed3c5fed1c3e",
+      "urizo-final-orchestrator": "8ffdace39ed91309f67759f65238ce50f3a5f324",
+      "urizo-final-mcp-server": "e6595aeaeda5a98512004ee3252cc1b02067feec"
     },
     "sourceReleaseRefs": {
       "urizo-final-frontend": "b503f2e7a4808c5776c36091a3d540ded0eb5b61",
       "urizo-final-backend": "1687b3cce51532c2e54723383af2a50518a5fdd8",
-      "urizo-final-orchestrator": "a55e62a0d5be972dbaf8f44dee17652487dc7470"
+      "urizo-final-orchestrator": "a55e62a0d5be972dbaf8f44dee17652487dc7470",
+      "urizo-final-mcp-server": "5a98279e4929b9050302db67724c2553fe9864f0"
     }
   },
   "localRuntime": {
@@ -111,6 +132,7 @@
       "database",
       "valkey",
       "coding-runtime",
+      "mcp-server",
       "checkpoint_database"
     ],
     "auxiliaryLongRunningServices": [

@@ -4,7 +4,7 @@
 
 - Master는 공통 기준·상태·Workspace 도구만 소유하며 제품 Source를 보관하지 않는다.
 - 상위 `AX-Module-Studio-Workspace`는 Git 저장소가 아니다.
-- Frontend, Backend, Orchestrator는 각각 독립 저장소다.
+- Frontend, Backend, Orchestrator, MCP Server는 각각 독립 저장소다.
 - 여러 저장소를 변경하면 같은 Slice ID/work slug를 사용하되 Commit과 PR은 저장소별로 분리한다.
 
 ## 필수 읽기
@@ -103,7 +103,7 @@
 `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
 `scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다. 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있다.
 
-- Master 먼저, 이어서 Frontend·Backend·Orchestrator를 확인한다.
+- Master 먼저, 이어서 Frontend·Backend·Orchestrator·MCP Server를 확인한다.
 - Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화한다.
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Codex·Claude `PostToolUse` Hook은 성공한 `git pull`을 감지하면 기존 공통 로더로
@@ -148,6 +148,7 @@
 - Frontend: React UI와 브라우저 동작
 - Backend: Spring API, 공개 계약, Flyway, Compose, 로컬 실행·검증
 - Orchestrator: Python LangGraph Coding Runtime
+- MCP Server: 단일 MCP Service·Endpoint·Catalog와 `common` 실행 경계
 - Master: 현재 제품 범위, 공통 Git/팀 정책, 상태 Snapshot, Workspace 도구
 
 Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. 단,
@@ -159,7 +160,7 @@ AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정�
 
 - 개발은 최신 `dev`에서 Feature Branch를 만들어 시작한다.
 - Branch, Commit, PR 제목·본문은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`의 한글 공통 형식을 사용하고 지정된 Slice ID 또는 work slug와 GitHub ID를 포함한다.
-- Every agent-created pull request in Master, Frontend, Backend, and Orchestrator targets `dev`.
+- Every agent-created pull request in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
 - `dev`와 `main`에 직접 Push하지 않는다.
 - `main` is the team lead's periodic manual promotion branch.
 - `main` 대상 PR, Force Push, 자동 Merge를 금지한다.

@@ -30,7 +30,8 @@ AX-Module-Studio-Workspace/              # not Git
 │   └── docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md
 ├── urizo-final-frontend/{AGENTS.md,CLAUDE.md}       # repository router; Claude imports AGENTS
 ├── urizo-final-backend/{AGENTS.md,CLAUDE.md}        # repository router; Claude imports AGENTS
-└── urizo-final-orchestrator/{AGENTS.md,CLAUDE.md}   # repository router; Claude imports AGENTS
+├── urizo-final-orchestrator/{AGENTS.md,CLAUDE.md}   # repository router; Claude imports AGENTS
+└── urizo-final-mcp-server/{AGENTS.md,CLAUDE.md}     # repository router; Claude imports AGENTS
 ```
 
 Team implementation starts from the common non-Git parent workspace after bootstrap. A Source-only

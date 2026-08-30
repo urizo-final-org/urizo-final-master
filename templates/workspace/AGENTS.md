@@ -3,7 +3,7 @@
 ## 저장소 경계
 
 - 이 상위 폴더에는 `.git`을 만들지 않는다.
-- Master, Frontend, Backend, Orchestrator는 각각 독립 저장소다.
+- Master, Frontend, Backend, Orchestrator, MCP Server는 각각 독립 저장소다.
 - 여러 저장소를 변경하면 같은 Slice ID/work slug를 쓰고 Commit/PR은 분리한다.
 
 ## 현재 기준
@@ -23,7 +23,7 @@
 - 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는 승인 전 절대 진행하지 않는다.
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
-  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all three Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
+  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
 - 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있으며, 성공한 Pull은 Codex·Claude `PostToolUse` Hook이 감지해
   `SessionStart`와 같은 AGENTS 로더를 다시 실행한다.
 - 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 전체 실행 Script, Frontend Watch·HMR, 그 외 격리 Service 갱신 중
@@ -43,7 +43,7 @@
   최신 `origin/dev` 기반 독립 Worktree에서 시작한다. 같은 PR은 재사용하고 다음 독립 PR은 새 Work ID와 Worktree를 쓴다.
 - Work ID는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
   기록된 PR은 다음 `SessionStart`에서 현행화한다. Hook은 읽기 전용이며 상세 규칙은 Master 운영 정책을 따른다.
-- Every agent-created PR in Master, Frontend, Backend, and Orchestrator targets `dev`.
+- Every agent-created PR in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
 - `main` is reserved for periodic manual promotion by Min Seungjun.
 - Git이 구현 상태의 기준이다.
 - Notion은 Min Seungjun이 현재 요청에서 명시적으로 지시한 경우에만 쓴다.
