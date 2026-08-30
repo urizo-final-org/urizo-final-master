@@ -1,6 +1,6 @@
 # AI06 구현 작업 임시 원장
 
-> 상태: AI04-002 `[제안]` 구현 완료 · Source Draft PR 검토 대기 · Production Coding Job E2E 계약 차단
+> 상태: AI04-002 `[제안]` 최소 수직 실행 연결 보완 완료 · Source Draft PR 검토 대기
 > 작성 기준일: 2026-08-30
 > 용도: Work ID별 범위·검증·PR·Merge 결과를 이어 가기 위한 임시 실행 원장
 > 종료 처리: 구현 캠페인이 끝나면 확정 결과만 `06_ORCHESTRATION_CONTROL.md`에 반영하고 이 파일은 삭제한다.
@@ -111,13 +111,13 @@
 ## 6. 현재 다음 행동
 
 - AI06-010 MCP Server #1, Backend #21, Master #22의 `dev` 병합과 공통 기록 현행화를 완료했다.
-- `AI04-002 / axms-ai04-002-coding-handler-integration`은 사용자가 승인한 `[제안]` 흐름에 한해 Backend·Orchestrator·MCP Server 최소 구현과 Draft PR 생성을 완료했다.
+- `AI04-002 / axms-ai04-002-coding-handler-integration`은 사용자가 승인한 `[제안]` 흐름에 한해 Backend·Orchestrator·MCP Server 최소 구현과 Draft PR 생성을 완료했고, Backend AI04 Stage Executor를 통한 Model→Tool→Result 수직 실행 연결을 보완했다.
 - 생산 Tool Catalog에는 제안 범위의 Coding Tool 7개만 등록했다. 새로운 Handler·Tool 공통 계약, Result Port, Snapshot Schema, 공통 Job/Profile/Approval Schema와 보안 경계 변경은 계속 별도 승인 게이트를 따른다.
-- 승인된 fresh-stage producer 계약이 없어 신규 Production Coding Job의 최초 분석 결과는 생성하지 않으며, 실제 Production Job E2E는 fail-closed 상태로 남긴다.
+- Orchestrator Production Snapshot Handler는 Spring Stage API에서 새 결과를 생성한 뒤 기존 Backend Result API로 저장하며, 준비된 Result만 소비하던 Executor는 테스트·호환 용도로만 남겼다.
 
 ### AI04-002 · Coding Handler 연동 `[제안]` 구현
 
-- 상태: `[제안]` 최소 구현 완료 · 3개 Source Draft PR 검토 대기 · Production Coding Job E2E 계약 차단
+- 상태: `[제안]` 최소 수직 실행 연결 보완 완료 · 3개 Source Draft PR 검토 대기
 - Work ID / work slug: `AI04-002` / `axms-ai04-002-coding-handler-integration`
 - 승인 기준: 2026-08-30 사용자 구두 합의를 기능 확정이 아닌 `[제안]` 노드 템플릿으로 적용하며, 4번 담당자 `jcy644542`가 이후 직접 변경·기능 테스트한다.
 - 시작 기준: Backend `37e8f413` / Orchestrator `8ffdace39` / MCP Server `e6595aea`
@@ -127,23 +127,26 @@
   - [x] 리뷰 반려 시 코딩·리뷰를 총 3회까지 반복하고, 미리보기 반려 시 요구사항 분석으로 돌아가 전체 Pipeline을 총 3회까지 반복
   - [x] Backend의 기능 소유 Job/Candidate/Attempt/Result/Approval, Orchestrator 14-node 제안 Graph·Handler, MCP Coding Tool 7개 연결
   - [x] 최신 code candidate → passed review → preview 후보 연결, 상태 Version·재시도 멱등성·Result 동시성·역할/승인 주체 검증
+  - [x] AI04 전용 Stage Executor가 제한된 최대 8회 Model↔Tool 루프에서 기존 MCP 7-tool allowlist만 호출하고 Tool 결과를 다음 Model 입력으로 환류
+  - [x] Orchestrator Production Executor가 Stage 결과를 기존 Result Port/Backend Result API에 저장하고 동일 resultId 재전달 시 저장 결과를 재사용
 - 검증 결과:
-  - Backend 집중 테스트 33개 통과·DB 환경 게이트 1개 Skip, Control 전체 회귀 실패 0·환경 게이트 4개 Skip, 두 실행 JAR와 runtime/migration production Image Build·non-root 실행 통과
-  - Backend Product 전체 회귀의 `McpPlatformBoundaryTest` 1개는 CRLF 개행 비교로 실패했으며 동일 실패를 깨끗한 `origin/dev`에서 재현해 이번 변경의 회귀가 아님을 확인했다. 나머지 Product 테스트는 실패 0이다.
-  - Orchestrator 집중 26개·전체 149개·AST 47개 통과, production Image Build와 UID 10001·14-node smoke 통과
+  - Backend 보완 집중 테스트 통과, Product 전체 회귀에서 기준선 CRLF 1개 제외 178개 통과·환경 게이트 4개 Skip, Control에서 같은 CRLF 1개 제외 174개 통과·환경 게이트 4개 Skip, 두 실행 JAR Build 통과
+  - Control 원형 회귀에서 추가로 관찰된 `JwtTokenProviderTest.aModifiedSignatureNeverDecodes` 1회 실패는 단독 즉시 재실행과 Product 회귀에서 통과해 비결정적 기준선으로 분리했다.
+  - Backend runtime production Image는 저장소의 opt-in CA Secret 경로로 Build 통과했으며 인증서 내용은 Image·로그·Git에 포함하지 않았다.
+  - Orchestrator 전체 151개·`compileall` 통과, Stage API POST→기존 Result PUT 연결 및 Backend Model→Tool 결과 환류 테스트 통과
   - MCP 전체 29개 통과·Windows symlink 권한 1개 Skip, `compileall`·보호 경로/경쟁 조건·diff/secret 검증 통과
-  - Backend·Orchestrator 계약 Fixture byte 동일성, 세 저장소 `git diff --check`와 변경 범위 secret 검사 통과
+  - Backend·Orchestrator staged `git diff --check`, 두 변경 저장소의 고신뢰 credential 패턴 검사 통과
 - Commit / Draft PR:
-  - Backend `1fd1ee45b8c1288ab12a92bbe66d0731da8a6709` / [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22)
-  - Orchestrator `69b54619d01584dda3817191377902d71e9f1d08` / [#11](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/11)
+  - Backend `4a497a601b6f7febb8c19f79c3d3f6d860329189` / [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22)
+  - Orchestrator `fa1e9ab274b12d4c7090d36fb01109cbad07113a` / [#11](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/11)
   - MCP Server `b21d69564fa8d7a62eec4e20fb1299c47c744f44` / [#2](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/2)
-- PR 상태: 모두 `dev` 대상 Draft·MERGEABLE이며 필수 Review가 없어 `BLOCKED`; 등록된 GitHub Status Check는 없다. Ready 전환·Ruleset 우회·병합은 하지 않았다.
+- PR 상태: 모두 `dev` 대상 Draft이며 Ready 전환·Ruleset 우회·병합은 하지 않았다.
 - 남은 차단/결정:
-  - 승인된 fresh-stage producer가 없어 Production 신규 Job은 최초 `coding.analyze`에서 `HANDLER_RESULT_NOT_FOUND`로 안전하게 종료한다. 현재 E2E 증명 범위는 Graph/계약 경로다.
-  - MCP Production Image Build는 `files.pythonhosted.org` 인증서 `UnknownIssuer` 환경 오류로 완료하지 못했다. TLS 검증 완화는 사용하지 않았다.
+  - 실제 Provider·사전 준비 MCP Workspace·DB를 함께 사용한 live Production Job 실행은 로컬 CMS를 건드리지 않는 이번 보완 조건에 따라 수행하지 않았다. 자동 검증 범위는 Model→Tool 결과 환류와 Stage API→기존 Result 저장 계약이다.
+  - Orchestrator·MCP Production Image Build는 `files.pythonhosted.org` 인증서 `UnknownIssuer` 환경 오류로 완료하지 못했다. Backend의 최초 무-Secret Build도 Maven Central PKIX에서 같은 환경 문제를 보였고 안전한 opt-in CA Secret 적용 시 통과했다. TLS 검증 완화는 사용하지 않았다.
   - MCP Workspace는 Production에서 UID 10001이 쓸 수 있는 사전 준비된 하위 Git Workspace를 mount해야 하며, clone/provision 계약은 이번 범위 밖이다.
   - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동은 하지 않았다.
-  - 4번 담당자의 제안 노드 템플릿 확정·기능 테스트, fresh-stage producer 계약 승인, Source PR 리뷰가 다음 승인 게이트다.
+  - 4번 담당자의 제안 노드 템플릿 확정·기능 테스트와 Source PR 리뷰가 다음 승인 게이트다.
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
 
