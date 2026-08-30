@@ -27,6 +27,8 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 |---|---|---|---|---|---|---|---|
 | `20260819150845` | `RESERVED` | `axms-cms-local-demo-mvp` | `add_local_demo_cms_schema` | `tmdwns0531` | `2026-09-19T15:08:45Z` | pending | none |
 | `20260819165652` | `RESERVED` | `axms-cms-local-demo-mvp` | `map_site_navigation_and_home_template` | `tmdwns0531` | `2026-09-19T16:56:52Z` | pending | `20260819150845` |
+| `20260830013135942` | `MERGED` | `axms-ai06-007-profile-version-read-contract` | `create_ai_profile_version_read_contract` | `tmdwns0531` | `2026-09-30T01:31:35Z` | [#15](https://github.com/urizo-final-org/urizo-final-backend/pull/15) | none |
+| `20260830025553074` | `MERGED` | `axms-ai06-008-job-snapshot-binding` | `bind_coding_job_to_profile_version` | `tmdwns0531` | `2026-09-30T02:55:53Z` | [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) | `20260830013135942` |
 
 ## Reservation template
 
