@@ -1,6 +1,6 @@
 # AI06 구현 작업 임시 원장
 
-> 상태: AI06-008 `dev` 병합 완료 · AI06-009 미착수
+> 상태: AI06-009 구현·검증·PR 생성 완료 · dev 병합 대기
 > 작성 기준일: 2026-08-30
 > 용도: Work ID별 범위·검증·PR·Merge 결과를 이어 가기 위한 임시 실행 원장
 > 종료 처리: 구현 캠페인이 끝나면 확정 결과만 `06_ORCHESTRATION_CONTROL.md`에 반영하고 이 파일은 삭제한다.
@@ -28,6 +28,8 @@
 - Orchestrator AI06-006 PR [#7](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/7)은 Snapshot Runner 집중 10개·WorkerLoop 집중 5개·전체 96개 테스트와 34개 Python 파일 문법 검사를 통과해 `dev`에 병합됐으며 Head SHA는 `1faae3b96fa4c95b2be2ca0c049b54ec09e837ed`, Merge SHA는 `8c139060a0a3709a32ea6d18464382d9f7d6485f`이다. GitHub Status Check는 없었고, 관리자 권한을 재확인한 뒤 self-review Ruleset만 이 PR에 한해 우회했으며 Ruleset은 변경하지 않았다.
 - Backend AI06-007 PR [#15](https://github.com/urizo-final-org/urizo-final-backend/pull/15)는 Profile 집중 15개, 계약 Fixture 107 valid·50 invalid, Flyway empty-head·직전 Revision upgrade·repeat, Product 118개·Control 114개 테스트와 두 JAR Build를 통과해 `dev`에 병합됐으며 Head SHA는 `64714e064517dffe37c277832eac917f31e6df6d`, Merge SHA는 `3c59ab10e433ed097ffd884fc08fffda9b9afb5e`이다.
 - Orchestrator AI06-007 PR [#8](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/8)은 집중 21개·전체 107개 테스트, 38개 Python 파일 문법 검사, frozen-lock production Image Build와 non-root 실행 검증을 통과해 `dev`에 병합됐으며 Head SHA는 `e3ebaed3b3cb9476f456feb60a917c5e87be2d4e`, Merge SHA는 `29a7ae5f123b57717f2d383e8123a5e0cc89bac8`이다. 두 PR 모두 GitHub Status Check는 없었고, 관리자 권한을 재확인한 뒤 self-review Ruleset만 해당 PR에 한해 우회했으며 Ruleset은 변경하지 않았다.
+- Frontend AI06-012 PR [#14](https://github.com/urizo-final-org/urizo-final-frontend/pull/14)는 Runtime과 맞지 않던 AI 운영 목업을 간소화한 뒤 `dev`에 병합됐으며 Head SHA는 `accf65dc96fed707c8476bd4f5833b982079b03d`, Merge SHA는 `9ec93aef012e653aae9f62e5c8e4b988d2495d92`이다.
+- Backend AI06-013 PR [#17](https://github.com/urizo-final-org/urizo-final-backend/pull/17)은 Profile Version Repository의 Spring Proxy 시작 문제를 수정한 뒤 `dev`에 병합됐으며 Head SHA는 `f89d440823c5bde9d1e0f3387635d119e5c1f721`, Merge SHA는 `bc741c5256d896b8c49ed1d443c989879bbe2eeb`이다.
 
 ## 3. 제안 Work ID
 
@@ -39,7 +41,7 @@
 | 3 | `AI06-006` / `axms-ai06-006-snapshot-runner-compat` | Orchestrator | 기존 `CodingGraphRunner`와 WorkerLoop에 Snapshot Provider/Runner 호환 경로를 연결한다. `jobId == thread_id`, Checkpoint, 멱등성, 승인 중단·재개를 보존하고 현행 Graph는 호환 Adapter로 유지한다. | 기존 Coding 흐름과 Snapshot 흐름의 동일 Job 중복 억제·재시도·중단/재개 테스트, 전체 회귀 통과 | `AI06-005` dev 병합 후 자동 진입 가능 | `dev` 병합 완료 · PR #7 |
 | 4 | `AI06-007` / `axms-ai06-007-profile-version-read-contract` | Backend, Orchestrator | Spring이 활성 Versioned Snapshot JSON을 보관·조회하고 Orchestrator가 Job에 고정된 Version을 읽는 최소 API/Client를 구현한다. | API 계약, Version 불변성, 없는/비활성 Version 거부, 양 저장소 회귀 통과 | **시작 전 협의**: 공통 Profile Table/Flyway·API 계약 확정 | `dev` 병합 완료 · Backend #15 / Orchestrator #8 |
 | 5 | `AI06-008` / `axms-ai06-008-job-snapshot-binding` | Backend, Orchestrator | Job 생성 시 `profileVersionId`를 고정하고 Queue에는 `jobId`만 전달하며, Claim/Runner가 Spring 기준 Snapshot을 가져와 실행하도록 연결한다. | Queue Payload 최소성, Job-Version 불변성, 재전달 멱등성, 로컬 통합 회귀 통과 | 공통 Job/Event 계약 변경 승인 완료 | `dev` 병합 완료 · Backend #16 / Orchestrator #9 |
-| 6 | `AI06-009` / `axms-ai06-009-approval-check-guardrail-runtime` | Backend, Orchestrator | 등록된 Result Port를 기준으로 공통 Approval·Check·Guardrail과 Checkpoint 재개 경로를 일반화한다. 기능별 정책 내용은 넣지 않는다. | 승인·반려·Check 실패·재개·중복 Callback·우회 방지 테스트, 통합 회귀 통과 | `AI06-008` 병합 후, 공통 상태/보안 계약 확인 뒤 진행 | 제안·게이트 |
+| 6 | `AI06-009` / `axms-ai06-009-approval-check-guardrail-runtime` | Backend, Orchestrator | 등록된 Result Port를 기준으로 공통 Approval·Check·Guardrail과 Checkpoint 재개 경로를 일반화한다. 기능별 정책 내용은 넣지 않는다. | 승인·반려·Check 실패·재개·중복 Callback·우회 방지 테스트, 통합 회귀 통과 | `AI06-008` 병합 후, 공통 상태/보안 계약 확인 뒤 진행 | 구현·검증·PR 생성 완료 · Backend #19 / Orchestrator #10 · dev 병합 대기 |
 | 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | **자동 진행 금지**: 신규 저장소·Service 생성 승인 필요 | 제안·게이트 |
 | 8 | `AI04-001` / `axms-ai04-001-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 4번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
 | 9 | `AI05-001` / `axms-ai05-001-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 5번 범위로 별도 시작; 공통 계약 변경 없으면 자율 진행 | 후속·미시작 |
@@ -102,9 +104,36 @@
 
 ## 6. 현재 다음 행동
 
-- `AI06-008`을 Backend PR #16과 Orchestrator PR #9로 `dev` 병합 완료했다.
-- Backend Flyway Revision `20260830025553074`는 병합 완료로 현행화한다.
-- AI06-009는 시작하지 않고 별도 승인 게이트에서 멈춘다.
+- Backend [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19)와 Orchestrator [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10)을 `dev` 대상으로 생성했다.
+- 먼저 열린 Backend [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18)은 AI06-009와 파일 충돌이 없고 더 이른 Flyway Revision `20260830073257815`를 사용한다. 승인 리뷰까지 통과했으나 보호된 `dev` 갱신 Ruleset에 막혀 있으므로, #18을 먼저 병합한 뒤 #19에 최신 `dev`를 merge하고 전체 Backend 회귀를 다시 통과시킨 후 병합한다.
+- 기존 `WAITING_APPROVAL`, lifecycle command와 `passed|failed` Result Port를 재사용한다. 승인은 `approved`만 Orchestrator resume으로 소비하고, 반려는 Spring `CANCELLED` terminal/no-requeue로 끝낸다.
+- 새 공통 Table·Column·상태·Result Port는 추가하지 않았다. 승인 provenance 조회에는 기존 lifecycle status View의 정확한 5개 Column만 읽는 최소 Flyway 1개를 사용한다.
+
+### AI06-009 · Approval·Check·Guardrail Runtime
+
+- 상태: 구현·검증·PR 생성 완료 · dev 병합 대기
+- 시작 기준: Backend `bc741c5256d896b8c49ed1d443c989879bbe2eeb` / Orchestrator `e411fbbfffa85635b9969aa1ce09c38e9d5d6248`
+- Worktree/Branch: Backend 새 Worktree / `feature/tmdwns0531_axms-ai06-009-approval-check-guardrail-runtime_v0.2`, Orchestrator 기존 clean Worktree / `feature/tmdwns0531_axms-ai06-009-approval-check-guardrail-runtime_v0.1`
+- 변경 저장소·Package: Backend Coding Job lifecycle/Worker 계약, Orchestrator 공통 Handler·Registry·Snapshot resume
+- 구현 Checkpoint:
+  - [x] 기존 상태·lifecycle command를 재사용한 승인·반려 전이와 중복 Callback 억제
+  - [x] 공통 Start·Guardrail·Check·Approval·End Handler와 production Registry 연결
+  - [x] 승인·반려·Check 실패·재개·기술 재시도·우회 방지와 양 저장소 전체 회귀
+- 검증 명령·결과:
+  - Backend offline contract gate: 7 documents, 41 operations, 829 local references, Fixture 108 valid·50 invalid 통과
+  - Backend 집중 product/control 각 19개 통과, 전체 product 133개·control 129개에서 실패·오류 0, 환경 게이트 DB Integration 각 2개 Skip, 두 JAR Build 통과
+  - Orchestrator 집중 50개·전체 123개 테스트와 40개 Python 파일 문법 검사 통과
+  - Orchestrator frozen `uv.lock` production Image Build, non-root UID 10001, production common Handler Key 5개 확인
+  - 양 저장소 `git diff --check`, added-line Secret Scan, 독립 최종 정적 감사 통과; reportable P1/P2/blocker 없음
+  - Backend Flyway 전체 격리 검증은 기존 로컬 `migration_owner` 인증 불일치(28P01)로 새 Revision 적용 전에 중단됐다. 생성된 임시 검증 DB는 정리했고 실행 중 CMS DB에는 새 Revision을 적용하지 않았으며 `/api/readiness`는 `READY`다.
+- PR: Backend [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) / Orchestrator [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10) · dev 병합 대기
+- dev Merge SHA: 진행 전
+- 후속 위험/결정:
+  - Backend `v0.1` Worktree의 중단 시점 미커밋 초안은 폐기하지 않고 별도 보존하며, 실제 구현은 최신 `dev` 기반 `v0.2`에서 진행한다.
+  - Backend #18의 Flyway Revision이 더 이르므로 #18을 먼저 병합하고 최신 `dev` 통합 회귀를 통과하기 전에는 Backend #19를 병합하지 않는다.
+  - `resume=true`는 정확한 `WAITING_APPROVAL → RUNNING` 승인 claim만 뜻한다. higher attempt는 기술 재시도이며 승인 interrupt를 소비하지 않고, 반려는 Spring `CANCELLED`로 종료한다.
+  - Flyway empty-head·직전 Revision upgrade는 정상 격리 자격 증명이 있는 CI 또는 수동 게이트에서 확인해야 한다.
+  - 새 공통 Schema·상태·Handler/Tool/Result Port나 기능별 정책이 필요하면 구현 전에 별도 승인받는다.
 
 ### AI06-008 · Job–Snapshot 바인딩
 
@@ -123,6 +152,6 @@
 - PR: Backend [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) / Orchestrator [#9](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/9) · 병합 완료
 - dev Merge SHA: Backend `620f09b2032c616daec035fe393469e6092fde35` / Orchestrator `e411fbbfffa85635b9969aa1ce09c38e9d5d6248`
 - 후속 위험/결정:
-  - AI06-009 Approval·Check·Guardrail 일반화와 MCP 실연동은 범위 밖이며 시작하지 않았다.
+  - AI06-009 Approval·Check·Guardrail 일반화는 AI06-008 범위에 포함하지 않았고, 이후 별도 Work ID로 시작했다. MCP 실연동은 계속 후속 범위다.
   - 6번은 LLM Ops·Natural CMS의 실행 골격·표준·안전 경계만 소유하고, 기능별 UX·업무 규칙·Profile 내용·Handler·Tool·Domain·메뉴는 4·5번 상세 문서가 소유한다.
   - 공통 플랫폼 작업이 모두 끝난 뒤 실제 Runtime과 일치하는 Snapshot/Node/Edge/Handler/Result Port, Job/Queue/Checkpoint/Approval, MCP 보안 경계·확장 지점·불변조건·승인 게이트·회귀 체크리스트를 공통 AI 문서에 최종 정리한다.
