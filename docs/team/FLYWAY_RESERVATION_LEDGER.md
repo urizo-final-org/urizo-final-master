@@ -29,8 +29,8 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260819165652` | `RESERVED` | `axms-cms-local-demo-mvp` | `map_site_navigation_and_home_template` | `tmdwns0531` | `2026-09-19T16:56:52Z` | pending | `20260819150845` |
 | `20260830013135942` | `MERGED` | `axms-ai06-007-profile-version-read-contract` | `create_ai_profile_version_read_contract` | `tmdwns0531` | `2026-09-30T01:31:35Z` | [#15](https://github.com/urizo-final-org/urizo-final-backend/pull/15) | none |
 | `20260830025553074` | `MERGED` | `axms-ai06-008-job-snapshot-binding` | `bind_coding_job_to_profile_version` | `tmdwns0531` | `2026-09-30T02:55:53Z` | [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) | `20260830013135942` |
-| `20260830073257815` | `RESERVED` | `axms-ai04-001-runner` | `create_coding_runner_task_queue` | `jcy644542` | `2026-09-29T07:32:57Z` | [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18) | `20260830025553074` |
-| `20260830074952891` | `RESERVED` | `axms-ai06-009-approval-check-guardrail-runtime` | `grant_coding_approval_transition_read` | `tmdwns0531` | `2026-09-29T07:49:52Z` | [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) | `20260830073257815` |
+| `20260830073257815` | `MERGED` | `axms-ai04-001-runner` | `create_coding_runner_task_queue` | `jcy644542` | `2026-09-29T07:32:57Z` | [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18) | `20260830025553074` |
+| `20260830074952891` | `MERGED` | `axms-ai06-009-approval-check-guardrail-runtime` | `grant_coding_approval_transition_read` | `tmdwns0531` | `2026-09-29T07:49:52Z` | [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) | `20260830073257815` |
 
 ## Reservation template
 
