@@ -1,7 +1,17 @@
 # Flyway UTC reservation ledger
 
-> Owner: Integration/Contract owner
+> Maintainer: authenticated teammate LLMs for their own work rows
 > Format: append-only status record; do not reuse abandoned timestamps
+
+## Self-service reservation rules
+
+- New revisions use the current UTC time as `yyyyMMddHHmmssSSS` (17 digits, including milliseconds).
+- Before writing SQL, the active LLM checks this ledger and Backend Migration filenames. If the value already exists, it generates a new current UTC value.
+- If the same work already has a valid reservation, reuse it instead of creating another one.
+- The active LLM records the current GitHub ID as `Owner` and immediately adds its own row as `RESERVED`. No separate approval from Min Seungjun or the Integration/Contract owner is required.
+- Each teammate LLM may add and update only its own work rows. It must not edit another owner's rows, the baseline, or these policy rules.
+- Set `Expires (UTC)` to 30 days after reservation. Record the Revision in the Backend PR body and update the row to `PR_OPEN`, `MERGED`, or `ABANDONED` as the work changes.
+- Existing 14-digit revisions remain valid and must not be renamed or reused.
 
 ## Baseline
 
@@ -17,11 +27,13 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 |---|---|---|---|---|---|---|---|
 | `20260819150845` | `RESERVED` | `axms-cms-local-demo-mvp` | `add_local_demo_cms_schema` | `tmdwns0531` | `2026-09-19T15:08:45Z` | pending | none |
 | `20260819165652` | `RESERVED` | `axms-cms-local-demo-mvp` | `map_site_navigation_and_home_template` | `tmdwns0531` | `2026-09-19T16:56:52Z` | pending | `20260819150845` |
+| `20260830013135942` | `MERGED` | `axms-ai06-007-profile-version-read-contract` | `create_ai_profile_version_read_contract` | `tmdwns0531` | `2026-09-30T01:31:35Z` | [#15](https://github.com/urizo-final-org/urizo-final-backend/pull/15) | none |
+| `20260830025553074` | `MERGED` | `axms-ai06-008-job-snapshot-binding` | `bind_coding_job_to_profile_version` | `tmdwns0531` | `2026-09-30T02:55:53Z` | [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) | `20260830013135942` |
 
 ## Reservation template
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
 |---|---|---|---|---|---|---|---|
-| `YYYYMMDDHHMMSS` | `RESERVED` | `AXMS-...` | `lower_snake_description` | confirmed owner | ISO-8601 | pending | revision/Slice IDs |
+| `yyyyMMddHHmmssSSS` | `RESERVED` | `AXMS-...` | `lower_snake_description` | current GitHub ID | ISO-8601 | pending | revision/Slice IDs |
 
-Allowed states: `RESERVED`, `PR_OPEN`, `MERGED`, `ABANDONED`. The Integration/Contract owner is the sole editor. Timestamp allocation must also be recorded in the Backend PR body so a stale Master branch cannot silently authorize a collision.
+Allowed states: `RESERVED`, `PR_OPEN`, `MERGED`, `ABANDONED`. Reservation is self-approved after the duplicate checks and row append above. Git Push, PR creation, review, and Merge still follow the normal repository approval rules.
