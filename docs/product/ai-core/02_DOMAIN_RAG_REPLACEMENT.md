@@ -38,10 +38,26 @@
 
 ### 담당자 확인 항목
 
-- [ ] `CONNECTOR_SYNC`, `KNOWLEDGE_BUILD` Job Type 분리 필요 여부
-- [ ] Job별 입력·완료·실패·재시도 기준
-- [ ] Build 성공과 Knowledge Version 활성화의 분리 여부
-- [ ] 기존 Product Queue·Outbox 복구 계약 재사용 여부
+- [x] `CONNECTOR_SYNC`, `KNOWLEDGE_BUILD` Job Type 분리 필요 여부
+- [ ] Job별 입력·완료·실패·재시도 기준 — 임베딩 서빙 방식 확정 후 회신
+- [x] Build 성공과 Knowledge Version 활성화의 분리 여부
+- [x] 기존 Product Queue·Outbox 복구 계약 재사용 여부
+
+### 2026-08-30 담당자 확인 결과
+
+> 확인자: 민은지 (`emilyjjang-jpg`) · 3건 동의, 1건 보류
+
+- **Job Type 분리: 동의(유지).** 이미 분리되어 있다. `job_type` CHECK 제약이
+  `('CONNECTOR_SYNC', 'KNOWLEDGE_BUILD')`로 한정하고(`V20260811211500__create_product_job_outbox_and_batch.sql:26`),
+  `ProductJobWorker.java:63`이 두 Job을 분기 실행한다. 추가 분리·통합 없이 현행 유지한다.
+- **재시도 기준: 보류.** 골격(`attempt`, `max_attempts`, `next_attempt_at`, `failure_retryable`)은 있으나
+  현재 값이 해시 픽스처 임베딩 전제다. 임베딩을 로컬 서빙으로 둘지 외부 API로 둘지에 따라
+  재시도·타임아웃 정책이 달라지므로, 2번의 임베딩 서빙 방식 확정 후 회신한다. 이번 주 내 공유 예정.
+- **Build·활성화 분리: 동의(유지).** 이미 분리되어 있다. Build는 `EVALUATE` 단계에서
+  `APPROVAL_PENDING`/`WAITING_APPROVAL`로 멈추고(`ProductBatchService.java:235-242`),
+  활성화는 `POST /api/knowledge-versions/{id}/activate` 별도 호출이다.
+- **Queue·Outbox 재사용: 동의.** 이미 해당 계약을 사용 중이다(Outbox 디스패처, `recoverInterruptedJobs()`).
+  별도 Queue를 신설하지 않는다.
 
 ## 하위 작업 기록
 
