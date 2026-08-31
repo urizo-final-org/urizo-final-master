@@ -182,6 +182,7 @@
   - Master [#24](https://github.com/urizo-final-org/urizo-final-master/pull/24)
 - PR 상태: Backend #23, Orchestrator #12, MCP Server #3, Master #24 모두 `dev` 병합 완료
 - dev Merge SHA: Backend `5d10afde15c52c7748e6998416c02438692d6ac6` / Orchestrator `1332543171e4993ad9fffb9edee097b880103705` / MCP Server `1fbf2bd2ca650bb33d1518713b49220af942ecb3` / Master `24018692f332afe0bf65b4f39843c51480e6afd5`
+- Closeout PR: Master [#25](https://github.com/urizo-final-org/urizo-final-master/pull/25) · `dev` 대상 Draft
 - 로컬 CMS 재빌드·재기동, 실제 DB/Flyway 실행, Volume 변경은 하지 않았다.
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
