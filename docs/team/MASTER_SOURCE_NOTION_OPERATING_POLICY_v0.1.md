@@ -112,8 +112,8 @@ GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한�
   상태, Branch, Push, PR과 `dev` 병합 정보를 저장소별 한 행으로 기록한다.
 - PR 생성 시 LLM이 해당 Work ID에 PR 정보를 연결할지 한 번 제안한다. 동의하면 실제 PR 링크·상태·생성일과
   확인된 원격 Branch·최근 Push SHA·일자를 함께 기록하며, 이 PR 링크를 이후 자동 동기화 동의로 본다.
-- PR 링크가 기록된 작업은 다음 `SessionStart`에서 LLM이 실제 GitHub 상태를 확인한다. 병합됐다면 추가 질문 없이
-  Merge SHA·일자와 완료 상태를 갱신한다. Hook은 담당 기능과 동기화 대상을 알릴 뿐 문서를 직접 수정하지 않는다.
+- PR 링크가 기록된 작업은 담당 LLM이 해당 작업을 재개하거나 PR을 처리하기 전에 실제 GitHub 상태를 확인한다. 병합됐다면 추가 질문 없이
+  Merge SHA·일자와 완료 상태를 갱신한다. Context Hook은 GitHub·Ledger를 스캔하거나 문서를 직접 수정하지 않는다.
 - PR 연결을 동의하지 않은 작업은 자동 추적하지 않는다. 기능 문서 기록 유무를 GitHub Action 병합 조건으로 강제하지 않는다.
 - LLM은 로컬 추측값이 아니라 Git·GitHub에서 확인한 값만 반영하며 전체 Commit 이력을 문서에 복제하지 않는다.
 
@@ -133,7 +133,7 @@ urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork
 ```
 
 - Master를 먼저 확인하고 이어서 Source 네 저장소를 모두 확인한다.
-- Master 확인 후 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화하고 활성 LLM은 현재 턴에 Master 기준을 다시 읽는다.
+- Master 확인 후 Workspace AGENTS, Codex·Claude Context Hook, Git Pull Gate를 자동 동기화한다. AGENTS 지문이 바뀌면 현재 턴에 전체 기준을 한 번 다시 읽고, 바뀌지 않았으면 짧은 Checkpoint만 갱신한다.
 - 깨끗한 `dev`만 `origin/dev`로 Fast-forward한다.
 - Feature Branch는 Branch를 바꾸거나 `dev`를 자동 Merge/Rebase하지 않는다.
 - Dirty, Diverged, Upstream 없음, Origin 불일치는 변경하지 않고 보고한다.

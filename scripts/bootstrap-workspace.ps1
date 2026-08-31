@@ -48,6 +48,30 @@ function Invoke-Git {
     }
 }
 
+function Get-LocalGitConfig {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryPath,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+
+    $previousErrorAction = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $value = @(& git -c "safe.directory=$RepositoryPath" -C $RepositoryPath config --local --get $Key 2>$null)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
+    if ($exitCode -eq 1) {
+        return $null
+    }
+    if ($exitCode -ne 0) {
+        throw "Could not read local Git config '$Key' in $RepositoryPath"
+    }
+    return (($value | ForEach-Object { $_.ToString() }) -join '').Trim()
+}
+
 function Copy-TemplateIfAbsent {
     param(
         [Parameter(Mandatory = $true)][string]$Source,
@@ -266,6 +290,10 @@ function Sync-WorkspaceLlmConfiguration {
     Sync-ManagedTemplateFile `
         -Source (Join-Path $templateRoot 'codex/hooks/post-pull-context.ps1') `
         -Target (Join-Path $WorkspaceRoot '.codex/hooks/post-pull-context.ps1')
+    $workspaceGitHook = Join-Path $WorkspaceRoot '.githooks/pre-push'
+    Sync-ManagedTemplateFile `
+        -Source (Join-Path $templateRoot 'githooks/pre-push') `
+        -Target $workspaceGitHook
 
     $isWindowsHost = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT
     $claudeSettingsName = if ($isWindowsHost) { 'settings.windows.json' } else { 'settings.unix.json' }
@@ -273,11 +301,54 @@ function Sync-WorkspaceLlmConfiguration {
         -Source (Join-Path $templateRoot "claude/$claudeSettingsName") `
         -Target (Join-Path $WorkspaceRoot '.claude/settings.json')
 
+    $workspaceGitHookRoot = [IO.Path]::GetFullPath((Join-Path $WorkspaceRoot '.githooks'))
+    foreach ($repository in $manifest.repositories) {
+        $repositoryPath = [IO.Path]::GetFullPath((Join-Path $WorkspaceRoot $repository.relativePath))
+        if (-not (Test-Path -LiteralPath (Join-Path $repositoryPath '.git'))) {
+            if ($WhatIf) {
+                Write-Host "PLAN install Pull gate after repository creation: $($repository.name)"
+                continue
+            }
+            throw "Cannot install the Pull gate because a repository checkout is missing: $repositoryPath"
+        }
+
+        $existingHooksPath = Get-LocalGitConfig -RepositoryPath $repositoryPath -Key 'core.hooksPath'
+        if ($existingHooksPath) {
+            $normalizedExisting = $existingHooksPath.Replace('/', '\').TrimEnd('\')
+            $normalizedManaged = $workspaceGitHookRoot.Replace('/', '\').TrimEnd('\')
+            if (-not $normalizedExisting.Equals($normalizedManaged, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Existing core.hooksPath differs; refusing to overwrite it: repository=$($repository.name); value=$existingHooksPath"
+            }
+        }
+
+        $existingWorkspaceRoot = Get-LocalGitConfig -RepositoryPath $repositoryPath -Key 'axms.workspaceRoot'
+        if ($existingWorkspaceRoot -and
+            -not [IO.Path]::GetFullPath($existingWorkspaceRoot).Equals([IO.Path]::GetFullPath($WorkspaceRoot), [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Existing axms.workspaceRoot differs; refusing to overwrite it: repository=$($repository.name); value=$existingWorkspaceRoot"
+        }
+
+        if ($WhatIf) {
+            Write-Host "PLAN install Pull gate Git config: $($repository.name)"
+        }
+        else {
+            Invoke-Git -RepositoryPath $repositoryPath -Arguments @('config', '--local', 'core.hooksPath', $workspaceGitHookRoot)
+            Invoke-Git -RepositoryPath $repositoryPath -Arguments @('config', '--local', 'axms.workspaceRoot', $WorkspaceRoot)
+            Write-Host "INSTALLED Pull gate Git config: $($repository.name)"
+        }
+    }
+
+    if (-not $isWindowsHost -and -not $WhatIf) {
+        & chmod +x $workspaceGitHook
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not mark the managed pre-push Hook executable: $workspaceGitHook"
+        }
+    }
+
     if ($WhatIf) {
-        Write-Host 'LLM HOOK SETUP PLAN: Codex and Claude SessionStart plus Git-pull context synchronization was planned.'
+        Write-Host 'CONTEXT AND PULL GATE SETUP PLAN: lifecycle context, compact checkpoints, and read-only pre-push enforcement were planned.'
     }
     else {
-        Write-Host 'LLM HOOK SETUP PASS: Codex and Claude use the shared AXMS loader at SessionStart and after Git pull.'
+        Write-Host 'CONTEXT AND PULL GATE SETUP PASS: Codex and Claude use bounded context refresh; Git push validates a fresh pre-PR Pull receipt.'
     }
 }
 

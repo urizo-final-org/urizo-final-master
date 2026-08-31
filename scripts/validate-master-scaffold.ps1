@@ -39,9 +39,13 @@ $required = @(
     'templates/workspace/codex/hooks/post-pull-context.ps1',
     'templates/workspace/claude/settings.windows.json',
     'templates/workspace/claude/settings.unix.json',
+    'templates/workspace/githooks/pre-push',
     'scripts/preflight-workspace.ps1',
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
+    'scripts/start-feature-work.ps1',
+    'scripts/prepare-dev-pr.ps1',
+    'scripts/pre-push-pull-gate.ps1',
     'scripts/health-workspace.ps1',
     'scripts/start-local-cms.ps1',
     'scripts/start-frontend-live.ps1',
@@ -107,17 +111,24 @@ $sessionStartRules = @($hookConfig.hooks.SessionStart)
 if ($hookEventNames.Count -ne 2 -or
     $hookEventNames -notcontains 'SessionStart' -or
     $hookEventNames -notcontains 'PostToolUse' -or
-    $sessionStartRules.Count -ne 1 -or
-    $sessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
-    throw 'Codex Hook template must contain the approved SessionStart and Git-pull PostToolUse rules.'
+    $sessionStartRules.Count -ne 2 -or
+    $sessionStartRules[0].matcher -ne '^(startup|clear|compact)$' -or
+    $sessionStartRules[1].matcher -ne '^resume$') {
+    throw 'Codex Hook template must split full lifecycle loading from compact resume checkpoints.'
 }
-$sessionStartCommands = @($sessionStartRules[0].hooks)
-if ($sessionStartCommands.Count -ne 1 -or
-    $sessionStartCommands[0].type -ne 'command' -or
-    $sessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
-    $sessionStartCommands[0].commandWindows -notmatch 'session-start\.ps1' -or
-    $sessionStartCommands[0].additionalContextLimit -ne 32768) {
-    throw 'Codex SessionStart Hook must use one cross-platform command with the approved context limit.'
+$fullSessionCommand = @($sessionStartRules[0].hooks)
+$resumeSessionCommand = @($sessionStartRules[1].hooks)
+if ($fullSessionCommand.Count -ne 1 -or
+    $fullSessionCommand[0].type -ne 'command' -or
+    $fullSessionCommand[0].command -notmatch 'session-start\.ps1.+-Mode Full.+24576' -or
+    $fullSessionCommand[0].commandWindows -notmatch 'session-start\.ps1.+-Mode Full.+24576' -or
+    $fullSessionCommand[0].additionalContextLimit -ne 24576 -or
+    $resumeSessionCommand.Count -ne 1 -or
+    $resumeSessionCommand[0].type -ne 'command' -or
+    $resumeSessionCommand[0].command -notmatch 'session-start\.ps1.+-Mode Checkpoint.+4096' -or
+    $resumeSessionCommand[0].commandWindows -notmatch 'session-start\.ps1.+-Mode Checkpoint.+4096' -or
+    $resumeSessionCommand[0].additionalContextLimit -ne 4096) {
+    throw 'Codex SessionStart Hook must use bounded full and checkpoint commands on both operating systems.'
 }
 $postToolUseRules = @($hookConfig.hooks.PostToolUse)
 $postToolUseCommands = @(if ($postToolUseRules.Count -eq 1) { @($postToolUseRules[0].hooks) } else { @() })
@@ -128,8 +139,8 @@ if ($postToolUseRules.Count -ne 1 -or
     $postToolUseCommands[0].type -ne 'command' -or
     $postToolUseCommands[0].command -notmatch 'post-pull-context\.ps1' -or
     $postToolUseCommands[0].commandWindows -notmatch 'post-pull-context\.ps1' -or
-    $postToolUseCommands[0].additionalContextLimit -ne 32768) {
-    throw 'Codex PostToolUse Hook must inspect shell commands and reload context only after Git pull.'
+    $postToolUseCommands[0].additionalContextLimit -ne 24576) {
+    throw 'Codex PostToolUse Hook must inspect shell commands with enough room for a conditional full refresh.'
 }
 $sessionStartScriptPath = Join-Path $masterRoot 'templates/workspace/codex/hooks/session-start.ps1'
 $sessionStartScript = Get-Content -Raw -Encoding UTF8 -LiteralPath $sessionStartScriptPath
@@ -138,16 +149,14 @@ if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
     $sessionStartScript -notmatch 'systemMessage\s*=\s*\$blockedReason') {
     throw 'Codex SessionStart Hook must stop the turn with a visible reason when Master context loading fails.'
 }
-if ($sessionStartScript -notmatch 'AI FEATURE SESSION CONTEXT' -or
-    $sessionStartScript -notmatch 'auth status --active --hostname github\.com' -or
-    $sessionStartScript -notmatch "ErrorActionPreference = 'Continue'" -or
-    $sessionStartScript -notmatch 'instructionFiles\.Remove\(\$masterAgentsPath\)' -or
-    $sessionStartScript -notmatch 'Tracked PR sync' -or
-    $sessionStartScript -notmatch 'Hook is read-only') {
-    throw 'SessionStart Hook must expose the current GitHub identity, assigned AI work, tracked PR sync, and read-only boundary.'
+if ($sessionStartScript -notmatch "ValidateSet\('Full', 'Checkpoint'\)" -or
+    $sessionStartScript -notmatch 'AXMS CONTEXT CHECKPOINT v2' -or
+    $sessionStartScript -notmatch 'Get-FileFingerprint' -or
+    $sessionStartScript -match 'AI FEATURE SESSION CONTEXT|auth status --active|Next candidate|Tracked PR sync') {
+    throw 'SessionStart Hook must provide fingerprinted bounded checkpoints without GitHub or AI-ledger scans.'
 }
 $missingWorkspaceRoot = Join-Path $masterRoot '__missing_axms_workspace__'
-$blockedOutput = @(& $sessionStartScriptPath -WorkspaceRoot $missingWorkspaceRoot) -join "`n"
+$blockedOutput = @(& $sessionStartScriptPath -WorkspaceRoot $missingWorkspaceRoot -Mode Full -Reason Lifecycle -MaxContextBytes 24576) -join "`n"
 $blockedResult = $blockedOutput | ConvertFrom-Json
 if ($blockedResult.continue -ne $false -or
     $blockedResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:' -or
@@ -161,8 +170,37 @@ if ($postPullScript -notmatch '\bgit\(' -and $postPullScript -notmatch 'gitPullP
 }
 if ($postPullScript -notmatch 'session-start\.ps1' -or
     $postPullScript -notmatch '\$PSScriptRoot' -or
+    $postPullScript -notmatch 'agentsChanged' -or
+    $postPullScript -notmatch '-Mode Full' -or
+    $postPullScript -notmatch '-Mode Checkpoint' -or
     $postPullScript -match 'Find-WorkspaceRoot|sync-workspace\.ps1') {
-    throw 'Post-pull Hook must derive the managed Workspace path and reuse the shared AGENTS loader without extra discovery or synchronization.'
+    throw 'Post-pull Hook must choose checkpoint or full mode from actual Pull output and reuse the shared loader.'
+}
+
+$testWorkspaceRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-hook-validation-" + [Guid]::NewGuid().ToString('N'))
+try {
+New-Item -ItemType Directory -Path (Join-Path $testWorkspaceRoot 'urizo-final-master') -Force | Out-Null
+Copy-Item -LiteralPath (Join-Path $masterRoot 'templates/workspace/AGENTS.md') -Destination (Join-Path $testWorkspaceRoot 'AGENTS.md')
+Copy-Item -LiteralPath (Join-Path $masterRoot 'AGENTS.md') -Destination (Join-Path $testWorkspaceRoot 'urizo-final-master/AGENTS.md')
+
+$checkpointOutput = @(& $sessionStartScriptPath -WorkspaceRoot $testWorkspaceRoot -Mode Checkpoint -Reason Resume -MaxContextBytes 4096) -join "`n"
+$checkpointBytes = [Text.Encoding]::UTF8.GetByteCount($checkpointOutput)
+if ($checkpointOutput -notmatch '^AXMS CONTEXT CHECKPOINT v2: reason=Resume' -or
+    $checkpointOutput -match '===== BEGIN' -or
+    $checkpointOutput -notmatch 'Before implementation:' -or
+    $checkpointOutput -notmatch 'Before PR:' -or
+    $checkpointBytes -gt 4096) {
+    throw "Checkpoint mode must stay below 4096 bytes and repeat both Pull gates; bytes=$checkpointBytes"
+}
+
+$fullOutput = @(& $sessionStartScriptPath -WorkspaceRoot $testWorkspaceRoot -Mode Full -Reason Lifecycle -MaxContextBytes 24576) -join "`n"
+$fullBytes = [Text.Encoding]::UTF8.GetByteCount($fullOutput)
+if ($fullOutput -notmatch '^MASTER CONTEXT PASS' -or
+    $fullOutput -notmatch '===== BEGIN urizo-final-master/AGENTS\.md =====' -or
+    $fullOutput -match '===== BEGIN AGENTS\.md =====' -or
+    $fullOutput -match 'AI FEATURE SESSION CONTEXT|Next candidate|auth status --active' -or
+    $fullBytes -gt 24576) {
+    throw "Full mode must load Master without duplicating Workspace AGENTS or dynamic ledger state; bytes=$fullBytes"
 }
 
 function Invoke-PostPullValidationCase {
@@ -172,17 +210,15 @@ function Invoke-PostPullValidationCase {
 
     $inputJson = $HookInput | ConvertTo-Json -Depth 12 -Compress
     $powerShellExecutable = (Get-Process -Id $PID).Path
-    return @($inputJson | & $powerShellExecutable -NoProfile -File $postPullScriptPath -WorkspaceRoot $missingWorkspaceRoot) -join "`n"
+    return @($inputJson | & $powerShellExecutable -NoProfile -File $postPullScriptPath -WorkspaceRoot $testWorkspaceRoot -ContextLoaderPath $sessionStartScriptPath) -join "`n"
 }
 
 $directPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
     tool_input = [ordered]@{ cmd = 'git pull --ff-only' }
-    tool_response = [ordered]@{ exit_code = 0 }
+    tool_response = [ordered]@{ exit_code = 0; output = 'Already up to date.' }
 })
-$directPullResult = $directPullOutput | ConvertFrom-Json
-if ($directPullResult.continue -ne $false -or
-    $directPullResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:') {
-    throw 'Post-pull Hook must detect a successful direct exec_command Git pull.'
+if ($directPullOutput -notmatch '^AXMS CONTEXT CHECKPOINT v2: reason=Pull' -or $directPullOutput -match '===== BEGIN') {
+    throw 'A successful ordinary Git pull must emit only the compact checkpoint.'
 }
 
 $functionsExecPullInput = 'const r = await tools.exec_command({ cmd: "git pull --ff-only", workdir: "C:\\repo" }); text(JSON.stringify(r));'
@@ -196,10 +232,17 @@ $functionsExecPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
     tool_input = $functionsExecPullInput
     tool_response = $functionsExecSuccessResponse
 })
-$functionsExecPullResult = $functionsExecPullOutput | ConvertFrom-Json
-if ($functionsExecPullResult.continue -ne $false -or
-    $functionsExecPullResult.stopReason -notmatch '^MASTER CONTEXT BLOCKED:') {
-    throw 'Post-pull Hook must detect a successful Git pull nested in functions.exec.'
+if ($functionsExecPullOutput -notmatch '^AXMS CONTEXT CHECKPOINT v2: reason=Pull' -or $functionsExecPullOutput -match '===== BEGIN') {
+    throw 'A successful Git pull nested in functions.exec must emit only the compact checkpoint.'
+}
+
+$agentsPullOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
+    tool_input = [ordered]@{ cmd = 'git pull --ff-only' }
+    tool_response = [ordered]@{ exit_code = 0; output = ' AGENTS.md | 4 ++--' }
+})
+if ($agentsPullOutput -notmatch '^MASTER CONTEXT PASS' -or
+    $agentsPullOutput -notmatch '===== BEGIN urizo-final-master/AGENTS\.md =====') {
+    throw 'A successful Git pull that changes AGENTS.md must emit one full canonical refresh.'
 }
 
 $functionsExecSearchOutput = Invoke-PostPullValidationCase -HookInput ([ordered]@{
@@ -222,6 +265,12 @@ $functionsExecFailedPullOutput = Invoke-PostPullValidationCase -HookInput ([orde
 if (-not [string]::IsNullOrWhiteSpace($functionsExecFailedPullOutput)) {
     throw 'Post-pull Hook must not reload context after a failed Git pull nested in functions.exec.'
 }
+}
+finally {
+    if (Test-Path -LiteralPath $testWorkspaceRoot) {
+        Remove-Item -LiteralPath $testWorkspaceRoot -Recurse -Force
+    }
+}
 
 foreach ($claudeSettingsRelative in @(
     'templates/workspace/claude/settings.windows.json',
@@ -233,16 +282,22 @@ foreach ($claudeSettingsRelative in @(
     if ($claudeHookEventNames.Count -ne 2 -or
         $claudeHookEventNames -notcontains 'SessionStart' -or
         $claudeHookEventNames -notcontains 'PostToolUse' -or
-        $claudeSessionStartRules.Count -ne 1 -or
-        $claudeSessionStartRules[0].matcher -ne '^(startup|resume|clear|compact)$') {
-        throw "Claude Hook template must contain the approved SessionStart and Git-pull PostToolUse rules: $claudeSettingsRelative"
+        $claudeSessionStartRules.Count -ne 2 -or
+        $claudeSessionStartRules[0].matcher -ne '^(startup|clear|compact)$' -or
+        $claudeSessionStartRules[1].matcher -ne '^resume$') {
+        throw "Claude Hook template must split full lifecycle loading from compact resume checkpoints: $claudeSettingsRelative"
     }
-    $claudeSessionStartCommands = @($claudeSessionStartRules[0].hooks)
-    if ($claudeSessionStartCommands.Count -ne 1 -or
-        $claudeSessionStartCommands[0].type -ne 'command' -or
-        $claudeSessionStartCommands[0].command -notmatch 'session-start\.ps1' -or
-        $claudeSessionStartCommands[0].timeout -ne 30) {
-        throw "Claude SessionStart must call the shared AXMS loader once: $claudeSettingsRelative"
+    $claudeFullCommand = @($claudeSessionStartRules[0].hooks)
+    $claudeResumeCommand = @($claudeSessionStartRules[1].hooks)
+    if ($claudeFullCommand.Count -ne 1 -or
+        $claudeFullCommand[0].type -ne 'command' -or
+        $claudeFullCommand[0].command -notmatch 'session-start\.ps1.+-Mode Full.+24576' -or
+        $claudeFullCommand[0].timeout -ne 30 -or
+        $claudeResumeCommand.Count -ne 1 -or
+        $claudeResumeCommand[0].type -ne 'command' -or
+        $claudeResumeCommand[0].command -notmatch 'session-start\.ps1.+-Mode Checkpoint.+4096' -or
+        $claudeResumeCommand[0].timeout -ne 30) {
+        throw "Claude SessionStart must call the shared bounded loader in both modes: $claudeSettingsRelative"
     }
     $claudePostToolUseRules = @($claudeSettings.hooks.PostToolUse)
     $claudePostToolUseCommands = @(if ($claudePostToolUseRules.Count -eq 1) { @($claudePostToolUseRules[0].hooks) } else { @() })
@@ -302,13 +357,15 @@ if ($workspaceAgentTemplate -notmatch 'PostToolUse' -or
     $masterAgents -notmatch 'PostToolUse' -or
     $workspaceAgentTemplate -notmatch '적용 모드를 LLM이 판단' -or
     $masterAgents -notmatch '적용 대상을 판단') {
-    throw 'Master and Workspace AGENTS policies must reload AGENTS after Git pull and leave runtime-mode selection to the LLM.'
+    throw 'Master and Workspace AGENTS policies must checkpoint successful Git pulls and leave runtime-mode selection to the LLM.'
 }
-if ($workspaceAgentTemplate -notmatch 'git pull --ff-only origin dev' -or
-    $masterAgents -notmatch 'git pull --ff-only origin dev' -or
-    $workspaceAgentTemplate -notmatch 'PR 생성 직전' -or
-    $masterAgents -notmatch 'PR 생성 직전') {
-    throw 'Master and Workspace AGENTS policies must require clean dev pulls before isolated work and before PR creation.'
+if ($workspaceAgentTemplate -notmatch 'start-feature-work\.ps1' -or
+    $masterAgents -notmatch 'start-feature-work\.ps1' -or
+    $workspaceAgentTemplate -notmatch 'prepare-dev-pr\.ps1' -or
+    $masterAgents -notmatch 'prepare-dev-pr\.ps1' -or
+    $workspaceAgentTemplate -notmatch 'pre-push' -or
+    $masterAgents -notmatch 'pre-push') {
+    throw 'Master and Workspace AGENTS policies must route pre-work and pre-PR Pulls through enforced gates.'
 }
 if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
@@ -318,16 +375,40 @@ $syncWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $
 if ($syncWorkspaceScript -notmatch 'bootstrap-workspace\.ps1' -or
     $syncWorkspaceScript -notmatch '-SyncLlmHooks' -or
     $syncWorkspaceScript -notmatch '\.codex/hooks/session-start\.ps1' -or
-    $syncWorkspaceScript -notmatch 'ACTIVE SESSION CONTEXT RELOAD PASS' -or
+    $syncWorkspaceScript -notmatch 'Get-InstructionFingerprint' -or
+    $syncWorkspaceScript -notmatch "'Checkpoint'.*'Full'|'Full'.*'Checkpoint'" -or
+    $syncWorkspaceScript -notmatch 'ACTIVE SESSION CONTEXT REFRESH PASS' -or
     $syncWorkspaceScript -notmatch 'LOCAL RUNTIME CONTEXT PASS' -or
     $workspaceAgentTemplate -notmatch 'LOCAL RUNTIME CONTEXT PASS' -or
     $masterAgents -notmatch 'LOCAL RUNTIME CONTEXT PASS') {
-    throw 'Workspace synchronization must install both LLM Hooks and reuse the shared SessionStart loader for immediate active-session context reload.'
+    throw 'Workspace synchronization must install Hooks and select full versus checkpoint refresh from instruction fingerprints.'
 }
 $bootstrapWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1')
 if ($bootstrapWorkspaceScript -notmatch 'GetExtension\(\$Target\)' -or
-    $bootstrapWorkspaceScript -notmatch 'UTF8Encoding\]::new\(\$writeUtf8Bom\)') {
-    throw 'Workspace bootstrap must write managed PowerShell Hook files with a UTF-8 BOM for Windows PowerShell compatibility.'
+    $bootstrapWorkspaceScript -notmatch 'UTF8Encoding\]::new\(\$writeUtf8Bom\)' -or
+    $bootstrapWorkspaceScript -notmatch 'core\.hooksPath' -or
+    $bootstrapWorkspaceScript -notmatch 'axms\.workspaceRoot' -or
+    $bootstrapWorkspaceScript -notmatch 'refusing to overwrite') {
+    throw 'Workspace bootstrap must preserve PowerShell encoding and install the managed Git Hook without overwriting an unrelated hooksPath.'
+}
+$startFeatureWorkScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-feature-work.ps1')
+$prepareDevPrScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/prepare-dev-pr.ps1')
+$prePushPullGateScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/pre-push-pull-gate.ps1')
+$prePushHook = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates/workspace/githooks/pre-push')
+if ($startFeatureWorkScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \$integrationBranch\)' -or
+    $startFeatureWorkScript -notmatch '@\(''worktree'', ''add''' -or
+    $startFeatureWorkScript -notmatch 'CANONICAL DIRTY PRESERVED' -or
+    $startFeatureWorkScript -notmatch '@\(''worktree'', ''remove''' -or
+    $prepareDevPrScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \$integrationBranch\)' -or
+    $prepareDevPrScript -notmatch 'CANONICAL DIRTY PRESERVED' -or
+    $prepareDevPrScript -notmatch '@\(''worktree'', ''remove''' -or
+    $prepareDevPrScript -notmatch 'axms-pull-gates' -or
+    $prePushPullGateScript -match '@\(''pull''' -or
+    $prePushPullGateScript -notmatch 'refs/heads/dev' -or
+    $prePushPullGateScript -notmatch 'refs/heads/main' -or
+    $prePushPullGateScript -notmatch 'Stale pre-PR Pull receipt' -or
+    $prePushHook -notmatch 'pre-push-pull-gate\.ps1') {
+    throw 'Pull-gate scripts must pull before work/PR while keeping pre-push validation network-free and read-only.'
 }
 $startLocalScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-local-cms.ps1')
 $rebuildLocalServiceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/rebuild-local-service.ps1')
@@ -401,6 +482,7 @@ $parseTargets = @(
     Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1'
 ) + @(
     Get-Item -LiteralPath (Join-Path $masterRoot 'templates/workspace/codex/hooks/session-start.ps1')
+    Get-Item -LiteralPath (Join-Path $masterRoot 'templates/workspace/codex/hooks/post-pull-context.ps1')
 )
 foreach ($scriptFile in $parseTargets) {
     $tokens = $null
@@ -415,7 +497,7 @@ if ($parseFailures.Count -gt 0) {
 }
 
 $forbiddenPatterns = @(
-    '(?im)^\s*(?:&\s+)?git\s+(reset|clean|stash|checkout|switch|pull|rebase)\b',
+    '(?im)^\s*(?:&\s+)?git\s+(reset|clean|stash|checkout|switch|rebase)\b',
     'Remove-Item[^\r\n]*-Recurse',
     '\bdocker\s+volume\s+(rm|prune)\b',
     '\bdown\s+-v\b',
@@ -431,6 +513,13 @@ foreach ($pattern in $forbiddenPatterns) {
     }
 }
 
+$nonPullGateScriptText = (Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1' |
+    Where-Object { $_.Name -notin @('validate-master-scaffold.ps1', 'start-feature-work.ps1', 'prepare-dev-pr.ps1') } |
+    ForEach-Object { Get-Content -Raw -Encoding UTF8 -LiteralPath $_.FullName }) -join "`n"
+if ($nonPullGateScriptText -match "(?im)git\s+pull|@\('pull'") {
+    throw 'Network-mutating Git pull is allowed only in the pre-work and pre-PR Pull gate scripts.'
+}
+
 foreach ($forbiddenDirectory in @(
         'urizo-final-frontend',
         'urizo-final-backend',
@@ -443,7 +532,8 @@ foreach ($forbiddenDirectory in @(
 
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
-Write-Host 'PASS: fail-closed AGENTS reload after direct/functions.exec Git pull with failure and search guards'
+Write-Host 'PASS: bounded full/checkpoint context with conditional AGENTS refresh after direct/functions.exec Git pull'
+Write-Host 'PASS: enforced pre-work/pre-PR Pull gates and read-only pre-push receipt validation'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: five canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

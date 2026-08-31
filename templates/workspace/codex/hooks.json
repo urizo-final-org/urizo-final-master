@@ -1,17 +1,30 @@
 {
-  "description": "Reload canonical AXMS instructions when a Codex session starts, its context is rebuilt, or a Git pull completes.",
+  "description": "Load canonical AXMS instructions once per rebuilt context and emit compact workflow checkpoints on resume or ordinary Git pull.",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "^(startup|resume|clear|compact)$",
+        "matcher": "^(startup|clear|compact)$",
         "hooks": [
           {
             "type": "command",
-            "command": "pwsh -NoProfile -File .codex/hooks/session-start.ps1",
-            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1",
+            "command": "pwsh -NoProfile -File .codex/hooks/session-start.ps1 -Mode Full -Reason Lifecycle -MaxContextBytes 24576",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1 -Mode Full -Reason Lifecycle -MaxContextBytes 24576",
             "timeout": 30,
-            "statusMessage": "Reloading AXMS Master and AI work context",
-            "additionalContextLimit": 32768
+            "statusMessage": "Loading canonical AXMS instructions",
+            "additionalContextLimit": 24576
+          }
+        ]
+      },
+      {
+        "matcher": "^resume$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File .codex/hooks/session-start.ps1 -Mode Checkpoint -Reason Resume -MaxContextBytes 4096",
+            "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1 -Mode Checkpoint -Reason Resume -MaxContextBytes 4096",
+            "timeout": 30,
+            "statusMessage": "Refreshing AXMS workflow checkpoint",
+            "additionalContextLimit": 4096
           }
         ]
       }
@@ -25,8 +38,8 @@
             "command": "pwsh -NoProfile -File .codex/hooks/post-pull-context.ps1",
             "commandWindows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\post-pull-context.ps1",
             "timeout": 30,
-            "statusMessage": "Reloading AXMS context after Git pull",
-            "additionalContextLimit": 32768
+            "statusMessage": "Refreshing AXMS context after Git pull",
+            "additionalContextLimit": 24576
           }
         ]
       }

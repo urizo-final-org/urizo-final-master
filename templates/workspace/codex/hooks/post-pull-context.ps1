@@ -1,6 +1,8 @@
 [CmdletBinding()]
 param(
-    [string]$WorkspaceRoot
+    [string]$WorkspaceRoot,
+
+    [string]$ContextLoaderPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -8,7 +10,7 @@ Set-StrictMode -Version Latest
 
 function Get-NestedValue {
     param(
-        [Parameter(Mandatory = $true)]$InputObject,
+        [Parameter(Mandatory = $true)][AllowNull()]$InputObject,
         [Parameter(Mandatory = $true)][string[]]$Path
     )
 
@@ -24,6 +26,17 @@ function Get-NestedValue {
         $cursor = $property.Value
     }
     return $cursor
+}
+
+function Add-TextValue {
+    param(
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][System.Collections.Generic.List[string]]$List,
+        $Value
+    )
+
+    if ($Value -is [string] -and -not [string]::IsNullOrWhiteSpace($Value)) {
+        $List.Add($Value)
+    }
 }
 
 $hookInputText = [Console]::In.ReadToEnd()
@@ -52,23 +65,17 @@ foreach ($path in @(
     @('args', 'command'),
     @('args', 'cmd')
 )) {
-    $candidate = Get-NestedValue -InputObject $hookInput -Path $path
-    if ($candidate -is [string] -and -not [string]::IsNullOrWhiteSpace($candidate)) {
-        $commandCandidates.Add($candidate)
-    }
+    Add-TextValue -List $commandCandidates -Value (Get-NestedValue -InputObject $hookInput -Path $path)
 }
 
 $execCommandPattern = '(?s)\btools\.exec_command\s*\(\s*\{\s*cmd\s*:\s*(?<literal>"(?:\\.|[^"\\])*")'
 foreach ($candidate in @($commandCandidates)) {
     foreach ($match in [regex]::Matches($candidate, $execCommandPattern)) {
         try {
-            $nestedCommand = $match.Groups['literal'].Value | ConvertFrom-Json
+            Add-TextValue -List $commandCandidates -Value ($match.Groups['literal'].Value | ConvertFrom-Json)
         }
         catch {
             continue
-        }
-        if ($nestedCommand -is [string] -and -not [string]::IsNullOrWhiteSpace($nestedCommand)) {
-            $commandCandidates.Add($nestedCommand)
         }
     }
 }
@@ -80,6 +87,7 @@ if ([string]::IsNullOrWhiteSpace($commandText) -or $commandText -notmatch $gitPu
 }
 
 $exitCodes = [System.Collections.Generic.List[int]]::new()
+$responseTexts = [System.Collections.Generic.List[string]]::new()
 foreach ($path in @(
     @('tool_response', 'exit_code'),
     @('tool_response', 'exitCode')
@@ -90,10 +98,15 @@ foreach ($path in @(
     }
 }
 
-$functionsExecOutput = Get-NestedValue -InputObject $hookInput -Path @('tool_response', 'output')
-if ($null -ne $functionsExecOutput) {
-    foreach ($item in @($functionsExecOutput)) {
+foreach ($path in @(
+    @('tool_response', 'output'),
+    @('tool_response', 'stdout'),
+    @('tool_response', 'text')
+)) {
+    $responseValue = Get-NestedValue -InputObject $hookInput -Path $path
+    foreach ($item in @($responseValue)) {
         $responseText = if ($item -is [string]) { $item } else { Get-NestedValue -InputObject $item -Path @('text') }
+        Add-TextValue -List $responseTexts -Value $responseText
         if ($responseText -isnot [string] -or -not $responseText.Trim().StartsWith('{')) {
             continue
         }
@@ -107,10 +120,13 @@ if ($null -ne $functionsExecOutput) {
         if ($null -ne $embeddedExitCode) {
             $exitCodes.Add([int]$embeddedExitCode)
         }
+        foreach ($embeddedPath in @(@('output'), @('stdout'), @('text'))) {
+            Add-TextValue -List $responseTexts -Value (Get-NestedValue -InputObject $embeddedResponse -Path $embeddedPath)
+        }
     }
 }
 
-if (@($exitCodes | Where-Object { $_ -ne 0 }).Count -gt 0) {
+if ($exitCodes.Count -eq 0 -or @($exitCodes | Where-Object { $_ -ne 0 }).Count -gt 0) {
     exit 0
 }
 
@@ -118,7 +134,7 @@ if ([string]::IsNullOrWhiteSpace($WorkspaceRoot)) {
     $WorkspaceRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 }
 
-$contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'
+$contextLoader = if ($ContextLoaderPath) { $ContextLoaderPath } else { Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1' }
 if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
     $blockedReason = 'MASTER CONTEXT BLOCKED: shared SessionStart loader is missing after Git pull.'
     [ordered]@{
@@ -129,4 +145,11 @@ if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
     exit 0
 }
 
-& $contextLoader -WorkspaceRoot $WorkspaceRoot
+$responseText = $responseTexts -join "`n"
+$agentsChanged = $responseText -match '(?im)(?:^|[\\/\s])AGENTS\.md(?:\s|$|[|])'
+if ($agentsChanged) {
+    & $contextLoader -WorkspaceRoot $WorkspaceRoot -Mode Full -Reason Pull -MaxContextBytes 24576
+}
+else {
+    & $contextLoader -WorkspaceRoot $WorkspaceRoot -Mode Checkpoint -Reason Pull -MaxContextBytes 4096
+}

@@ -34,10 +34,12 @@ DB 변경이 필요하면 Flyway Ledger와 Backend Migration 파일명을 확인
 `yyyyMMddHHmmssSSS` 17자리 Revision을 중복 없이 생성해 자기 작업 행을 즉시 `RESERVED`로 기록하라.
 예약 자체에는 Min Seungjun 또는 Integration/Contract 담당자의 승인을 요청하지 말고, 같은 작업의 기존 예약은 재사용하라.
 
-Dirty, Diverged, local-only 작업을 자동 Reset, Stash, Checkout하지 마라. 깨끗한 최신 dev
-기반 Feature Branch 또는 별도 Worktree를 사용하라. 저장소별 Commit/PR을 분리하고 모든
-PR은 dev를 대상으로 한다. dev/main 직접 Push, main 대상 PR, Force Push, 자동 Merge를
-금지한다.
+Dirty, Diverged, local-only 작업을 자동 Reset, Stash, Checkout하지 마라. 새 구현은
+`urizo-final-master/scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로
+시작해 canonical dev Pull과 독립 Worktree 생성을 통과하라. Push·PR 직전에는 깨끗한 Feature Worktree에서
+`urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행해 현재 Head용 Pull Receipt를 발급받아라.
+Managed pre-push Hook을 우회하지 마라. 저장소별 Commit/PR을 분리하고 모든 PR은 dev를 대상으로 한다.
+dev/main 직접 Push, main 대상 PR, Force Push, 자동 Merge를 금지한다.
 
 단순 질문은 형식을 강제하지 않고 바로 답하라. 코드·문서 변경이나 조사 완료 보고는
 Master `AGENTS.md`의 공통 응답 형식을 짧고 명료하게 사용하라.
