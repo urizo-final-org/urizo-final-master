@@ -52,7 +52,7 @@
 | 8 | `AI04-002` / `axms-ai04-002-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 흐름만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #22 / Orchestrator #11 / MCP #2 / Master #23 |
 | 9 | `AI05-001-01` / `axms-ai05-001-01-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 최소 수직 연결만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #23 / Orchestrator #12 / MCP #3 / Master #24 |
 | 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | `dev` 병합 완료 · Frontend #16 / Backend #24 / Master #26 |
-| 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | 후속·미시작 |
+| 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | `dev` 병합 완료 · Frontend #17 / Backend #26 / Master #28 |
 
 ### UI 목업과 실제 연결의 구분
 
@@ -184,6 +184,35 @@
 - dev Merge SHA: Backend `5d10afde15c52c7748e6998416c02438692d6ac6` / Orchestrator `1332543171e4993ad9fffb9edee097b880103705` / MCP Server `1fbf2bd2ca650bb33d1518713b49220af942ecb3` / Master `24018692f332afe0bf65b4f39843c51480e6afd5`
 - Closeout PR: Master [#25](https://github.com/urizo-final-org/urizo-final-master/pull/25) · `dev` 대상 Draft
 - 로컬 CMS 재빌드·재기동, 실제 DB/Flyway 실행, Volume 변경은 하지 않았다.
+
+### AI05-002 · CMS 사이트 설정 연동
+
+- 상태: Frontend·Backend·Master `dev` 병합 완료 · Closeout 현행화
+- 마감 Work ID / work slug: `AI05-002-CLOSEOUT` / `axms-ai05-002-post-merge-closeout`
+- Work ID / work slug: `AI05-002` / `axms-ai05-002-cms-site-settings-integration`
+- 승인 기준: 2026-08-31 사용자 승인 범위인 CMS 기본 설정·사이트 관리 실제 연동만 구현하고, 5번 담당자 `LEEJAEWOOK1` 소유 상세 문서는 수정하지 않는다.
+- 시작 기준: Frontend `4411dcd3c282312cbcbc3cc4c61e62b4b36dde4b` / Backend `be68fea34a9ba4c23724ec87b69cf28518182b6d` / Master `7b27975f562f2ad9d41c06b4a1a8de13cf145309`
+- Worktree/Branch: 저장소별 최신 `origin/dev` 기반 독립 Worktree / `feature/tmdwns0531_axms-ai05-002-cms-site-settings-integration_v0.1`
+- 구현 Checkpoint:
+  - [x] CMS 소유 `app.cms_site` Table과 기본 사이트·Template 연결을 추가하고 공통 Profile Schema는 변경하지 않음
+  - [x] 최고관리자 전용 CMS 기본 설정·사이트별 조회/저장 API와 사이트명·공개 경로·Template·사용 여부 검증 연결
+  - [x] 공개 경로의 최장 일치 사이트 Context와 Template 해석, 사이트 설정 저장 후 공개 화면 즉시 갱신 연결
+  - [x] 사이트 소유 필드와 Template 표현 필드 경계를 유지하고 메뉴·콘텐츠·게시판 계약은 확장하지 않음
+- 검증 결과:
+  - Frontend Vitest 54개, TypeScript app/node 검사와 Vite build 통과
+  - Backend 관련 테스트 17개 통과. 전체 211개 중 기존 Windows CRLF 경계 검사 1개 실패, 환경 Gate 4개 Skip
+  - 양 Source 저장소 `git diff --check` 통과, Flyway Revision 중복 없음 확인
+- Commit / PR:
+  - Frontend `7388380ddf22b1a5b8a8781b299606b161c41652` / [#17](https://github.com/urizo-final-org/urizo-final-frontend/pull/17)
+  - Backend `0645271a1faf3b585020396228563f6596c10de5` / [#26](https://github.com/urizo-final-org/urizo-final-backend/pull/26)
+  - Master `c9bbf544e375ac2f4ade0c17e065b723bbf0ff9b` / [#28](https://github.com/urizo-final-org/urizo-final-master/pull/28)
+- PR 상태: Frontend #17, Backend #26, Master #28 모두 `dev` 병합 완료
+- dev Merge SHA: Frontend `267f36b6391aa1f7c5e0c4961e7dc6adbe7d904a` / Backend `7a07c6f1c41c07f9e074340bcd2a964335bac75d` / Master `df389188c2fb0b07cad42a8479fb6637feadbc09`
+- Flyway Revision: `20260831022313641` · `MERGED` · Backend #26
+- 남은 검증/결정:
+  - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동·Volume 변경은 사용자 승인 Gate에 따라 수행하지 않았다.
+  - Frontend 고정 Node 24.14.0/pnpm 11.9.0 조합 대신 번들 Node 24.19로 직접 검증했다.
+  - Closeout PR: 생성 후 연결 · `dev` 대상 Draft
 
 ### AI06-011 · 관리자 Profile 설정 연동
 
