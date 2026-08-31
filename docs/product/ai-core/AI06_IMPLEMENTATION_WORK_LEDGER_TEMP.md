@@ -212,7 +212,7 @@
 - 남은 검증/결정:
   - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동·Volume 변경은 사용자 승인 Gate에 따라 수행하지 않았다.
   - Frontend 고정 Node 24.14.0/pnpm 11.9.0 조합 대신 번들 Node 24.19로 직접 검증했다.
-  - Closeout PR: 생성 후 연결 · `dev` 대상 Draft
+  - Closeout PR: Master [#29](https://github.com/urizo-final-org/urizo-final-master/pull/29) · `dev` 대상 Draft
 
 ### AI06-011 · 관리자 Profile 설정 연동
 
