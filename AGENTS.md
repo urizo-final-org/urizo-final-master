@@ -175,6 +175,10 @@ AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정�
 - 개발은 최신 `dev`에서 Feature Branch를 만들어 시작한다.
 - Branch, Commit, PR 제목·본문은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`의 한글 공통 형식을 사용하고 지정된 Slice ID 또는 work slug와 GitHub ID를 포함한다.
 - Every agent-created pull request in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
+- GitHub Ruleset에서 Min Seungjun(`tmdwns0531`)은 `dev` 대상 PR의 직접 병합 예외 Actor다. 현재 요청에서 병합까지
+  명시적으로 승인됐고 PR Base가 `dev`, Head SHA가 의도한 Commit, `mergeable=MERGEABLE`이며 일반 Merge가 필수 리뷰 조건으로만
+  차단되면 `gh pr merge --merge --admin`으로 이 예외를 적용할 수 있다.
+- 이 예외는 `dev`·`main` 직접 Push, 자동 Merge, `main` 대상 PR, Force Push 또는 다른 계정의 Ruleset 우회를 허용하지 않는다.
 - 현재 Work ID의 PR이 `dev`에 병합됐음을 GitHub와 `origin/dev`에서 확인하면 해당 PR의 원격 Head Branch와
   로컬 Branch를 제거하고, 연결된 Worktree가 깨끗하면 함께 제거한다. 원격 Branch가 이미 삭제됐으면 Fetch·Prune으로 현행화한다.
 - Branch 정리 전 PR Base·병합 상태·Head SHA와 로컬 Dirty·Diverged·local-only Commit을 확인한다.

@@ -54,6 +54,9 @@
 - Work ID는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
   기록된 PR은 다음 `SessionStart`에서 현행화한다. Hook은 읽기 전용이며 상세 규칙은 Master 운영 정책을 따른다.
 - Every agent-created PR in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
+- GitHub Ruleset에서 Min Seungjun(`tmdwns0531`)은 `dev` 대상 PR의 직접 병합 예외 Actor다. 병합이 명시적으로 승인됐고
+  Base·Head SHA·Mergeable을 확인했으며 일반 Merge가 필수 리뷰로만 막히면 `gh pr merge --merge --admin`을 사용할 수 있다.
+  이 예외는 직접 Push, 자동 Merge, `main` 대상 PR, Force Push 또는 다른 계정의 우회를 허용하지 않는다.
 - 현재 Work ID의 PR이 `dev`에 병합됐음을 GitHub와 `origin/dev`에서 확인하면 해당 원격 Head Branch와 로컬 Branch를 제거하고,
   연결된 Worktree가 깨끗하면 함께 제거한다. 열린 PR, 미병합 Branch, 병합 후 추가 Commit, Dirty·Diverged·local-only 작업은 보존하고 보고한다.
 - `main` is reserved for periodic manual promotion by Min Seungjun.
