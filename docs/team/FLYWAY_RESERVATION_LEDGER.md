@@ -32,7 +32,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260830073257815` | `MERGED` | `axms-ai04-001-runner` | `create_coding_runner_task_queue` | `jcy644542` | `2026-09-29T07:32:57Z` | [#18](https://github.com/urizo-final-org/urizo-final-backend/pull/18) | `20260830025553074` |
 | `20260830074952891` | `MERGED` | `axms-ai06-009-approval-check-guardrail-runtime` | `grant_coding_approval_transition_read` | `tmdwns0531` | `2026-09-29T07:49:52Z` | [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) | `20260830073257815` |
 | `20260830111238338` | `MERGED` | `axms-ai04-002-coding-handler-integration` | `create_coding_handler_results` | `tmdwns0531` | `2026-09-29T11:12:38Z` | [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22) | `20260830074952891` |
-| `20260830162029912` | `RESERVED` | `axms-ai05-001-01-cms-handler-integration` | `create_natural_cms_result_boundary` | `tmdwns0531` | `2026-09-29T16:20:29Z` | pending | `20260830111238338` |
+| `20260830162029912` | `PR_OPEN` | `axms-ai05-001-01-cms-handler-integration` | `create_natural_cms_result_boundary` | `tmdwns0531` | `2026-09-29T16:20:29Z` | [#23](https://github.com/urizo-final-org/urizo-final-backend/pull/23) | `20260830111238338` |
 
 ## Reservation template
 
