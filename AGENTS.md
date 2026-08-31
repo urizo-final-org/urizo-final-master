@@ -175,6 +175,10 @@ AI 핵심 기능 담당자는 `docs/product/ai-core/`에서 자신에게 배정�
 - 개발은 최신 `dev`에서 Feature Branch를 만들어 시작한다.
 - Branch, Commit, PR 제목·본문은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`의 한글 공통 형식을 사용하고 지정된 Slice ID 또는 work slug와 GitHub ID를 포함한다.
 - Every agent-created pull request in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
+- 현재 Work ID의 PR이 `dev`에 병합됐음을 GitHub와 `origin/dev`에서 확인하면 해당 PR의 원격 Head Branch와
+  로컬 Branch를 제거하고, 연결된 Worktree가 깨끗하면 함께 제거한다. 원격 Branch가 이미 삭제됐으면 Fetch·Prune으로 현행화한다.
+- Branch 정리 전 PR Base·병합 상태·Head SHA와 로컬 Dirty·Diverged·local-only Commit을 확인한다.
+  열린 PR, 미병합 Branch, 병합 후 추가 Commit, Dirty Worktree는 자동 삭제하지 않고 보존 상태를 보고한다.
 - `dev`와 `main`에 직접 Push하지 않는다.
 - `main` is the team lead's periodic manual promotion branch.
 - `main` 대상 PR, Force Push, 자동 Merge를 금지한다.
