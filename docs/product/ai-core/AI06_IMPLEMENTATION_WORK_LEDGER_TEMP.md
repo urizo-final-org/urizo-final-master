@@ -1,6 +1,6 @@
 # AI06 구현 작업 임시 원장
 
-> 상태: AI04-002 `dev` 병합 완료 · AI05-001-01 `[제안]` 최소 수직 실행 연결 검증 완료
+> 상태: AI04-002·AI05-001-01 `[제안]` 최소 수직 실행 연결 `dev` 병합 완료
 > 작성 기준일: 2026-08-31
 > 용도: Work ID별 범위·검증·PR·Merge 결과를 이어 가기 위한 임시 실행 원장
 > 종료 처리: 구현 캠페인이 끝나면 확정 결과만 `06_ORCHESTRATION_CONTROL.md`에 반영하고 이 파일은 삭제한다.
@@ -50,7 +50,7 @@
 | 6 | `AI06-009` / `axms-ai06-009-approval-check-guardrail-runtime` | Backend, Orchestrator | 등록된 Result Port를 기준으로 공통 Approval·Check·Guardrail과 Checkpoint 재개 경로를 일반화한다. 기능별 정책 내용은 넣지 않는다. | 승인·반려·Check 실패·재개·중복 Callback·우회 방지 테스트, 통합 회귀 통과 | `AI06-008` 병합 후, 공통 상태/보안 계약 확인 뒤 진행 | `dev` 병합·종료 검증 완료 · Backend #19 / Orchestrator #10 |
 | 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend, Master | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | 신규 저장소·Service 생성 승인 완료 | `dev` 병합·현행화 완료 · MCP #1 / Backend #21 / Master #22 |
 | 8 | `AI04-002` / `axms-ai04-002-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 흐름만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #22 / Orchestrator #11 / MCP #2 / Master #23 |
-| 9 | `AI05-001-01` / `axms-ai05-001-01-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 최소 수직 연결만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | Draft PR Backend #23 / Orchestrator #12 / MCP #3 / Master #24 |
+| 9 | `AI05-001-01` / `axms-ai05-001-01-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 최소 수직 연결만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #23 / Orchestrator #12 / MCP #3 / Master #24 |
 | 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | 후속·게이트 |
 | 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | 후속·미시작 |
 
@@ -112,7 +112,7 @@
 
 - AI06-010 MCP Server #1, Backend #21, Master #22의 `dev` 병합과 공통 기록 현행화를 완료했다.
 - `AI04-002 / axms-ai04-002-coding-handler-integration`은 사용자가 승인한 `[제안]` 흐름에 한해 Backend·Orchestrator·MCP Server 최소 구현과 `dev` 병합을 완료했다.
-- `AI05-001-01 / axms-ai05-001-01-cms-handler-integration`은 같은 실행 뼈대에 CMS 기능 전용 Resource·Structured Command·Preview 경계만 연결하고 있으며, 5번 담당 기능의 최종 확정이 아니다.
+- `AI05-001-01 / axms-ai05-001-01-cms-handler-integration`은 같은 실행 뼈대에 CMS 기능 전용 Resource·Structured Command·Preview 경계를 연결하고 `dev` 병합을 완료했으며, 5번 담당 기능의 최종 확정은 아니다.
 - 생산 Tool Catalog에는 승인 범위의 Coding Tool 7개와 CMS Tool 6개만 등록한다. 새로운 공통 Handler/Tool/Result/Snapshot Schema, 공통 Job/Profile/Approval Schema와 보안 경계 변경은 계속 별도 승인 게이트를 따른다.
 - Orchestrator Production Snapshot Handler는 Spring Stage API에서 새 결과를 생성한 뒤 기존 Backend Result API로 저장하며, 준비된 Result만 소비하던 Executor는 테스트·호환 용도로만 남겼다.
 
@@ -152,7 +152,8 @@
 
 ### AI05-001-01 · Natural CMS Handler 연동 `[제안]` 구현
 
-- 상태: `[제안]` 최소 수직 실행 연결 구현·로컬 검증 완료 · `dev` 대상 Draft PR 검토
+- 상태: `[제안]` 최소 수직 실행 연결 `dev` 병합·Closeout 검증 완료
+- 마감 Work ID / work slug: `AI05-001-01-CLOSEOUT` / `axms-ai05-001-01-post-merge-closeout`
 - Work ID / work slug: `AI05-001-01` / `axms-ai05-001-01-cms-handler-integration`
 - 승인 기준: 2026-08-31 사용자 승인 범위만 구현하며, 5번 담당자 `LEEJAEWOOK1` 소유의 상세 기능 문서와 AI05-001 Backend #20 변경은 수정·재작성하지 않는다.
 - 시작 기준: Backend `acdfa58d7278e59567157ec089531595647fd86c` / Orchestrator `221d64175129dd065f23de2d9c7c81863a9932aa` / MCP Server `6f0380f8e5749e4a71de80fdbbb7d3fdbcf5f93c` / Master `8dbda3591263449b825e7dc68f9010ac50aa6771`
@@ -174,11 +175,13 @@
   - 노드 순서·Result Port·반려 재시도는 Orchestrator `default_natural_cms_snapshot.py`와 `natural_cms_handlers.py`, 순수 Preview 계산은 MCP `cms/preview.py`에서 변경한다.
   - 이번 제안은 `CONTENT UPDATE(title, body)`만 지원한다. 확장 시에도 기존 `CmsRequestValidator`·`CmsService`를 재사용하고 MCP Core DB 직접 접근 금지를 유지한다.
   - 공통 Job/Profile/Approval/Result/Snapshot Schema와 Worker dispatch 계약은 변경하지 않았다. 실제 생산 Queue dispatch가 필요하면 공통 계약 승인 후 별도 Work로 연결한다.
-- Commit / Draft PR:
+- Commit / PR:
   - Backend `e4cc38bd72660a848db548fd96709bd3221b3fa1` / [#23](https://github.com/urizo-final-org/urizo-final-backend/pull/23)
   - Orchestrator `d89bc770791ed45cb571f8be05405b4abaff1abb` / [#12](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/12)
   - MCP Server `f3392ecc9654f316b60d52dcc2ef03de6af88d62` / [#3](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/3)
   - Master [#24](https://github.com/urizo-final-org/urizo-final-master/pull/24)
+- PR 상태: Backend #23, Orchestrator #12, MCP Server #3, Master #24 모두 `dev` 병합 완료
+- dev Merge SHA: Backend `5d10afde15c52c7748e6998416c02438692d6ac6` / Orchestrator `1332543171e4993ad9fffb9edee097b880103705` / MCP Server `1fbf2bd2ca650bb33d1518713b49220af942ecb3` / Master `24018692f332afe0bf65b4f39843c51480e6afd5`
 - 로컬 CMS 재빌드·재기동, 실제 DB/Flyway 실행, Volume 변경은 하지 않았다.
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
