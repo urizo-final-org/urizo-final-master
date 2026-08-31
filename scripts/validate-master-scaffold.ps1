@@ -304,6 +304,12 @@ if ($workspaceAgentTemplate -notmatch 'PostToolUse' -or
     $masterAgents -notmatch '적용 대상을 판단') {
     throw 'Master and Workspace AGENTS policies must reload AGENTS after Git pull and leave runtime-mode selection to the LLM.'
 }
+if ($workspaceAgentTemplate -notmatch 'git pull --ff-only origin dev' -or
+    $masterAgents -notmatch 'git pull --ff-only origin dev' -or
+    $workspaceAgentTemplate -notmatch 'PR 생성 직전' -or
+    $masterAgents -notmatch 'PR 생성 직전') {
+    throw 'Master and Workspace AGENTS policies must require clean dev pulls before isolated work and before PR creation.'
+}
 if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
     throw 'Master and Workspace AGENTS policies must require automatic Codex and Claude Hook synchronization after Master updates.'

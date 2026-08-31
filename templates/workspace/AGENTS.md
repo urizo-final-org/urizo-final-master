@@ -26,6 +26,10 @@
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
 - 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있으며, 성공한 Pull은 Codex·Claude `PostToolUse` Hook이 감지해
   `SessionStart`와 같은 AGENTS 로더를 다시 실행한다.
+- 새 구현 작업은 대상 저장소의 깨끗한 `dev`에서 `git pull --ff-only origin dev`를 성공시킨 뒤 Hook의 AGENTS 재주입 결과를 확인하고,
+  갱신된 `origin/dev` 기반 독립 Worktree와 Feature Branch를 만든 다음 시작한다. Pull이 실패하거나 Dirty·Diverged·local-only 상태로 안전하게 수행할 수 없으면 기존 상태를 보존하고 `MASTER CONTEXT BLOCKED`를 보고하며 구현하지 않는다.
+- PR 생성 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `git pull --ff-only origin dev`를 다시 성공시키고 Hook의 AGENTS 재주입과 관련 검증을 마친 뒤 Push·PR을 진행한다.
+  최신 `dev`와 분기되어 Fast-forward Pull이 실패하면 자동 Merge·Rebase·충돌 해결을 하지 않고 `MASTER CONTEXT BLOCKED`로 중단한다.
 - 주입된 `AGENTS.md`와 이번 작업의 활성 Source Worktree 변경 범위를 기준으로 `full` 전체 실행,
   Frontend Watch·HMR, 단일 Service 격리 갱신 중 적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
 - 변경 범위는 staged·unstaged·untracked 파일과 `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 본다.
