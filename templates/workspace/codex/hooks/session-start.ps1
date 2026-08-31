@@ -257,6 +257,7 @@ try {
 
     [void]$builder.AppendLine('- LLM cycle: 새 작업 지시 때 Work ID·slug를 한 번 제안하고, 같은 PR의 여러 작업은 한 ID에 묶는다.')
     [void]$builder.AppendLine('- LLM cycle: PR 생성 때 문서 연결을 한 번 제안한다. 기록된 PR은 다음 SessionStart에서 병합 여부를 확인해 추가 질문 없이 현행화한다.')
+    [void]$builder.AppendLine('- LLM cycle: 현재 Work ID의 PR이 dev에 병합됐으면 검증 후 원격·로컬 Head Branch와 clean Worktree를 정리하고, Dirty·Diverged·local-only 또는 미병합 작업은 보존한다.')
     [void]$builder.AppendLine('- Hook is read-only: 실제 기능 MD 수정과 GitHub 확인은 담당 LLM이 수행한다.')
 
     $payload = $builder.ToString()

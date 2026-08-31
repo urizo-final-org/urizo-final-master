@@ -54,6 +54,8 @@
 - Work ID는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
   기록된 PR은 다음 `SessionStart`에서 현행화한다. Hook은 읽기 전용이며 상세 규칙은 Master 운영 정책을 따른다.
 - Every agent-created PR in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
+- 현재 Work ID의 PR이 `dev`에 병합됐음을 GitHub와 `origin/dev`에서 확인하면 해당 원격 Head Branch와 로컬 Branch를 제거하고,
+  연결된 Worktree가 깨끗하면 함께 제거한다. 열린 PR, 미병합 Branch, 병합 후 추가 Commit, Dirty·Diverged·local-only 작업은 보존하고 보고한다.
 - `main` is reserved for periodic manual promotion by Min Seungjun.
 - Git이 구현 상태의 기준이다.
 - Notion은 Min Seungjun이 현재 요청에서 명시적으로 지시한 경우에만 쓴다.
