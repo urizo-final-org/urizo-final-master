@@ -37,6 +37,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260831022313641` | `MERGED` | `axms-ai05-002-cms-site-settings-integration` | `create_cms_site_settings` | `tmdwns0531` | `2026-09-30T02:23:13Z` | [Backend #26](https://github.com/urizo-final-org/urizo-final-backend/pull/26) | `20260831011109932` |
 | `20260831165912245` | `RESERVED` | `AXMS-RC-002` | `unify_natural_cms_apply_transaction` | `tmdwns0531` | `2026-09-30T16:59:12Z` | pending | `20260830162029912` |
 | `20260831181151833` | `RESERVED` | `AXMS-RC-003` | `expose_snapshot_approval_authority` | `tmdwns0531` | `2026-09-30T18:11:51Z` | pending | `20260831165912245` |
+| `20260831195834460` | `RESERVED` | `AXMS-RC-005` | `cascade_provider_audit_on_credential_delete` | `tmdwns0531` | `2026-09-30T19:58:34Z` | pending | none |
 
 ## Reservation template
 
