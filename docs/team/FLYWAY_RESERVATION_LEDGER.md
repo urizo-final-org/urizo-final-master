@@ -33,7 +33,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260830074952891` | `MERGED` | `axms-ai06-009-approval-check-guardrail-runtime` | `grant_coding_approval_transition_read` | `tmdwns0531` | `2026-09-29T07:49:52Z` | [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) | `20260830073257815` |
 | `20260830111238338` | `MERGED` | `axms-ai04-002-coding-handler-integration` | `create_coding_handler_results` | `tmdwns0531` | `2026-09-29T11:12:38Z` | [#22](https://github.com/urizo-final-org/urizo-final-backend/pull/22) | `20260830074952891` |
 | `20260830162029912` | `MERGED` | `axms-ai05-001-01-cms-handler-integration` | `create_natural_cms_result_boundary` | `tmdwns0531` | `2026-09-29T16:20:29Z` | [#23](https://github.com/urizo-final-org/urizo-final-backend/pull/23) | `20260830111238338` |
-| `20260831011109932` | `PR_OPEN` | `axms-ai06-011-admin-profile-settings-integration` | `grant_profile_version_admin_write` | `tmdwns0531` | `2026-09-30T01:11:09Z` | [Backend #24](https://github.com/urizo-final-org/urizo-final-backend/pull/24) | `20260830162029912` |
+| `20260831011109932` | `MERGED` | `axms-ai06-011-admin-profile-settings-integration` | `grant_profile_version_admin_write` | `tmdwns0531` | `2026-09-30T01:11:09Z` | [Backend #24](https://github.com/urizo-final-org/urizo-final-backend/pull/24) | `20260830162029912` |
 
 ## Reservation template
 

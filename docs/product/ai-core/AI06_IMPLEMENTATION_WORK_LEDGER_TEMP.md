@@ -51,7 +51,7 @@
 | 7 | `AI06-010` / `axms-ai06-010-mcp-common-platform-bootstrap` | 신규 MCP 저장소, Backend, Master | 계획된 단일 MCP Repository에 `common`·`coding`·`cms` Package, Service·Catalog 골격과 Spring 왕복 계약을 만든다. MCP의 Core DB 직접 접근은 금지한다. | Spring→MCP→Spring 왕복 계약, Catalog allowlist, DB 직접 접근 부재, 보안 회귀 통과 | 신규 저장소·Service 생성 승인 완료 | `dev` 병합·현행화 완료 · MCP #1 / Backend #21 / Master #22 |
 | 8 | `AI04-002` / `axms-ai04-002-coding-handler-integration` | Backend, Orchestrator, MCP | 4번 소유 Coding Job/Candidate/Attempt 결과와 기능별 Coding Handler·Tool을 등록된 계약 안에서 연결한다. | Coding Job E2E, Diff/승인/반려/재시도, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 흐름만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #22 / Orchestrator #11 / MCP #2 / Master #23 |
 | 9 | `AI05-001-01` / `axms-ai05-001-01-cms-handler-integration` | Backend, Orchestrator, MCP | 5번 소유 Natural CMS Job/Resource/Preview 결과와 기능별 CMS Handler·Tool을 등록된 계약 안에서 연결한다. | CMS Preview/승인/반려/게시 조건, 기존 공통 Runtime 회귀 통과 | 사용자 승인 `[제안]` 최소 수직 연결만 구현; 담당자 확정과 새 공통 계약은 별도 게이트 | `dev` 병합 완료 · Backend #23 / Orchestrator #12 / MCP #3 / Master #24 |
-| 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | Draft PR · Frontend #16 / Backend #24 |
+| 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | `dev` 병합 완료 · Frontend #16 / Backend #24 / Master #26 |
 | 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | 후속·미시작 |
 
 ### UI 목업과 실제 연결의 구분
@@ -187,9 +187,10 @@
 
 ### AI06-011 · 관리자 Profile 설정 연동
 
-- 상태: Frontend·Backend `dev` 대상 Draft PR 생성 완료
+- 상태: Frontend·Backend·Master `dev` 병합 완료 · Closeout 현행화
 - 시작 기준: Frontend `2ee02773238480a8a9f163268596232be574cc86` / Backend `5d10afde15c52c7748e6998416c02438692d6ac6`
 - Worktree/Branch: 저장소별 최신 `origin/dev` 기반 독립 Worktree / `feature/tmdwns0531_axms-ai06-011-admin-profile-settings-integration_v0.1`
+- Closeout Work: `AI06-011-CLOSEOUT` / `axms-ai06-011-post-merge-closeout` / Master `742048e572f0375ee3c57fa6453f05a318f3405a` 기준
 - 구현 Checkpoint:
   - [x] 최고관리자 전용 Profile Version 목록·불변 DRAFT 생성·명시적 활성화 API와 공개 오류 Envelope 연결
   - [x] 현행 Profile·Handler·Result Port·Tool·Graph·Model Binding·실행 Context 분리·잠금 Guardrail 계약 검증
@@ -200,12 +201,15 @@
   - Backend Profile 집중 26개, Product 198개·Control 194개와 두 JAR Build 통과. 기존 Windows CRLF 고정 경계 테스트 1개는 기준선으로 분리
   - Backend production Image Build는 외부 Maven Central 인증서 PKIX 환경 오류로 중단했으며 TLS 검증을 완화하지 않음
   - Flyway Revision `20260831011109932` 정적 권한·불변 Trigger, PowerShell parse, 양 저장소 diff·Secret 검사 통과
-- Commit / Draft PR:
+- Commit / PR:
   - Frontend `69db93c2db48bc8fc194c29fdd69e1663de80bf9` / [#16](https://github.com/urizo-final-org/urizo-final-frontend/pull/16)
   - Backend `672fb5cf9aeef165b6aa40e9cc368d0309abdfa5` / [#24](https://github.com/urizo-final-org/urizo-final-backend/pull/24)
+  - Master `d2e9a34b749516ab74a96aab30ab179ebbd97ee3` / [#26](https://github.com/urizo-final-org/urizo-final-master/pull/26)
+- PR 상태: Frontend #16, Backend #24, Master #26 모두 `dev` 병합 완료
+- dev Merge SHA: Frontend `4411dcd3c282312cbcbc3cc4c61e62b4b36dde4b` / Backend `be68fea34a9ba4c23724ec87b69cf28518182b6d` / Master `742048e572f0375ee3c57fa6453f05a318f3405a`
 - 남은 검증/결정:
   - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동·Volume 변경은 사용자 승인 Gate에 따라 수행하지 않았다.
-  - Draft PR CI와 리뷰 후 담당자가 직접 Ready 전환·`dev` 병합한다.
+  - Closeout 문서 PR은 `dev` 대상 Draft로 별도 연결하고 담당자가 직접 검토·병합한다.
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
 
