@@ -107,6 +107,8 @@ Profile JSON과 Job 실행 Context는 분리한다. 공통 필드 정의는
 
 - 기존 `handlerKey` 내부의 담당 기능 로직·오류 처리·테스트 수정
 - 기존 Tool 이름·입출력 계약 안의 `coding`·`cms` Tool 구현·버그 수정
+- 승인된 Work ID 안에서 공통 호출 형식·인증·권한·Spring 최종 저장 경계를 유지하는 담당 Package의
+  기능 전용 leaf Tool 병렬 추가·미사용 Tool 삭제와 Catalog·Allowlist·Profile 참조·테스트 동시 갱신
 - 기존 Result Port 안의 반환 조건과 내부 계산 수정
 - 담당 Profile의 Node·Edge·Config와 Scenario Fixture 변경
 - 담당 Package 내부 리팩터링과 회귀 테스트 추가
@@ -114,8 +116,8 @@ Profile JSON과 Job 실행 Context는 분리한다. 공통 필드 정의는
 
 다음은 공통 플랫폼·계약 변경이므로 관련 기능 담당자와 6번이 함께 처리한다.
 
-- 새로운 Node Type·`handlerKey`, Tool·Catalog 항목 또는 Result Port 추가
-- Tool 입출력, Result Port 의미, Snapshot Schema 변경
+- 새로운 Node Type·`handlerKey`, 공통·공유 Tool 또는 Result Port 추가
+- 공통 Tool 호출 형식·기존 Tool 입출력 계약·Catalog·Allowlist 구조, Result Port 의미, Snapshot Schema 변경
 - Runner·Graph Builder·Registry·Checkpoint·Approval Interrupt 변경
 - 공통 Approval·Check·Guardrail, 인증·권한·Allowlist·보안 경계 변경
 - 다른 기능 또는 Spring Domain에 새로운 부작용 추가
