@@ -46,7 +46,7 @@
 | 자율 수정 가능 | 6번과 공동 변경 필요 |
 |---|---|
 | 기존 `handlerKey` 내부 기능 로직·오류 처리·테스트 | 새로운 `handlerKey`·Node Type 등록 |
-| 기존 Tool 이름과 입출력 계약 안의 Coding·CMS Tool 로직 | 새로운 Tool·Catalog 항목 또는 Tool 입출력 계약 변경 |
+| 기존 Tool 이름과 입출력 계약 안의 Coding·CMS Tool 로직 | 공통 Tool 호출 형식·기존 Tool 입출력 계약 또는 Catalog·Allowlist 구조 변경 |
 | 기존 Result Port 안의 반환 조건·내부 계산 | 새로운 Result Port 또는 Port 의미 변경 |
 | 담당 Profile의 Node·Edge·Config와 Scenario Fixture | Snapshot Schema·Runner·Registry·Checkpoint 변경 |
 | 담당 Package 내부 리팩터링과 회귀 테스트 | 공통 Approval·Check·Guardrail, 인증·권한·보안 경계 변경 |
@@ -56,6 +56,9 @@
 잠금 Guardrail과 Spring Domain Service 최종 저장 원칙을 우회할 수 없다. 변경한 담당자는 공통 Contract Test와
 자신의 기능 Scenario Test를 통과시킨다. 공통 계약이나 다른 기능의 부작용이 달라질 때만 관련 담당자와 6번이
 함께 변경한다.
+승인된 Work ID 안에서 공통 호출 형식·인증·권한·Spring 최종 저장 경계를 유지하는 `coding`·`cms`
+기능 전용 leaf Tool의 병렬 추가와 미사용 Tool 삭제는 담당 기능 변경으로 처리한다. Catalog·Allowlist·Profile 참조와
+Contract·Scenario Test를 함께 갱신하며, 삭제 전 활성 Profile·Snapshot과 다른 소비자의 참조가 없음을 확인한다.
 기능 전용 내부 Table도 Spring Domain과 Flyway 예약·검증 규칙을 따르며 다른 기능의 공유 계약으로 만들지 않는다.
 공통 Table의 구조·Column·상태·관계 변경은 관련 담당자와 오프라인 협의 후 공동 변경한다.
 
