@@ -12,7 +12,7 @@
 - Work ID 내부 작업은 `구현 → 해당 단위 테스트 → 전체 회귀 검증 → Commit → Push → dev 대상 PR → CI 확인 → dev 병합` 순으로 진행한다.
 - 승인된 자동 범위에서는 Work ID 내부 병합과 다음 승인된 Work ID 진입을 선조치 후보고할 수 있다.
 - Git이 상태의 기준이다. 이 파일에는 진행 상태, 검증 명령·결과, PR URL, dev Merge SHA, 후속 위험만 기록한다.
-- 현재 다른 팀원이 작업 중이지 않으므로 충돌 확인은 가볍게 한다. 시작 직전 대상 저장소의 Branch·Working Tree·동일 Work ID Branch/PR 존재 여부만 확인한다.
+- 현재 `AI06-018`과 `AI06-019`는 별도 Codex 작업에서 병렬 진행한다. 시작 직전 대상 저장소의 Branch·Working Tree·동일 Work ID Branch/PR과 아래 소유 경계를 확인하고, 공유 계약 또는 이 원장을 동시에 수정해야 하면 먼저 단일 작성자를 정한다.
 
 ## 2. 현재 구현 기준
 
@@ -54,6 +54,17 @@
 | 10 | `AI06-011` / `axms-ai06-011-admin-profile-settings-integration` | Frontend, Backend | Agent 설정과 중앙 `Guardrail Profile` 목업을 Spring Profile Version·권한·검증 API에 연결한다. 잠금 Guardrail은 UI에서 삭제·비활성화할 수 없게 한다. | 최고관리자 권한, 불변 Version 저장·활성화, 잘못된 설정 거부, UI·Backend 회귀 통과 | `AI06-009` 이후 진행. 공통 Profile/Guardrail 계약 변경 시 협의 | `dev` 병합 완료 · Frontend #16 / Backend #24 / Master #26 |
 | 11 | `AI05-002` / `axms-ai05-002-cms-site-settings-integration` | Frontend, Backend | `CMS 기본 설정`과 별도 사이트 관리 화면을 5번 소유 CMS Domain의 저장·조회 API에 연결한다. 공통 Profile Schema를 사이트 설정 저장소로 사용하지 않는다. | 최고관리자 권한, 사이트별 설정 격리, 저장·조회·오류 처리, UI·Backend 회귀 통과 | 5번 범위로 별도 시작. 공통 Table 변경 없으면 자율 진행 | `dev` 병합 완료 · Frontend #17 / Backend #26 / Master #28 |
 | 12 | `AI06-017` / `axms-ai06-017-admin-provider-credential-integration` | Frontend, Backend, Master | Agent 설정의 Provider·Model 화면을 기존 dev 전용 암호화 Local Provider Credential API에 연결하고 Key 등록·교체·상태·최소 연결 테스트·삭제를 제공한다. | 최고관리자 권한, CSRF·loopback 경계, Secret 원문 비노출, UI/API 집중 회귀 통과 | 기존 Table·암호화·Provider 호출 Adapter 재사용. 실제 Key·DB·유료 Provider 호출은 별도 사용자 Gate | `Source dev 병합 완료 · Frontend #20 (62ed93f) / Backend #35 (c058284) · Backend 집중 9개, Frontend 56개·TypeScript 통과 · OpenAI·Gemini 실제 연결 확인 · Anthropic 크레딧 미충전으로 성공 호출 보류` |
+| 13 | `AI06-018` / `axms-ai06-018-provider-native-tool-calling` | Backend | 공통 Tool 정의·JSON Schema 검증과 OpenAI·Gemini Native Tool Calling 요청/응답 변환을 기존 Provider Gateway 경계에 연결한다. | Tool allowlist·Schema 제한·결정적 Tool Call 결과 계약·오류 거부·Secret/원문 응답 비노출 집중 회귀 통과 | `AI06-019`의 Stage DTO/Client·`CodingModelTurnService`·`modelBinding` 계약은 수정하지 않는다. Anthropic 유료 호출과 Frontend는 제외한다. | `Backend PR 검증 중 · Commit af24ce2 · PR #37 · AI06-019 파일 교집합 0` |
+| 14 | `AI06-019` / `axms-ai06-019-profile-model-binding-selection` | Backend, Orchestrator | 실행 Node의 `nodeId`와 Job에 고정된 `profileVersionId`를 사용해 Snapshot `modelBinding`을 실제 Provider·Model 선택으로 전달한다. | Binding 누락·잘못된 Provider/Model 거부, 선택 모델 전달, 기존 Gateway·Provider Credential 경계 보존, 양 저장소 집중 회귀 통과 | `AI06-018`의 Tool Schema·Native Tool 변환·Provider Adapter 본문은 수정하지 않는다. | `Source dev 병합 완료 · Backend #36 / 537b1a3 · Orchestrator #14 / 85b3639 · Master #35 · Backend Product 28개·Control 23개 통과, 전체 259개 중 Windows CRLF 기준선 1개 실패 · Orchestrator 전체 156개·compileall 통과 · GitHub Actions 실행 없음` |
+
+### 2026-08-31 현재 인계·병렬 작업 기록
+
+- `AI06-017`은 Backend PR [#35](https://github.com/urizo-final-org/urizo-final-backend/pull/35), Frontend PR [#20](https://github.com/urizo-final-org/urizo-final-frontend/pull/20), Master PR [#33](https://github.com/urizo-final-org/urizo-final-master/pull/33)이 모두 `dev`에 병합됐다. dev Merge SHA는 Backend `c05828427823cbf5f330b43f530cfff82c331531`, Frontend `62ed93f3743d70e29c43a61ae2850ce08e093f7e`, Master `25dee2ab39d00c84a1751746b5e68216da63a7ff`이다.
+- 실제 Provider 확인은 OpenAI·Gemini 연결 성공까지 완료했다. Anthropic은 Key가 발급됐지만 Console Credit이 `US$0.00`인 상태로 직접 요청에서 HTTP 400을 확인했으므로, Key 무효로 확정하지 않고 Credit 충전 후 성공 호출만 후속 수동 Gate로 남긴다.
+- `AI06-018`은 `integration.ai.gateway` 공통 Tool 계약과 OpenAI·Gemini Provider Native 변환만 소유한다. Tool 미사용 요청의 기존 동작을 유지하고, Claude 유료 호출·Stage 실행 계약·Profile 모델 선택은 변경하지 않는다.
+- `AI06-018` Backend Commit `af24ce2ddcfcee8c0d219259a68ec5d74af88c57` / PR [#37](https://github.com/urizo-final-org/urizo-final-backend/pull/37)은 `dev` 대상 OPEN·MERGEABLE이다. 집중 테스트 45개와 실제 Spring AI OpenAI `tools.function`·Gemini `functionDeclarations` 직렬화 및 Gemini `thoughtSignature` 후속 요청 검증을 통과했다. Product 271개·Control 261개 전체 회귀는 기존 Windows CRLF 경계 테스트 각 1개만 실패하고 환경 Gate 각 4개를 Skip했으며, 두 Lane Package는 통과했다. Anthropic 유료 성공 호출과 외부 Provider 네트워크 왕복은 실행하지 않았다.
+- `AI06-019`는 Snapshot Binding에서 Provider·Model을 선택해 기존 Gateway에 전달하는 경로만 소유한다. Tool Schema·Native Tool 변환·Provider Adapter 구현은 변경하지 않는다.
+- 두 작업은 같은 Backend 저장소를 사용하지만 변경 Package와 계약 소유자를 위와 같이 분리한다. 경계 밖 파일이 필요해지면 구현을 멈추고 충돌 여부를 다시 확인한다.
 
 ### UI 목업과 실제 연결의 구분
 
