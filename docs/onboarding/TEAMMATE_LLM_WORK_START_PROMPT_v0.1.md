@@ -44,9 +44,11 @@ Master `AGENTS.md`의 공통 응답 형식을 짧고 명료하게 사용하라.
 
 요청받지 않은 Push, PR, Merge, Notion 쓰기, 배포는 하지 마라.
 
-CMS 로컬 실행 요청은 Master `scripts/start-local-cms.ps1`만 사용하라. 이미 정상인
-`spring-core`는 재사용하고 Coding Runtime을 기다리지 마라. 최초 Image 준비나 Source 변경
-반영이 필요하면 Script가 요구하는 Network·Rebuild 옵션만 추가하고 임의 Docker 명령을 만들지 마라.
+로컬 실행 자연어는 현재 Work ID의 Git 변경 범위로 판단하라. CMS-only는 Master
+`scripts/start-local-cms.ps1 -Profile spring-core`, 전체·여러 Source 변경은 같은 Script의 `full`,
+Frontend-only Live 변경은 `scripts/start-frontend-live.ps1`, 단일 Service는
+`scripts/rebuild-local-service.ps1`을 사용하라. 재빌드에는 활성 Source Worktree 경로를 명시하고
+임의 Docker 명령을 만들지 마라. 실행 대상을 특정할 수 없으면 한 번 질문하라.
 ```
 
 이 Prompt는 상세 설계 승인표가 아니다. 제품 범위가 달라질 때만 승인받고, 범위 안의 구현

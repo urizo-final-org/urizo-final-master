@@ -16,7 +16,7 @@
 
 ## Git
 
-네 저장소에 같은 규칙을 적용한다.
+Master와 네 Source 저장소에 같은 규칙을 적용한다.
 
 ```text
 Agent-PR-Base: dev
@@ -132,7 +132,7 @@ GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한�
 urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork
 ```
 
-- Master를 먼저 확인하고 이어서 Source 세 저장소를 모두 확인한다.
+- Master를 먼저 확인하고 이어서 Source 네 저장소를 모두 확인한다.
 - Master 확인 후 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화하고 활성 LLM은 현재 턴에 Master 기준을 다시 읽는다.
 - 깨끗한 `dev`만 `origin/dev`로 Fast-forward한다.
 - Feature Branch는 Branch를 바꾸거나 `dev`를 자동 Merge/Rebase하지 않는다.
