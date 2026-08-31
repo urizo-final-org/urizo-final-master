@@ -209,7 +209,7 @@
 - dev Merge SHA: Frontend `4411dcd3c282312cbcbc3cc4c61e62b4b36dde4b` / Backend `be68fea34a9ba4c23724ec87b69cf28518182b6d` / Master `742048e572f0375ee3c57fa6453f05a318f3405a`
 - 남은 검증/결정:
   - 실제 DB/Flyway 실행과 로컬 CMS 재빌드·재기동·Volume 변경은 사용자 승인 Gate에 따라 수행하지 않았다.
-  - Closeout 문서 PR은 `dev` 대상 Draft로 별도 연결하고 담당자가 직접 검토·병합한다.
+  - Closeout PR: Master [#27](https://github.com/urizo-final-org/urizo-final-master/pull/27) · `dev` 대상 Draft
 
 ### AI06-010 · MCP 공통 플랫폼 부트스트랩
 
