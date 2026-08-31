@@ -26,13 +26,23 @@
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
 - 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있으며, 성공한 Pull은 Codex·Claude `PostToolUse` Hook이 감지해
   `SessionStart`와 같은 AGENTS 로더를 다시 실행한다.
-- 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 전체 실행 Script, Frontend Watch·HMR, 그 외 격리 Service 갱신 중
-  적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
+- 주입된 `AGENTS.md`와 이번 작업의 활성 Source Worktree 변경 범위를 기준으로 `full` 전체 실행,
+  Frontend Watch·HMR, 단일 Service 격리 갱신 중 적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
+- 변경 범위는 staged·unstaged·untracked 파일과 `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 본다.
+  Frontend-only Live 허용 변경이면 HMR을 쓰지만, Frontend와 Backend·Orchestrator·MCP Server 변경이 함께 있거나
+  Frontend의 Package·Lockfile·Dockerfile·Vite·Nginx 설정 변경이 있으면 `full` 전체 재빌드·재기동을 사용한다.
+- 자연어는 LLM이 이 근거로 판단하고 Script에는 확정된 `Profile`, `Service`, 활성 `SourceRoot`만 넘긴다.
+  대상을 특정할 수 없거나 안전한 실행 결과가 달라지는 모호함이 남으면 추측하지 않고 한 번 질문한다.
+- 실행 직전 `LOCAL RUNTIME CONTEXT PASS: mode=<full|frontend-live|isolated>; sources=<활성 Source>; reason=<판단 근거>`를 보고한다.
 - 신규 Workspace 설정이나 수동 Master 갱신처럼 표준 최신화를 거치지 않았을 때만 활성 LLM이
   `urizo-final-master/scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 직접 실행한다.
 - 두 도구는 같은 Master 원문 로더를 사용하며 실패 시 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다. Codex 최초 신뢰 확인은 팀원이 한 번 승인한다.
-- `CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은
-  `urizo-final-master/scripts/start-local-cms.ps1 -ApproveLocalMutation`으로 처리한다. 이미 정상이면 `spring-core`를 즉시 재사용하고, 최초 Image 준비는 `-ApproveNetwork`, Source 변경 반영은 `-Rebuild -ApproveNetwork`를 추가한다. CMS 실행 때문에 범위 밖 Coding Runtime을 기다리거나 임의 Docker 명령을 조합하지 않는다.
+- `CMS 로컬 실행`, `CMS만 띄워줘`는 `urizo-final-master/scripts/start-local-cms.ps1 -Profile spring-core -ApproveLocalMutation`,
+  `시스템 띄워줘`, `전체 재기동`, `로컬 재기동`은 같은 Script의 `-Profile full`로 처리한다. 여러 Source 또는 비-Live 변경 반영은
+  `-Rebuild -ApproveNetwork`를 추가하며 `full`에는 MCP Server를 포함한다. 직전 전체 동기화에서 Source가 하나라도 갱신됐거나
+  전체·로컬 재기동을 명시한 경우도 `-Rebuild -ApproveNetwork`와 네 활성 SourceRoot로 전체 Image와 Container를 갱신한다.
+  단일 Service 격리 변경은 `urizo-final-master/scripts/rebuild-local-service.ps1 -Service <spring-app|frontend|coding-runtime|mcp-server> -Profile <spring-core|full> -SourceRoot <활성 Service Worktree>`로
+  허용 Service만 갱신하고 해당 Profile 전체 Health를 확인한다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. 단, 팀원별 LLM은
   `urizo-final-master/docs/team/FLYWAY_RESERVATION_LEDGER.md`에 자기 작업 예약 행을 추가하고 상태를 갱신할 수 있다.

@@ -110,31 +110,45 @@
   Workspace·Master·현재 저장소 `AGENTS.md`를 활성 세션에 다시 주입한다.
 - 활성 LLM은 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 아래 세 실행 모드 중 적용 대상을 판단하고
   `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
-  1. 최초 실행·전체 재기동은 전체 실행 Script
-  2. Frontend 일반 UI/UX 변경은 Watch·HMR
-  3. 그 외 격리 변경은 필요한 Image와 Container만 갱신한 뒤 전체 Health 확인
+  1. 최초 실행·전체 재기동·여러 Source 변경은 `full` 전체 실행 Script
+  2. Frontend-only Live 허용 변경은 Watch·HMR
+  3. 그 외 단일 Service 격리 변경은 해당 Image와 Container만 갱신한 뒤 실행 Profile 전체 Health 확인
+- 실제 변경 범위는 이번 작업에서 사용하는 각 Source Worktree의 staged·unstaged·untracked 파일과
+  `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 확인한다. 다른 Work ID의 보존 Worktree는 현재 변경 범위로 세지 않는다.
+- `Frontend만 반영`처럼 Frontend를 명시했더라도 Backend·Orchestrator·MCP Server 변경이 함께 있거나,
+  Frontend의 `package.json`, Lockfile, Dockerfile, Vite·Nginx 설정처럼 Image Build 대상 변경이 있으면 Watch를 쓰지 않고 `full`로 재빌드한다.
+- 자연어 요청은 LLM이 위 근거로 해석하되 실행 Script에는 해석된 `Profile`, `Service`, 활성 `SourceRoot`만 전달한다.
+  실행 대상을 특정할 수 없거나 안전한 두 모드의 결과가 달라지는 모호함이 남으면 추측하지 않고 한 번 질문한다.
+- 실행 직전 `LOCAL RUNTIME CONTEXT PASS: mode=<full|frontend-live|isolated>; sources=<활성 Source>; reason=<판단 근거>`를 짧게 보고한다.
 
 ## CMS 로컬 실행
 
-`CMS 로컬 실행`, `시스템 띄워줘`, `로컬 재기동`은 임의 Docker 명령 조합이 아니라
-`scripts/start-local-cms.ps1` 한 경로로 처리한다.
+로컬 실행은 임의 Docker 명령 조합이 아니라 `scripts/start-local-cms.ps1` 한 경로로 처리한다.
 
 - 명시적인 로컬 실행 요청을 받으면 `-ApproveLocalMutation`을 사용한다.
-- 이미 CMS가 정상이면 기존 `spring-core` Container를 재사용하고 즉시 종료한다.
+- `CMS 로컬 실행`, `CMS만 띄워줘`는 `-Profile spring-core`를 사용한다.
+- `시스템 띄워줘`, `전체 재기동`, `로컬 재기동`은 `-Profile full`을 사용하며 MCP Server도 성공 조건에 포함한다.
+- 직전 전체 동기화에서 Source 하나라도 Fast-forward됐거나 `전체 재기동`·`로컬 재기동`을 명시하면
+  `-Profile full -Rebuild -ApproveNetwork`로 전체 Image를 재빌드하고 Container를 재생성한다.
+- 요청 Profile이 이미 정상이면서 반영할 Source 변경이 없으면 기존 Container를 재사용하고 즉시 종료한다.
 - 중지 상태면 기존 Image로만 기동하며, 최초 실행처럼 Image가 없으면 Network 승인 후 `-ApproveNetwork`를 추가한다.
-- Source 변경을 Image에 반영해야 할 때만 `-Rebuild -ApproveNetwork`를 추가한다.
-- CMS 실행에서는 Coding Runtime 상태를 성공 조건으로 삼지 않는다. AI·Coding Runtime 통합 검증은 기존 `full` 절차를 별도로 사용한다.
+- 여러 Source 변경, 전체 재빌드 요청, DB·Flyway·Compose·Network·Secret 영향 또는 Frontend 비-Live 변경을
+  Image에 반영할 때는 `-Profile full -Rebuild -ApproveNetwork`와 이번 작업의
+  `-BackendSourceRoot`, `-FrontendSourceRoot`, `-OrchestratorSourceRoot`, `-McpSourceRoot`를 사용한다.
+- `spring-core` 실행에서는 Coding Runtime과 MCP Server를 성공 조건으로 삼지 않는다.
 - 공통 Script가 정확한 원인으로 차단한 경우에만 해당 원인을 수정한다. 전체 실행 실패를 임의 Docker 명령으로 우회하지 않는다.
 
 이미 건강한 CMS의 격리된 부분 변경은 전체 실행과 구분한다.
 
 - DB·Flyway·Compose·Network·Secret에 영향이 없고 변경 Service가 명확할 때만 해당 Image와 Container를 갱신한다.
-- Backend가 제공하는 버전 관리된 부분 실행 Script가 있으면 우선 사용한다. 없으면 적용 Compose와 정확한 Service를 확인한 뒤 대상만 갱신한다.
-- 부분 갱신은 DB·Volume을 변경하지 않으며 완료 후 전체 `spring-core` Health를 확인한다.
+- `scripts/rebuild-local-service.ps1 -Service <spring-app|frontend|coding-runtime|mcp-server> -Profile <spring-core|full> -SourceRoot <활성 Service Worktree> -ApproveLocalMutation -ApproveNetwork`를 사용한다.
+- `coding-runtime`과 `mcp-server`는 `full`에서만 부분 갱신한다. DB·Flyway·Volume Service는 이 Script의 대상이 아니다.
+- 부분 갱신은 이미 건강한 Profile에서만 수행하며 DB·Volume을 변경하지 않고 완료 후 해당 Profile 전체 Health를 확인한다.
 
 ### Frontend Live 개발
 
-- 건강한 CMS에서 일반적인 React·CSS·정적 Asset 수정은 Image 재빌드 대신
+- 사용자가 Frontend-only 반영을 명시하고 이번 작업의 Source 변경이 Frontend Live 허용 파일에만 있을 때,
+  건강한 CMS에서 Image 재빌드 대신
   `scripts/start-frontend-live.ps1 -FrontendSourceRoot <활성 Frontend Worktree> -ApproveLocalMutation`을 사용한다.
 - 한 번에 하나의 활성 Work ID·Frontend Worktree만 Watch 대상으로 연결한다. Worktree를 바꾸기 전에 기존 Watch를 종료한다.
 - Watch는 `src`, `public`, `index.html`만 실행 중인 Frontend Container에 동기화하며 Git·Secret·`node_modules`는 동기화하지 않는다.

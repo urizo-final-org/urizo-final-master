@@ -44,6 +44,8 @@ $required = @(
     'scripts/sync-workspace.ps1',
     'scripts/health-workspace.ps1',
     'scripts/start-local-cms.ps1',
+    'scripts/start-frontend-live.ps1',
+    'scripts/rebuild-local-service.ps1',
     'scripts/validate-master-scaffold.ps1'
 )
 
@@ -321,10 +323,25 @@ if ($bootstrapWorkspaceScript -notmatch 'GetExtension\(\$Target\)' -or
     $bootstrapWorkspaceScript -notmatch 'UTF8Encoding\]::new\(\$writeUtf8Bom\)') {
     throw 'Workspace bootstrap must write managed PowerShell Hook files with a UTF-8 BOM for Windows PowerShell compatibility.'
 }
-if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -ApproveLocalMutation' -or
+$startLocalScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-local-cms.ps1')
+$rebuildLocalServiceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/rebuild-local-service.ps1')
+if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -Profile spring-core -ApproveLocalMutation' -or
+    $workspaceAgentTemplate -notmatch '-Profile full' -or
     $masterAgents -notmatch 'scripts/start-local-cms\.ps1' -or
-    $masterAgents -notmatch 'spring-core') {
-    throw 'Master and Workspace AGENTS policies must route CMS local startup through the shared spring-core wrapper.'
+    $masterAgents -notmatch 'Frontend-only' -or
+    $masterAgents -notmatch 'LOCAL RUNTIME CONTEXT PASS: mode=' -or
+    $startLocalScript -notmatch 'BackendSourceRoot' -or
+    $startLocalScript -notmatch 'FrontendSourceRoot' -or
+    $startLocalScript -notmatch 'OrchestratorSourceRoot' -or
+    $startLocalScript -notmatch 'McpSourceRoot') {
+    throw 'Master local startup must route natural-language intent to spring-core/full and bind every active Source worktree explicitly.'
+}
+if ($workspaceAgentTemplate -notmatch 'rebuild-local-service\.ps1' -or
+    $workspaceAgentTemplate -notmatch 'SourceRoot <활성 Service Worktree>' -or
+    $masterAgents -notmatch 'rebuild-local-service\.ps1' -or
+    $rebuildLocalServiceScript -notmatch "ValidateSet\('spring-app', 'frontend', 'coding-runtime', 'mcp-server'\)" -or
+    $rebuildLocalServiceScript -notmatch 'SourceRoot') {
+    throw 'Master isolated-service routing must use the allowlisted partial-rebuild wrapper and an explicit active Source worktree.'
 }
 $devOnlyPrPattern = 'Every agent-created (pull request|PR).*targets `dev`'
 $manualMainPattern = '`main` is (the team lead''s|reserved for) periodic manual promotion'
