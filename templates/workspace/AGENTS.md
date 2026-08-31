@@ -24,12 +24,10 @@
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
-- 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있으며, 성공한 Pull은 Codex·Claude `PostToolUse` Hook이 감지해
-  `SessionStart`와 같은 AGENTS 로더를 다시 실행한다.
-- 새 구현 작업은 대상 저장소의 깨끗한 `dev`에서 `git pull --ff-only origin dev`를 성공시킨 뒤 Hook의 AGENTS 재주입 결과를 확인하고,
-  갱신된 `origin/dev` 기반 독립 Worktree와 Feature Branch를 만든 다음 시작한다. Pull이 실패하거나 Dirty·Diverged·local-only 상태로 안전하게 수행할 수 없으면 기존 상태를 보존하고 `MASTER CONTEXT BLOCKED`를 보고하며 구현하지 않는다.
-- PR 생성 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `git pull --ff-only origin dev`를 다시 성공시키고 Hook의 AGENTS 재주입과 관련 검증을 마친 뒤 Push·PR을 진행한다.
-  최신 `dev`와 분기되어 Fast-forward Pull이 실패하면 자동 Merge·Rebase·충돌 해결을 하지 않고 `MASTER CONTEXT BLOCKED`로 중단한다.
+- Codex·Claude Context Hook은 `startup|clear|compact`에서 Master와 활성 Source 원문을 불러오고 `resume`과 `PostToolUse`가 감지한 일반 Pull에서는 4KB 이하 Checkpoint만 불러온다. Pull 결과에 `AGENTS.md` 변경이 있을 때만 전체 원문을 한 번 갱신하며 Workspace AGENTS 원문은 중복 주입하지 않는다.
+- 새 구현 작업은 `urizo-final-master/scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 시작한다. 이 Gate가 canonical `dev` Pull과 최신 `origin/dev` 기반 독립 Worktree 생성을 수행한다.
+- Push·PR 직전에는 깨끗한 Feature Worktree에서 `urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate가 dev·Feature upstream Pull, 현재 dev 포함 여부를 검증하고 Head 전용 Receipt를 발급한다. Managed `pre-push` Hook은 유효한 Receipt가 있을 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
+- canonical `dev`가 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree에서 Gate를 수행한 뒤 clean 상태일 때만 임시 Worktree를 제거한다. Feature Worktree가 Dirty하거나 Diverged·local-only 상태에서 안전하게 진행할 수 없으면 기존 상태를 보존하고 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
 - 주입된 `AGENTS.md`와 이번 작업의 활성 Source Worktree 변경 범위를 기준으로 `full` 전체 실행,
   Frontend Watch·HMR, 단일 Service 격리 갱신 중 적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
 - 변경 범위는 staged·unstaged·untracked 파일과 `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 본다.
@@ -56,7 +54,7 @@
 - 조사·분석과 기능 MD 수정만이면 Worktree를 만들지 않는다. 실제 Source 구현은 Work ID 승인 후 저장소별
   최신 `origin/dev` 기반 독립 Worktree에서 시작한다. 같은 PR은 재사용하고 다음 독립 PR은 새 Work ID와 Worktree를 쓴다.
 - Work ID는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
-  기록된 PR은 다음 `SessionStart`에서 현행화한다. Hook은 읽기 전용이며 상세 규칙은 Master 운영 정책을 따른다.
+  기록된 PR은 담당 LLM이 GitHub와 `origin/dev`를 확인해 현행화한다. Context Hook은 GitHub·Ledger를 스캔하지 않으며 상세 규칙은 Master 운영 정책을 따른다.
 - Every agent-created PR in Master, Frontend, Backend, Orchestrator, and MCP Server targets `dev`.
 - GitHub Ruleset에서 Min Seungjun(`tmdwns0531`)은 `dev` 대상 PR의 직접 병합 예외 Actor다. 병합이 명시적으로 승인됐고
   Base·Head SHA·Mergeable을 확인했으며 일반 Merge가 필수 리뷰로만 막히면 `gh pr merge --merge --admin`을 사용할 수 있다.

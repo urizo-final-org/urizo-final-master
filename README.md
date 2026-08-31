@@ -41,6 +41,16 @@ AX-Module-Studio-Workspace/          # no .git
 .\scripts\sync-workspace.ps1 -ApproveNetwork
 ```
 
+새 구현 시작과 Push·PR 전 Pull Gate:
+
+```powershell
+.\scripts\start-feature-work.ps1 -RepositoryName urizo-final-backend -BranchName feature/<github-id>_<work-slug>_<version> -ApproveNetwork
+.\scripts\prepare-dev-pr.ps1 -RepositoryPath <feature-worktree> -ApproveNetwork
+```
+
+Bootstrap이 설치하는 managed `pre-push` Hook은 두 번째 Gate가 발급한 현재 Head용 Receipt를 읽기 전용으로 확인한다.
+다른 세션 때문에 canonical `dev`가 Dirty면 Gate는 그 변경을 보존하고 임시 detached Pull Worktree를 사용한다.
+
 읽기 전용 확인:
 
 ```powershell

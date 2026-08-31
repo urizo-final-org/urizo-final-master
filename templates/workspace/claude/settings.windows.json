@@ -3,11 +3,21 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "^(startup|resume|clear|compact)$",
+        "matcher": "^(startup|clear|compact)$",
         "hooks": [
           {
             "type": "command",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1 -Mode Full -Reason Lifecycle -MaxContextBytes 24576",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "^resume$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .codex\\hooks\\session-start.ps1 -Mode Checkpoint -Reason Resume -MaxContextBytes 4096",
             "timeout": 30
           }
         ]

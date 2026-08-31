@@ -39,6 +39,37 @@ $manifest = Get-Content -Raw -Encoding UTF8 -LiteralPath $manifestPath | Convert
 $integrationBranch = [string]$manifest.branches.integration
 $results = [System.Collections.Generic.List[object]]::new()
 
+function Get-InstructionFingerprint {
+    $instructionPaths = [System.Collections.Generic.List[string]]::new()
+    $instructionPaths.Add((Join-Path $WorkspaceRoot 'AGENTS.md'))
+    foreach ($repository in $manifest.repositories) {
+        $instructionPaths.Add((Join-Path (Join-Path $WorkspaceRoot $repository.relativePath) 'AGENTS.md'))
+    }
+
+    $builder = [Text.StringBuilder]::new()
+    foreach ($path in @($instructionPaths | Sort-Object)) {
+        $relative = [IO.Path]::GetFullPath($path).Substring($WorkspaceRoot.Length).TrimStart([char[]]'\/').Replace('\', '/')
+        if (Test-Path -LiteralPath $path -PathType Leaf) {
+            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+            [void]$builder.AppendLine("$relative=$hash")
+        }
+        else {
+            [void]$builder.AppendLine("$relative=missing")
+        }
+    }
+
+    $bytes = [Text.Encoding]::UTF8.GetBytes($builder.ToString())
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try {
+        return ([BitConverter]::ToString($sha.ComputeHash($bytes))).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+        $sha.Dispose()
+    }
+}
+
+$instructionFingerprintBefore = Get-InstructionFingerprint
+
 function Invoke-GitCapture {
     param(
         [Parameter(Mandatory = $true)][string]$RepositoryPath,
@@ -298,17 +329,22 @@ else {
 
 $activeContext = @()
 $activeContextReloaded = $false
+$activeContextMode = $null
 if (-not $WhatIf) {
     $contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'
     if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
         throw 'Shared SessionStart context loader is missing after LLM Hook synchronization.'
     }
 
-    $activeContext = @(& $contextLoader -WorkspaceRoot $WorkspaceRoot)
+    $instructionFingerprintAfter = Get-InstructionFingerprint
+    $activeContextMode = if ($instructionFingerprintBefore -eq $instructionFingerprintAfter) { 'Checkpoint' } else { 'Full' }
+    $activeContextLimit = if ($activeContextMode -eq 'Full') { 24576 } else { 4096 }
+    $activeContext = @(& $contextLoader -WorkspaceRoot $WorkspaceRoot -Mode $activeContextMode -Reason Sync -MaxContextBytes $activeContextLimit)
     $activeContextText = $activeContext -join [Environment]::NewLine
     $activeContextFirstLine = @($activeContextText -split "`r?`n", 2)[0].Trim()
-    if ([string]::IsNullOrWhiteSpace($activeContextText) -or $activeContextFirstLine -ne 'MASTER CONTEXT PASS') {
-        throw 'Shared SessionStart context loader did not return a valid MASTER CONTEXT PASS payload.'
+    $expectedFirstLine = if ($activeContextMode -eq 'Full') { 'MASTER CONTEXT PASS' } else { 'AXMS CONTEXT CHECKPOINT v2: reason=Sync' }
+    if ([string]::IsNullOrWhiteSpace($activeContextText) -or $activeContextFirstLine -ne $expectedFirstLine) {
+        throw "Shared context loader did not return a valid $activeContextMode payload."
     }
     $activeContextReloaded = $true
 }
@@ -320,6 +356,7 @@ $summary = [pscustomobject]@{
     workspaceRoot = $WorkspaceRoot
     masterReady = $true
     activeContextReloaded = $activeContextReloaded
+    activeContextMode = $activeContextMode
     blocked = $blockedCount
     warnings = $warningCount
     results = $results
@@ -331,10 +368,10 @@ if ($AsJson) {
 else {
     $results | Format-Table -AutoSize -Wrap
     if ($activeContextReloaded) {
-        Write-Host 'ACTIVE SESSION CONTEXT RELOAD PASS: the synchronized SessionStart loader was reused immediately after workspace synchronization.'
+        Write-Host "ACTIVE SESSION CONTEXT REFRESH PASS: mode=$activeContextMode; full instructions are emitted only when an AGENTS.md fingerprint changed."
         $activeContext | Write-Output
     }
-    Write-Host 'LOCAL RUNTIME CONTEXT PASS REQUIRED: report the full-script, Frontend Watch/HMR, and isolated-service update modes from the reloaded context. The lifecycle Hook continues to apply on startup, resume, clear, or compact.'
+    Write-Host 'LOCAL RUNTIME CONTEXT PASS REQUIRED: report the full-script, Frontend Watch/HMR, and isolated-service update modes from the active context checkpoint.'
     Write-Host "BLOCKED=$blockedCount WARN=$warningCount"
 }
 

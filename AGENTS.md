@@ -78,16 +78,15 @@
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
 - 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
 - `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 확인한 뒤
-  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`로 Codex·Claude Hook을 갱신하고 현재 세션에 Master 기준을 다시 주입한다.
+  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`로 Codex·Claude Hook과 Git Pull Gate를 갱신한다. AGENTS 지문이 바뀐 경우에만 전체 원문을 한 번 주입하고, 바뀌지 않았으면 4KB 이하 Checkpoint만 주입한다.
 - 신규 Workspace 설정이나 표준 동기화 스크립트를 거치지 않은 수동 Master 갱신 후에는 활성 LLM이 구현 전에
-  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `LLM HOOK SETUP PASS` 또는 `LLM HOOK SETUP BLOCKED`를 보고한다.
-- Codex와 Claude Hook은 같은 AGENTS 로더를 사용한다. 원문을 불러오지 못하면 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다.
+  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `CONTEXT AND PULL GATE SETUP PASS` 또는 `MASTER CONTEXT BLOCKED`를 보고한다.
+- Codex와 Claude Hook은 같은 AGENTS 로더를 사용한다. `startup|clear|compact`는 Master와 활성 Source 원문을 불러오고, `resume`과 일반 Pull은 짧은 Checkpoint만 불러온다. Pull 결과에 `AGENTS.md` 변경이 있을 때만 전체 원문을 한 번 갱신한다. 원문을 불러오지 못하면 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다.
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
-- 새 구현 작업은 대상 저장소의 깨끗한 `dev`에서 `git pull --ff-only origin dev`를 성공시킨 뒤 `PostToolUse` Hook의 AGENTS 재주입 결과를 확인하고,
-  갱신된 `origin/dev` 기반 독립 Worktree와 Feature Branch를 만든 다음 구현을 시작한다. Pull이 실패하거나 Dirty·Diverged·local-only 상태로 안전하게 수행할 수 없으면 기존 상태를 보존하고 `MASTER CONTEXT BLOCKED`를 보고하며 Worktree나 Branch를 만들지 않는다.
-- PR 생성 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `git pull --ff-only origin dev`를 다시 성공시키고 Hook의 AGENTS 재주입과 관련 검증을 마친 뒤 Push·PR을 진행한다.
-  최신 `dev`와 분기되어 Fast-forward Pull이 실패하면 자동 Merge·Rebase·충돌 해결을 하지 않고 `MASTER CONTEXT BLOCKED`로 중단한다.
+- 새 구현 작업은 `scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 시작한다. 이 Gate가 깨끗한 canonical `dev`에서 `git pull --ff-only origin dev`를 성공시킨 뒤 갱신된 `origin/dev` 기반 독립 Worktree와 Feature Branch를 생성·재사용한다.
+- Push·PR 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate가 canonical `dev`와 등록된 Feature upstream을 Fast-forward Pull하고 현재 `origin/dev` 포함 여부를 검증한 뒤 현재 Head 전용 Receipt를 발급한다. Managed `pre-push` Hook은 Receipt·Head·`origin/dev`가 모두 일치할 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
+- canonical `dev`가 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree에서 같은 Gate를 수행한 뒤 clean 상태일 때만 그 임시 Worktree를 제거한다. Feature Worktree가 Dirty하거나 Diverged·local-only 상태에서 안전하게 진행할 수 없으면 기존 상태를 보존하고 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
 
 ## AI 핵심 기능 작업
 
@@ -99,7 +98,7 @@
   저장소별 최신 `origin/dev` 기반 독립 Worktree와 해당 Feature Branch에서 시작하며 기존 Worktree를 건드리지 않는다.
   같은 Work ID의 같은 PR 작업은 기존 Worktree를 재사용하고, 독립된 다음 PR은 새 Work ID와 새 Worktree를 사용한다.
 - Work ID 하나는 작업 시작부터 PR 생성까지며 같은 PR의 작업을 묶는다. PR 생성 시 문서 연결을 한 번 제안하고,
-  기록된 PR은 다음 `SessionStart`에서 병합 결과를 추가 질문 없이 현행화한다. Hook은 읽기 전용이다.
+  기록된 PR은 담당 LLM이 GitHub와 `origin/dev`를 확인해 현행화한다. Context Hook은 GitHub·Ledger를 스캔하지 않고 읽기 전용 Checkpoint만 만든다.
 - 상세 채번·기록 규칙은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`만 따른다.
 
 ## Git Pull과 전체 동기화
@@ -108,10 +107,9 @@
 `scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다. 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있다.
 
 - Master 먼저, 이어서 Frontend·Backend·Orchestrator·MCP Server를 확인한다.
-- Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS와 Codex·Claude Hook을 자동 동기화한다.
+- Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS, Codex·Claude Context Hook, Git pre-push Pull Gate를 자동 동기화한다.
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
-- Codex·Claude `PostToolUse` Hook은 성공한 `git pull`을 감지하면 기존 공통 로더로
-  Workspace·Master·현재 저장소 `AGENTS.md`를 활성 세션에 다시 주입한다.
+- Codex·Claude `PostToolUse` Hook은 성공한 일반 `git pull`을 감지하면 4KB 이하 Checkpoint를 주입한다. Pull 결과에 `AGENTS.md` 변경이 나타난 경우에만 Master와 활성 Source 원문을 한 번 주입하며 Workspace AGENTS 원문은 native directory routing과 중복 주입하지 않는다.
 - 활성 LLM은 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 아래 세 실행 모드 중 적용 대상을 판단하고
   `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
   1. 최초 실행·전체 재기동·여러 Source 변경은 `full` 전체 실행 Script
