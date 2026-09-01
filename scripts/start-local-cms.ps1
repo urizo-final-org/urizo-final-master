@@ -19,6 +19,8 @@ param(
 
     [switch]$Rebuild,
 
+    [switch]$RequireCleanSourceBindings,
+
     [ValidateRange(30, 1800)]
     [int]$WaitTimeoutSeconds = 180
 )
@@ -73,6 +75,28 @@ function Resolve-GitSourceRoot {
     return $resolvedPath
 }
 
+function Get-SourceBinding {
+    param(
+        [Parameter(Mandatory = $true)][string]$RepositoryName,
+        [Parameter(Mandatory = $true)][string]$SourceRoot
+    )
+
+    $sourceSha = (& git -c "safe.directory=$SourceRoot" -C $SourceRoot rev-parse HEAD 2>$null) -join ''
+    if ($LASTEXITCODE -ne 0 -or $sourceSha -notmatch '^[0-9a-f]{40}$') {
+        throw "$RepositoryName source SHA could not be resolved: $SourceRoot"
+    }
+    $sourceStatus = @(& git -c "safe.directory=$SourceRoot" -C $SourceRoot status --porcelain=v1 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        throw "$RepositoryName source status could not be resolved: $SourceRoot"
+    }
+    return [pscustomobject]@{
+        RepositoryName = $RepositoryName
+        SourceRoot = $SourceRoot
+        SourceSha = $sourceSha
+        Dirty = @($sourceStatus | Where-Object { $_ }).Count -gt 0
+    }
+}
+
 $requestedSourceRoots = @(
     $BackendSourceRoot,
     $FrontendSourceRoot,
@@ -80,6 +104,9 @@ $requestedSourceRoots = @(
     $McpSourceRoot
 )
 $sourceBindingRequested = $Rebuild -or @($requestedSourceRoots | Where-Object { $_ }).Count -gt 0
+if ($RequireCleanSourceBindings -and -not $sourceBindingRequested) {
+    throw 'RequireCleanSourceBindings requires -Rebuild or explicit SourceRoot bindings.'
+}
 if ($sourceBindingRequested) {
     if (-not $BackendSourceRoot) { $BackendSourceRoot = Join-Path $WorkspaceRoot 'urizo-final-backend' }
     if (-not $FrontendSourceRoot) { $FrontendSourceRoot = Join-Path $WorkspaceRoot 'urizo-final-frontend' }
@@ -98,7 +125,31 @@ if ($sourceBindingRequested) {
     }
 }
 
-$backendRunner = Join-Path $WorkspaceRoot 'urizo-final-backend/scripts/start-cms-local.ps1'
+$sourceBindings = [System.Collections.Generic.List[object]]::new()
+if ($sourceBindingRequested) {
+    $sourceBindings.Add((Get-SourceBinding -RepositoryName 'urizo-final-master' -SourceRoot $masterRoot))
+    $sourceBindings.Add((Get-SourceBinding -RepositoryName 'urizo-final-backend' -SourceRoot $BackendSourceRoot))
+    $sourceBindings.Add((Get-SourceBinding -RepositoryName 'urizo-final-frontend' -SourceRoot $FrontendSourceRoot))
+    if ($Profile -eq 'full') {
+        $sourceBindings.Add((Get-SourceBinding -RepositoryName 'urizo-final-orchestrator' -SourceRoot $OrchestratorSourceRoot))
+        $sourceBindings.Add((Get-SourceBinding -RepositoryName 'urizo-final-mcp-server' -SourceRoot $McpSourceRoot))
+    }
+}
+
+if ($RequireCleanSourceBindings) {
+    $dirtyBinding = @($sourceBindings | Where-Object { $_.Dirty }) | Select-Object -First 1
+    if ($dirtyBinding) {
+        throw "Final runtime verification requires a clean Source binding: $($dirtyBinding.RepositoryName)"
+    }
+}
+
+$backendRunnerRoot = if ($sourceBindingRequested) {
+    $BackendSourceRoot
+}
+else {
+    Join-Path $WorkspaceRoot 'urizo-final-backend'
+}
+$backendRunner = Join-Path $backendRunnerRoot 'scripts/start-cms-local.ps1'
 if (-not (Test-Path -LiteralPath $backendRunner -PathType Leaf)) {
     throw 'Backend start-cms-local.ps1 is missing. Synchronize the Backend dev branch before local CMS startup.'
 }
@@ -115,7 +166,25 @@ if ($FrontendSourceRoot) { $runnerArguments.FrontendSourceRoot = $FrontendSource
 if ($OrchestratorSourceRoot) { $runnerArguments.OrchestratorSourceRoot = $OrchestratorSourceRoot }
 if ($McpSourceRoot) { $runnerArguments.McpSourceRoot = $McpSourceRoot }
 
+foreach ($binding in $sourceBindings) {
+    Write-Output ("RUNTIME SOURCE BINDING: repository={0}; root={1}; sha={2}; dirty={3}" -f `
+        $binding.RepositoryName, $binding.SourceRoot, $binding.SourceSha, $binding.Dirty)
+}
 & $backendRunner @runnerArguments
 if ($LASTEXITCODE -ne 0) {
     throw "Backend $Profile local runner failed with exit code $LASTEXITCODE."
+}
+foreach ($binding in $sourceBindings) {
+    $verifiedSha = (& git -c "safe.directory=$($binding.SourceRoot)" -C $binding.SourceRoot rev-parse HEAD 2>$null) -join ''
+    if ($LASTEXITCODE -ne 0 -or $verifiedSha -ne $binding.SourceSha) {
+        throw "Runtime source HEAD changed while $Profile was starting: $($binding.RepositoryName)"
+    }
+    if ($RequireCleanSourceBindings) {
+        $verifiedStatus = @(& git -c "safe.directory=$($binding.SourceRoot)" -C $binding.SourceRoot status --porcelain=v1 2>$null)
+        if ($LASTEXITCODE -ne 0 -or @($verifiedStatus | Where-Object { $_ }).Count -gt 0) {
+            throw "Runtime source became dirty while $Profile was starting: $($binding.RepositoryName)"
+        }
+    }
+    Write-Output ("RUNTIME SOURCE VERIFIED: repository={0}; sha={1}" -f `
+        $binding.RepositoryName, $verifiedSha)
 }
