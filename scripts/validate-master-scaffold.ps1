@@ -190,7 +190,7 @@ if ($checkpointOutput -notmatch '^AXMS CONTEXT CHECKPOINT v2: reason=Resume' -or
     $checkpointOutput -notmatch 'Before implementation:' -or
     $checkpointOutput -notmatch 'Before PR:' -or
     $checkpointBytes -gt 4096) {
-    throw "Checkpoint mode must stay below 4096 bytes and repeat both Pull gates; bytes=$checkpointBytes"
+    throw "Checkpoint mode must stay below 4096 bytes and repeat both Git gates; bytes=$checkpointBytes"
 }
 
 $fullOutput = @(& $sessionStartScriptPath -WorkspaceRoot $testWorkspaceRoot -Mode Full -Reason Lifecycle -MaxContextBytes 24576) -join "`n"
@@ -365,7 +365,7 @@ if ($workspaceAgentTemplate -notmatch 'start-feature-work\.ps1' -or
     $masterAgents -notmatch 'prepare-dev-pr\.ps1' -or
     $workspaceAgentTemplate -notmatch 'pre-push' -or
     $masterAgents -notmatch 'pre-push') {
-    throw 'Master and Workspace AGENTS policies must route pre-work and pre-PR Pulls through enforced gates.'
+    throw 'Master and Workspace AGENTS policies must route pre-work Pull and pre-PR fetch through enforced gates.'
 }
 if ($workspaceAgentTemplate -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks' -or
     $masterAgents -notmatch 'bootstrap-workspace\.ps1 -SyncLlmHooks') {
@@ -403,16 +403,17 @@ if ($startFeatureWorkScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \
     $startFeatureWorkScript -notmatch '\$safeName\.Length -gt 48' -or
     $startFeatureWorkScript -notmatch 'Canonical checkout changed while the isolated dev Pull gate was running' -or
     $startFeatureWorkScript -notmatch '@\(''worktree'', ''remove''' -or
-    $prepareDevPrScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \$integrationBranch\)' -or
-    $prepareDevPrScript -notmatch 'CANONICAL DIRTY PRESERVED' -or
-    $prepareDevPrScript -notmatch '@\(''worktree'', ''remove''' -or
+    $prepareDevPrScript -notmatch '@\(''fetch'', ''origin'', \$integrationBranch\)' -or
+    $prepareDevPrScript -match '\$canonicalPath|\$temporaryPullWorktree|CANONICAL DIRTY PRESERVED' -or
+    $prepareDevPrScript -match '@\(''pull''|@\(''worktree'', ''add''|@\(''worktree'', ''remove''' -or
+    $prepareDevPrScript -notmatch '@\(''merge-base'', ''--is-ancestor''' -or
     $prepareDevPrScript -notmatch 'axms-pull-gates' -or
     $prePushPullGateScript -match '@\(''pull''' -or
     $prePushPullGateScript -notmatch 'refs/heads/dev' -or
     $prePushPullGateScript -notmatch 'refs/heads/main' -or
-    $prePushPullGateScript -notmatch 'Stale pre-PR Pull receipt' -or
+    $prePushPullGateScript -notmatch 'Stale pre-PR dev receipt' -or
     $prePushHook -notmatch 'pre-push-pull-gate\.ps1') {
-    throw 'Pull-gate scripts must pull before work/PR while keeping pre-push validation network-free and read-only.'
+    throw 'The pre-work gate must preserve canonical work, while the pre-PR gate fetches dev directly from its Feature Worktree and pre-push stays network-free.'
 }
 $startLocalScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-local-cms.ps1')
 $rebuildLocalServiceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/rebuild-local-service.ps1')
@@ -525,10 +526,10 @@ foreach ($pattern in $forbiddenPatterns) {
 }
 
 $nonPullGateScriptText = (Get-ChildItem -File -LiteralPath (Join-Path $masterRoot 'scripts') -Filter '*.ps1' |
-    Where-Object { $_.Name -notin @('validate-master-scaffold.ps1', 'start-feature-work.ps1', 'prepare-dev-pr.ps1') } |
+    Where-Object { $_.Name -notin @('validate-master-scaffold.ps1', 'start-feature-work.ps1') } |
     ForEach-Object { Get-Content -Raw -Encoding UTF8 -LiteralPath $_.FullName }) -join "`n"
 if ($nonPullGateScriptText -match "(?im)git\s+pull|@\('pull'") {
-    throw 'Network-mutating Git pull is allowed only in the pre-work and pre-PR Pull gate scripts.'
+    throw 'Network-mutating Git pull is allowed only in the pre-work gate script.'
 }
 
 foreach ($forbiddenDirectory in @(
@@ -544,7 +545,7 @@ foreach ($forbiddenDirectory in @(
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
 Write-Host 'PASS: bounded full/checkpoint context with conditional AGENTS refresh after direct/functions.exec Git pull'
-Write-Host 'PASS: enforced pre-work/pre-PR Pull gates and read-only pre-push receipt validation'
+Write-Host 'PASS: enforced pre-work Pull and pre-PR fetch gates with read-only pre-push receipt validation'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
 Write-Host 'PASS: five canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'

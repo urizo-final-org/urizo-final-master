@@ -348,7 +348,7 @@ function Sync-WorkspaceLlmConfiguration {
         Write-Host 'CONTEXT AND PULL GATE SETUP PLAN: lifecycle context, compact checkpoints, and read-only pre-push enforcement were planned.'
     }
     else {
-        Write-Host 'CONTEXT AND PULL GATE SETUP PASS: Codex and Claude use bounded context refresh; Git push validates a fresh pre-PR Pull receipt.'
+        Write-Host 'CONTEXT AND PULL GATE SETUP PASS: Codex and Claude use bounded context refresh; Git push validates a fresh pre-PR dev receipt.'
     }
 }
 
