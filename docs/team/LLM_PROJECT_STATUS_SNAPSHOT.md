@@ -1,25 +1,25 @@
 # AX Module Studio 현재 상태
 
 > Updated: 2026-09-01 (Asia/Seoul)
-> Snapshot-Version: `v1.4-release-closeout`
+> Snapshot-Version: `v1.5-release-closeout-done`
 > Owner: Min Seungjun (`tmdwns0531`)
 
 ## 현재 기준
 
 - 제품 범위: [로컬 데모 CMS 최소 범위](../product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
 - Git·팀 운영: [Master·Source 운영 정책](MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-- 현재 우선순위: 병합된 AI 핵심 기능을 제품 완료로 간주하지 않고 [AI Core Release Closeout](../product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)의 활성 29개 항목을 7개 Work로 닫는다.
+- 현재 상태: [AI Core Release Closeout](../product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)의 활성 29개 항목과 7개 Work를 최종 통합 SHA에서 모두 닫았다.
 - 이전 CMS Spec, Wave, 업무분장, 추적표, 인수인계 이력은 현재 권한이 아니다.
 - AI 핵심 기능의 과거 Work·PR 병합 이력은 완료 판정이 아니다. 현재 상태와 완료 증거는 Release Closeout만 관리한다.
 
-## 확인된 저장소 기준
+## 최종 검증 저장소 기준
 
-| 저장소 | `origin/dev` |
+| 저장소 | 최종 검증 SHA |
 |---|---|
-| Master | `de67ea818786de79c56c0db61bd984db1c81ce25` |
-| Frontend | `62ed93f3743d70e29c43a61ae2850ce08e093f7e` |
-| Backend | `9189d27510e16c3c11c350205e6b53c14ebe2f2a` |
-| Orchestrator | `85b36392481065e4b933e688ec66ebc3e2bee351` |
+| Master | `2743373fd133f7b7f19774d23e63937a44773b19` |
+| Frontend | `a8a69e8e0c31ed2abbb8881f9da2fe249d55019f` |
+| Backend | `6d5ad9bfab473c5548c0f3f1724e1f4f58ec152f` |
+| Orchestrator | `1f0224dc1857ca2ad0198c426aa78f440b3382ad` |
 | MCP Server | `0885dbe64ae601d9790c05c600dbb585eff70800` |
 
 개인별 local-only 변경은 canonical 완료 상태가 아니다. 이를 자동으로 삭제·Reset·Stash·Branch
@@ -28,11 +28,10 @@
 ## 구현 상태
 
 - 축소 CMS 기준 구현과 AI 핵심 기능의 과거 Slice·PR은 `origin/dev`에 병합돼 있다.
-- 병합 여부와 좁은 Slice 테스트 결과는 제품 완료 증거로 사용하지 않는다.
-- 기존 21개 분류에서는 완료 4개·의도적 제외 2개를 작업 대상에서 빼고, 미완료 7개·부분완료 8개만 활성 범위로 유지한다.
-- 구원장 14개는 PR 병합 상태가 아니라 현재 제품 흐름에서 다시 확인하고, 실패하는 경우에만 최소 수정한다.
-- 현재 Work는 `AXMS-RC-001`~`AXMS-RC-007`이며 모두 `OPEN`이다. 최종 통합 전 개별 로컬 Commit은 완료로 기록하지 않는다.
-- 최종 `DONE`은 모든 PR 병합 후 동일한 다섯 저장소 SHA에서 활성 29개·저장소 전체 테스트·기존 full 로컬 제품 흐름을 모두 통과한 경우에만 사용한다.
+- Frontend [#21](https://github.com/urizo-final-org/urizo-final-frontend/pull/21), Backend [#40](https://github.com/urizo-final-org/urizo-final-backend/pull/40), Orchestrator [#16](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/16)은 `dev`에 병합됐다.
+- 미완료 7개, 부분완료 8개, 구원장 14개는 현재 제품 흐름에서 재확인해 `29 / 29 DONE`이다.
+- `AXMS-RC-001`~`AXMS-RC-007`은 모두 `DONE`이다.
+- 저장소 전체 테스트, 인증된 Spring↔MCP 13-tool 왕복, 공식 `full -Rebuild`와 Flyway pending 0을 같은 최종 SHA 조합에서 통과했다.
 
 ## 구현 시작 조건
 
@@ -56,7 +55,7 @@ AI 핵심 기능 2~6번은 담당자 표를 우선한다. 현재 PC의 GitHub ID
 
 ```text
 MASTER UPDATE COMPLETE
-Snapshot-Version: v1.4-release-closeout
+Snapshot-Version: v1.5-release-closeout-done
 Slice/Work-Slug: <assigned value>
 Task-Version: <assigned value or N/A>
 Worker: <name / GitHub ID>

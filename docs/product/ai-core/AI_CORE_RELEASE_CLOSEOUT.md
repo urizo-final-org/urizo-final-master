@@ -1,6 +1,6 @@
 # AX Module Studio AI Core Release Closeout
 
-> 상태: `OPEN`
+> 상태: `DONE`
 > 기준일: 2026-09-01 (Asia/Seoul)
 > 원칙: `Simple is best`
 
@@ -29,40 +29,40 @@
 
 | Work | 저장소 | 포함 항목 | 제품 완료 결과 | 상태 |
 |---|---|---|---|---|
-| `AXMS-RC-001` 인증 세션 | Frontend, Backend | `P02` | 로그인·refresh·logout 응답 순서가 바뀌어도 최신 세션만 유지 | `OPEN` |
-| `AXMS-RC-002` Natural CMS | Backend, Orchestrator, MCP Server | `M02`, `L09` | 요청→Preview→승인→CMS 반영이 한 Job으로 끝나며 실패 시 원상복구 | `OPEN` |
-| `AXMS-RC-003` Snapshot Runtime | Backend, Orchestrator | `M01`, `P01`, `L01~L06`, `L10` | 저장한 Profile의 순서·분기·승인·재시도 설정 그대로 실행 | `OPEN` |
-| `AXMS-RC-004` CMS Site | Frontend, Backend | `M03~M05`, `P03~P04`, `L11` | Site 생성·전환·오류 복구·Template 즉시 반영이 실제 화면에서 동작 | `OPEN` |
-| `AXMS-RC-005` Provider 계약 | Frontend, Backend, Orchestrator | `P06~P08`, `L08`, `L12~L14` | 설정한 Provider·Model·role·Structured Output이 실제 실행까지 보존 | `OPEN` |
-| `AXMS-RC-006` MCP·정리 | Frontend, Backend, MCP Server, Master | `M06~M07`, `P05`와 Simple 위반 정리 | 13개 Tool 왕복·Windows 테스트·권한/문서 정합성, 죽은 코드와 중복 권위 제거 | `OPEN` |
-| `AXMS-RC-007` 최종 실행 | Master와 네 Source | 앞의 29개 | 같은 최종 SHA에서 전체 테스트와 기존 full 로컬 제품 흐름 통과 | `OPEN` |
+| `AXMS-RC-001` 인증 세션 | Frontend, Backend | `P02` | 로그인·refresh·logout 응답 순서가 바뀌어도 최신 세션만 유지 | `DONE` |
+| `AXMS-RC-002` Natural CMS | Backend, Orchestrator, MCP Server | `M02`, `L09` | 요청→Preview→승인→CMS 반영이 한 Job으로 끝나며 실패 시 원상복구 | `DONE` |
+| `AXMS-RC-003` Snapshot Runtime | Backend, Orchestrator | `M01`, `P01`, `L01~L06`, `L10` | 저장한 Profile의 순서·분기·승인·재시도 설정 그대로 실행 | `DONE` |
+| `AXMS-RC-004` CMS Site | Frontend, Backend | `M03~M05`, `P03~P04`, `L11` | Site 생성·전환·오류 복구·Template 즉시 반영이 실제 화면에서 동작 | `DONE` |
+| `AXMS-RC-005` Provider 계약 | Frontend, Backend, Orchestrator | `P06~P08`, `L08`, `L12~L14` | 설정한 Provider·Model·role·Structured Output이 실제 실행까지 보존 | `DONE` |
+| `AXMS-RC-006` MCP·정리 | Frontend, Backend, MCP Server, Master | `M06~M07`, `P05`와 Simple 위반 정리 | 13개 Tool 왕복·Windows 테스트·권한/문서 정합성, 죽은 코드와 중복 권위 제거 | `DONE` |
+| `AXMS-RC-007` 최종 실행 | Master와 네 Source | 앞의 29개 | 같은 최종 SHA에서 전체 테스트와 기존 full 로컬 제품 흐름 통과 | `DONE` |
 
-## 4. 미해결 15개
+## 4. 완료한 활성 15개
 
 ### 미완료 7개
 
 | ID | 항목 | 제품 기준 완료 결과 | Work | 상태 |
 |---|---|---|---|---|
-| `M01` | Snapshot 승인 순서 권위 | Backend 고정 체인 없이 Snapshot Edge·interrupt·checkpoint가 승인 순서를 결정 | `AXMS-RC-003` | `OPEN` |
-| `M02` | CMS 변경 원자성 | CMS 콘텐츠·Handler Result·Job 전이가 모두 성공하거나 모두 rollback | `AXMS-RC-002` | `OPEN` |
-| `M03` | 공개 Site 최초 실패 처리 | 오류 화면과 재시도가 보이고 재시도 성공 후 Site 표시 | `AXMS-RC-004` | `OPEN` |
-| `M04` | 공개 Site 요청 경합 | 이전 요청이 최신 Site 화면을 덮지 못함 | `AXMS-RC-004` | `OPEN` |
-| `M05` | 복수 Site 관리 | SUPER_ADMIN이 Site를 생성·조회·수정하고 key/path 충돌을 안내받음 | `AXMS-RC-004` | `OPEN` |
-| `M06` | MCP live 13-tool | 인증된 Spring↔MCP 왕복에서 Coding 7 + CMS 6 Catalog가 정확히 일치 | `AXMS-RC-006` | `OPEN` |
-| `M07` | MCP Windows 경계 | 같은 경계 Fixture가 LF와 CRLF에서 모두 통과 | `AXMS-RC-006` | `OPEN` |
+| `M01` | Snapshot 승인 순서 권위 | Backend 고정 체인 없이 Snapshot Edge·interrupt·checkpoint가 승인 순서를 결정 | `AXMS-RC-003` | `DONE` |
+| `M02` | CMS 변경 원자성 | CMS 콘텐츠·Handler Result·Job 전이가 모두 성공하거나 모두 rollback | `AXMS-RC-002` | `DONE` |
+| `M03` | 공개 Site 최초 실패 처리 | 오류 화면과 재시도가 보이고 재시도 성공 후 Site 표시 | `AXMS-RC-004` | `DONE` |
+| `M04` | 공개 Site 요청 경합 | 이전 요청이 최신 Site 화면을 덮지 못함 | `AXMS-RC-004` | `DONE` |
+| `M05` | 복수 Site 관리 | SUPER_ADMIN이 Site를 생성·조회·수정하고 key/path 충돌을 안내받음 | `AXMS-RC-004` | `DONE` |
+| `M06` | MCP live 13-tool | 인증된 Spring↔MCP 왕복에서 Coding 7 + CMS 6 Catalog가 정확히 일치 | `AXMS-RC-006` | `DONE` |
+| `M07` | MCP Windows 경계 | 같은 경계 Fixture가 LF와 CRLF에서 모두 통과 | `AXMS-RC-006` | `DONE` |
 
 ### 부분완료 8개
 
 | ID | 항목 | 남은 제품 기준 완료 결과 | Work | 상태 |
 |---|---|---|---|---|
-| `P01` | Profile 설정 실제 실행 | edge·loop·toolPolicy·modelBindings에 더해 Snapshot `maxAttempts`까지 적용 | `AXMS-RC-003` | `OPEN` |
-| `P02` | 인증 세션 경합 | 오래된 refresh·expired 응답 차단과 logout session-family 폐기 | `AXMS-RC-001` | `OPEN` |
-| `P03` | 공개 경로 검증 | `/admin`·`/api`·`/internal`·`/actuator`와 하위 경로 저장 거부 | `AXMS-RC-004` | `OPEN` |
-| `P04` | 기본 Template 관리 | `site.templateKey`만 선택 권위로 사용하고 저장 즉시 공개 화면 반영 | `AXMS-RC-004` | `OPEN` |
-| `P05` | 관리자 권한·문서 | 실제 SUPER_ADMIN 권한·Route·현재 상태 문서가 코드와 일치 | `AXMS-RC-006` | `OPEN` |
-| `P06` | Message role·Structured Output | role 순서와 `JSON_SCHEMA`가 실제 Provider 요청·응답까지 보존 | `AXMS-RC-005` | `OPEN` |
-| `P07` | Provider 상태 | 조회 실패를 성공처럼 표시하지 않고 Key 교체 전 테스트 결과를 폐기 | `AXMS-RC-005` | `OPEN` |
-| `P08` | JSON repair·검증 | 1회 repair 뒤 strict parse하고 실제 JSON golden/negative corpus 통과 | `AXMS-RC-005` | `OPEN` |
+| `P01` | Profile 설정 실제 실행 | edge·loop·toolPolicy·modelBindings에 더해 Snapshot `maxAttempts`까지 적용 | `AXMS-RC-003` | `DONE` |
+| `P02` | 인증 세션 경합 | 오래된 refresh·expired 응답 차단과 logout session-family 폐기 | `AXMS-RC-001` | `DONE` |
+| `P03` | 공개 경로 검증 | `/admin`·`/api`·`/internal`·`/actuator`와 하위 경로 저장 거부 | `AXMS-RC-004` | `DONE` |
+| `P04` | 기본 Template 관리 | `site.templateKey`만 선택 권위로 사용하고 저장 즉시 공개 화면 반영 | `AXMS-RC-004` | `DONE` |
+| `P05` | 관리자 권한·문서 | 실제 SUPER_ADMIN 권한·Route·현재 상태 문서가 코드와 일치 | `AXMS-RC-006` | `DONE` |
+| `P06` | Message role·Structured Output | role 순서와 `JSON_SCHEMA`가 실제 Provider 요청·응답까지 보존 | `AXMS-RC-005` | `DONE` |
+| `P07` | Provider 상태 | 조회 실패를 성공처럼 표시하지 않고 Key 교체 전 테스트 결과를 폐기 | `AXMS-RC-005` | `DONE` |
+| `P08` | JSON repair·검증 | 1회 repair 뒤 strict parse하고 실제 JSON golden/negative corpus 통과 | `AXMS-RC-005` | `DONE` |
 
 ## 5. 구원장 14개 제품 재확인
 
@@ -70,20 +70,20 @@
 
 | ID | 구 Work | 제품 기준 완료 결과 | 새 Work | 상태 |
 |---|---|---|---|---|
-| `L01` | `AI06-004` Snapshot Contract | 활성화할 Snapshot JSON의 필드·Port·제한을 불변 계약으로 검증 | `AXMS-RC-003` | `OPEN` |
-| `L02` | `AI06-005` Registry·Graph Builder | 등록된 Handler만으로 선형·분기·제한 반복 Graph를 조립 | `AXMS-RC-003` | `OPEN` |
-| `L03` | `AI06-006` Snapshot Runner | 실제 Worker가 Snapshot 경로로 실행하며 재시도·중단·재개를 보존 | `AXMS-RC-003` | `OPEN` |
-| `L04` | `AI06-007` Profile Version 읽기 | Job에 고정한 불변 Profile Version을 Spring에서 읽어 끝까지 사용 | `AXMS-RC-003` | `OPEN` |
-| `L05` | `AI06-008` Job–Snapshot 바인딩 | 생성 시 Version을 고정하고 Queue에는 `jobId`만 전달 | `AXMS-RC-003` | `OPEN` |
-| `L06` | `AI06-009` Approval·Check·Guardrail | 승인·Check·잠금 Guardrail과 재개가 Snapshot 결과 Port로 동작 | `AXMS-RC-003` | `OPEN` |
-| `L07` | `AI06-010` MCP 공통 플랫폼 | 인증·Allowlist·단일 Catalog·Core DB 비접근 경계를 유지 | `AXMS-RC-006` | `OPEN` |
-| `L08` | `AI04-002` Coding Handler | Coding Job의 분석·승인·코딩·리뷰·PR 결과가 Snapshot 흐름으로 연결 | `AXMS-RC-005` | `OPEN` |
-| `L09` | `AI05-001-01` Natural CMS Handler | 전용 Queue가 `jobId`를 소비하고 Preview 승인 후 Spring CMS Service로 반영 | `AXMS-RC-002` | `OPEN` |
-| `L10` | `AI06-011` 관리자 Profile 설정 | 관리자 저장·활성화가 불변 Version을 만들고 다음 Job 실행에 적용 | `AXMS-RC-003` | `OPEN` |
-| `L11` | `AI05-002` CMS Site 설정 | Site별 설정 격리와 공개 Context 단일 API를 유지하고 미사용 호환 코드를 제거 | `AXMS-RC-004`, `AXMS-RC-006` | `OPEN` |
-| `L12` | `AI06-017` Provider Credential | Key 등록·교체·상태·연결 테스트가 실제 화면 하나에서 동작하고 가짜 Models UI를 제거 | `AXMS-RC-005`, `AXMS-RC-006` | `OPEN` |
-| `L13` | `AI06-018` Provider-native Tool Calling | 허용 Tool·Schema·결과가 실제 Provider Adapter에서 보존 | `AXMS-RC-005` | `OPEN` |
-| `L14` | `AI06-019` Profile Model Binding | `profileVersionId + nodeId`가 실제 Provider·Model 선택에 사용 | `AXMS-RC-005` | `OPEN` |
+| `L01` | `AI06-004` Snapshot Contract | 활성화할 Snapshot JSON의 필드·Port·제한을 불변 계약으로 검증 | `AXMS-RC-003` | `DONE` |
+| `L02` | `AI06-005` Registry·Graph Builder | 등록된 Handler만으로 선형·분기·제한 반복 Graph를 조립 | `AXMS-RC-003` | `DONE` |
+| `L03` | `AI06-006` Snapshot Runner | 실제 Worker가 Snapshot 경로로 실행하며 재시도·중단·재개를 보존 | `AXMS-RC-003` | `DONE` |
+| `L04` | `AI06-007` Profile Version 읽기 | Job에 고정한 불변 Profile Version을 Spring에서 읽어 끝까지 사용 | `AXMS-RC-003` | `DONE` |
+| `L05` | `AI06-008` Job–Snapshot 바인딩 | 생성 시 Version을 고정하고 Queue에는 `jobId`만 전달 | `AXMS-RC-003` | `DONE` |
+| `L06` | `AI06-009` Approval·Check·Guardrail | 승인·Check·잠금 Guardrail과 재개가 Snapshot 결과 Port로 동작 | `AXMS-RC-003` | `DONE` |
+| `L07` | `AI06-010` MCP 공통 플랫폼 | 인증·Allowlist·단일 Catalog·Core DB 비접근 경계를 유지 | `AXMS-RC-006` | `DONE` |
+| `L08` | `AI04-002` Coding Handler | Coding Job의 분석·승인·코딩·리뷰·PR 결과가 Snapshot 흐름으로 연결 | `AXMS-RC-005` | `DONE` |
+| `L09` | `AI05-001-01` Natural CMS Handler | 전용 Queue가 `jobId`를 소비하고 Preview 승인 후 Spring CMS Service로 반영 | `AXMS-RC-002` | `DONE` |
+| `L10` | `AI06-011` 관리자 Profile 설정 | 관리자 저장·활성화가 불변 Version을 만들고 다음 Job 실행에 적용 | `AXMS-RC-003` | `DONE` |
+| `L11` | `AI05-002` CMS Site 설정 | Site별 설정 격리와 공개 Context 단일 API를 유지하고 미사용 호환 코드를 제거 | `AXMS-RC-004`, `AXMS-RC-006` | `DONE` |
+| `L12` | `AI06-017` Provider Credential | Key 등록·교체·상태·연결 테스트가 실제 화면 하나에서 동작하고 가짜 Models UI를 제거 | `AXMS-RC-005`, `AXMS-RC-006` | `DONE` |
+| `L13` | `AI06-018` Provider-native Tool Calling | 허용 Tool·Schema·결과가 실제 Provider Adapter에서 보존 | `AXMS-RC-005` | `DONE` |
+| `L14` | `AI06-019` Profile Model Binding | `profileVersionId + nodeId`가 실제 Provider·Model 선택에 사용 | `AXMS-RC-005` | `DONE` |
 
 ### Simple is best 위반 7개 연결
 
@@ -110,10 +110,17 @@
 
 | 최종 기록 | 결과 |
 |---|---|
-| 상태 | `OPEN` |
-| 최종 5개 SHA | — |
-| 미완료 7개 | `0 / 7 DONE` |
-| 부분완료 8개 | `0 / 8 DONE` |
-| 구원장 14개 | `0 / 14 DONE` |
-| 저장소 전체 테스트 | 미실행 |
-| full 로컬 제품 흐름 | 미실행 |
+| 상태 | `DONE` |
+| 검증 Master HEAD | `2743373fd133f7b7f19774d23e63937a44773b19` |
+| Frontend `origin/dev` | `a8a69e8e0c31ed2abbb8881f9da2fe249d55019f` ([#21](https://github.com/urizo-final-org/urizo-final-frontend/pull/21)) |
+| Backend `origin/dev` | `6d5ad9bfab473c5548c0f3f1724e1f4f58ec152f` ([#40](https://github.com/urizo-final-org/urizo-final-backend/pull/40)) |
+| Orchestrator `origin/dev` | `1f0224dc1857ca2ad0198c426aa78f440b3382ad` ([#16](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/16)) |
+| MCP Server `origin/dev` | `0885dbe64ae601d9790c05c600dbb585eff70800` (변경 없음) |
+| 미완료 7개 | `7 / 7 DONE` |
+| 부분완료 8개 | `8 / 8 DONE` |
+| 구원장 14개 | `14 / 14 DONE` |
+| 저장소 전체 테스트 | Frontend 75/75·typecheck·build, Backend Product 322(4 skip)·Control 309(4 skip), Orchestrator 180/180·compileall, MCP 32(Windows symlink 1 skip)·compileall 통과 |
+| 통합 왕복 | 인증된 Spring↔MCP exact 13-tool Catalog 통과 |
+| full 로컬 제품 흐름 | 공식 Master `full -Rebuild` 종료 코드 0, 전체 서비스와 DB gateway Healthy, Flyway `20260831195834460`·pending 0, CMS `http://127.0.0.1:18080/` 준비 |
+
+검증 Master HEAD 이후의 이 Closeout 기록 변경은 문서 전용이다. 제품·마이그레이션·컨테이너 검증은 위 다섯 SHA 조합에서 수행했다.

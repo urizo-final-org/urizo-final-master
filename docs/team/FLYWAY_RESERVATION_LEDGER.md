@@ -35,9 +35,9 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260830162029912` | `MERGED` | `axms-ai05-001-01-cms-handler-integration` | `create_natural_cms_result_boundary` | `tmdwns0531` | `2026-09-29T16:20:29Z` | [#23](https://github.com/urizo-final-org/urizo-final-backend/pull/23) | `20260830111238338` |
 | `20260831011109932` | `MERGED` | `axms-ai06-011-admin-profile-settings-integration` | `grant_profile_version_admin_write` | `tmdwns0531` | `2026-09-30T01:11:09Z` | [Backend #24](https://github.com/urizo-final-org/urizo-final-backend/pull/24) | `20260830162029912` |
 | `20260831022313641` | `MERGED` | `axms-ai05-002-cms-site-settings-integration` | `create_cms_site_settings` | `tmdwns0531` | `2026-09-30T02:23:13Z` | [Backend #26](https://github.com/urizo-final-org/urizo-final-backend/pull/26) | `20260831011109932` |
-| `20260831165912245` | `RESERVED` | `AXMS-RC-002` | `unify_natural_cms_apply_transaction` | `tmdwns0531` | `2026-09-30T16:59:12Z` | pending | `20260830162029912` |
-| `20260831181151833` | `RESERVED` | `AXMS-RC-003` | `expose_snapshot_approval_authority` | `tmdwns0531` | `2026-09-30T18:11:51Z` | pending | `20260831165912245` |
-| `20260831195834460` | `RESERVED` | `AXMS-RC-005` | `cascade_provider_audit_on_credential_delete` | `tmdwns0531` | `2026-09-30T19:58:34Z` | pending | none |
+| `20260831165912245` | `MERGED` | `AXMS-RC-002` | `unify_natural_cms_apply_transaction` | `tmdwns0531` | `2026-09-30T16:59:12Z` | [Backend #40](https://github.com/urizo-final-org/urizo-final-backend/pull/40) | `20260830162029912` |
+| `20260831181151833` | `MERGED` | `AXMS-RC-003` | `expose_snapshot_approval_authority` | `tmdwns0531` | `2026-09-30T18:11:51Z` | [Backend #40](https://github.com/urizo-final-org/urizo-final-backend/pull/40) | `20260831165912245` |
+| `20260831195834460` | `MERGED` | `AXMS-RC-005` | `cascade_provider_audit_on_credential_delete` | `tmdwns0531` | `2026-09-30T19:58:34Z` | [Backend #40](https://github.com/urizo-final-org/urizo-final-backend/pull/40) | none |
 
 ## Reservation template
 
