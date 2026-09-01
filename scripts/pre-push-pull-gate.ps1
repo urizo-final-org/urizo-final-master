@@ -107,13 +107,13 @@ try {
         $branch = $Matches['branch']
         $receiptPath = Join-Path $receiptDirectory (Get-ReceiptName -Branch $branch)
         if (-not (Test-Path -LiteralPath $receiptPath -PathType Leaf)) {
-            throw "Missing pre-PR Pull receipt for $branch. Run urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork from the feature Worktree."
+            throw "Missing pre-PR dev receipt for $branch. Run urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork from the feature Worktree."
         }
         try {
             $receipt = Get-Content -Raw -Encoding UTF8 -LiteralPath $receiptPath | ConvertFrom-Json
         }
         catch {
-            throw "Invalid pre-PR Pull receipt. Rerun the Pull gate: $receiptPath"
+            throw "Invalid pre-PR dev receipt. Rerun the dev gate: $receiptPath"
         }
 
         if ([int]$receipt.schemaVersion -ne 1 -or
@@ -121,7 +121,7 @@ try {
             [string]$receipt.head -ne $localSha -or
             [string]$receipt.originDev -ne $originDev -or
             [IO.Path]::GetFullPath([string]$receipt.repositoryRoot) -ne $repositoryRoot) {
-            throw "Stale pre-PR Pull receipt for $branch. HEAD or origin/dev changed; rerun prepare-dev-pr.ps1 -ApproveNetwork."
+            throw "Stale pre-PR dev receipt for $branch. HEAD or origin/dev changed; rerun prepare-dev-pr.ps1 -ApproveNetwork."
         }
         $ancestor = Invoke-GitCapture -Path $repositoryRoot -Arguments @('merge-base', '--is-ancestor', 'refs/remotes/origin/dev', $localSha) -AllowFailure
         if ($ancestor.ExitCode -ne 0) {

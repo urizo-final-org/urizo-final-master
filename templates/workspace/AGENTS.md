@@ -26,8 +26,8 @@
   `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
 - Codex·Claude Context Hook은 `startup|clear|compact`에서 Master와 활성 Source 원문을 불러오고 `resume`과 `PostToolUse`가 감지한 일반 Pull에서는 4KB 이하 Checkpoint만 불러온다. Pull 결과에 `AGENTS.md` 변경이 있을 때만 전체 원문을 한 번 갱신하며 Workspace AGENTS 원문은 중복 주입하지 않는다.
 - 새 구현 작업은 `urizo-final-master/scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 시작한다. 이 Gate가 canonical `dev` Pull과 최신 `origin/dev` 기반 독립 Worktree 생성을 수행한다.
-- Push·PR 직전에는 깨끗한 Feature Worktree에서 `urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate가 dev·Feature upstream Pull, 현재 dev 포함 여부를 검증하고 Head 전용 Receipt를 발급한다. Managed `pre-push` Hook은 유효한 Receipt가 있을 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
-- canonical `dev`가 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree에서 Gate를 수행한 뒤 clean 상태일 때만 임시 Worktree를 제거한다. Feature Worktree가 Dirty하거나 Diverged·local-only 상태에서 안전하게 진행할 수 없으면 기존 상태를 보존하고 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
+- Push·PR 직전에는 깨끗한 Feature Worktree에서 `urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate는 해당 Worktree에서 `git fetch origin dev`를 한 번 실행하고 현재 dev 포함 여부를 검증한 뒤 Head 전용 Receipt를 발급한다. canonical checkout과 다른 Feature upstream은 참조하거나 변경하지 않는다. Managed `pre-push` Hook은 유효한 Receipt가 있을 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
+- 새 작업 시작 Gate에서 canonical checkout이 `dev`가 아니거나 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree를 사용한다. PR Gate는 임시 Worktree를 만들지 않는다. Feature Worktree가 Dirty하거나 최신 `origin/dev`를 포함하지 않으면 기존 상태를 보존하고 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
 - 주입된 `AGENTS.md`와 이번 작업의 활성 Source Worktree 변경 범위를 기준으로 `full` 전체 실행,
   Frontend Watch·HMR, 단일 Service 격리 갱신 중 적용 모드를 LLM이 판단하고 `LOCAL RUNTIME CONTEXT PASS`로 보고한다.
 - 변경 범위는 staged·unstaged·untracked 파일과 `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 본다.

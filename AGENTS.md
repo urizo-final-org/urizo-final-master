@@ -85,8 +85,8 @@
 - Codex가 프로젝트 Hook 신뢰 확인을 처음 표시하면 팀원이 내용을 확인하고 한 번 승인한다. 이 제품 보안 확인은 LLM이 우회하지 않는다.
 - Source의 dirty·diverged·local-only 작업은 보존한다. 새 작업은 깨끗한 최신 `dev` 기반 Branch나 별도 Worktree에서 시작한다.
 - 새 구현 작업은 `scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 시작한다. 이 Gate가 깨끗한 canonical `dev`에서 `git pull --ff-only origin dev`를 성공시킨 뒤 갱신된 `origin/dev` 기반 독립 Worktree와 Feature Branch를 생성·재사용한다.
-- Push·PR 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate가 canonical `dev`와 등록된 Feature upstream을 Fast-forward Pull하고 현재 `origin/dev` 포함 여부를 검증한 뒤 현재 Head 전용 Receipt를 발급한다. Managed `pre-push` Hook은 Receipt·Head·`origin/dev`가 모두 일치할 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
-- canonical `dev`가 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree에서 같은 Gate를 수행한 뒤 clean 상태일 때만 그 임시 Worktree를 제거한다. Feature Worktree가 Dirty하거나 Diverged·local-only 상태에서 안전하게 진행할 수 없으면 기존 상태를 보존하고 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
+- Push·PR 직전에는 변경을 Commit한 깨끗한 Feature Worktree에서 `scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate는 해당 Worktree에서 `git fetch origin dev`를 한 번 실행하고 현재 `origin/dev` 포함 여부를 검증한 뒤 현재 Head 전용 Receipt를 발급한다. canonical checkout과 다른 Feature upstream은 참조하거나 변경하지 않는다. Managed `pre-push` Hook은 Receipt·Head·`origin/dev`가 모두 일치할 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.
+- 새 작업 시작 Gate에서 canonical checkout이 `dev`가 아니거나 Dirty면 해당 변경을 건드리지 않고 Master가 만든 임시 detached Pull Worktree를 사용한다. PR Gate는 임시 Worktree를 만들지 않는다. Feature Worktree가 Dirty하거나 최신 `origin/dev`를 포함하지 않으면 자동 Merge·Rebase·충돌 해결 없이 `MASTER CONTEXT BLOCKED`로 중단한다.
 
 ## AI 핵심 기능 작업
 
