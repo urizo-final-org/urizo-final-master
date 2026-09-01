@@ -1,8 +1,9 @@
 # 6. 오케스트레이션 제어
 
 > 담당자: 민승준 (`tmdwns0531`)
-> 현재 단계: AI06-008 `dev` 병합 완료 · AI06-009 별도 승인 게이트
+> 현재 단계: 제품 완료 판정은 [AI Core Release Closeout](AI_CORE_RELEASE_CLOSEOUT.md)에서 관리
 > 내용 권한: 담당자가 이 기능의 기획·방향·작업 ID와 진행 상태를 현행화한다.
+> 주의: 아래 Work·PR·테스트 수는 과거 구현 이력이며 현재 완료 상태가 아니다.
 
 ## 기능 목표와 소유 범위
 
@@ -200,13 +201,13 @@ urizo-final-mcp-server
 | 4번 | 공통 LLM_OPS Runtime 계약과 4번 소유 전용 Handler·Coding Tool 경계 | 담당 문서 소유권 문구 현행화 필요 |
 | 5번 | 공통 NATURAL_CMS Runtime 계약과 5번 소유 전용 Handler·CMS Tool 경계 | 담당 문서 소유권 문구 현행화 필요 |
 
-## 진행 상태
+## 과거 진행 기록
 
-- 현재: AI06-010 단일 MCP 플랫폼 부트스트랩을 MCP Server PR #1과 Backend PR #21로 `dev` 병합하고 전체 회귀·production Image·실제 왕복 검증을 완료했다.
+- 당시 상태: AI06-010 단일 MCP 플랫폼 부트스트랩을 MCP Server PR #1과 Backend PR #21로 `dev` 병합했다.
 - 완료 범위: 기존 Approval·Checkpoint Runtime을 유지하면서 신규 `urizo-final-mcp-server`, 빈 생산 Catalog, 고정 Tool 이름 Allowlist, 서비스 토큰 인증과 Spring의 조건부 discovery/`tools/list` Client를 추가했다.
 - 다음 게이트: 실제 Coding·CMS Tool Handler와 기존 CodingToolService 전환은 AI04/AI05 담당 범위다. AI06 공통 플랫폼은 새 Handler·Tool·DB 계약을 선행 확장하지 않는다.
 
-## 하위 작업 기록
+## 과거 하위 작업 기록
 
 ### `AI06-001` · Agent 설정 메뉴 정리
 

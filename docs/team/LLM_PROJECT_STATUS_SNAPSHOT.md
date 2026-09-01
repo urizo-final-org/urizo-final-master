@@ -1,44 +1,37 @@
 # AX Module Studio 현재 상태
 
-> Updated: 2026-08-26 (Asia/Seoul)
-> Snapshot-Version: `v1.3-light`
+> Updated: 2026-09-01 (Asia/Seoul)
+> Snapshot-Version: `v1.5-release-closeout-done`
 > Owner: Min Seungjun (`tmdwns0531`)
 
 ## 현재 기준
 
 - 제품 범위: [로컬 데모 CMS 최소 범위](../product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
 - Git·팀 운영: [Master·Source 운영 정책](MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-- 현재 우선순위: AI 핵심 기능 2~6번 담당자 배정을 마쳤으며 각 담당자가 심층 조사와 방향 수립을 진행한다.
+- 현재 상태: [AI Core Release Closeout](../product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)의 활성 29개 항목과 7개 Work를 최종 통합 SHA에서 모두 닫았다.
 - 이전 CMS Spec, Wave, 업무분장, 추적표, 인수인계 이력은 현재 권한이 아니다.
-- 업무분장과 Slice 체계는 CMS 기본 기능 확인 후 굵직한 기능 단위로 다시 정한다.
+- AI 핵심 기능의 과거 Work·PR 병합 이력은 완료 판정이 아니다. 현재 상태와 완료 증거는 Release Closeout만 관리한다.
 
-## 확인된 저장소 기준
+## 최종 검증 저장소 기준
 
-| 저장소 | `origin/dev` |
+| 저장소 | 최종 검증 SHA |
 |---|---|
-| Master | `b85736e1d738c9027fa0ebf217e32829962b67dc` |
-| Frontend | `7123b362cfd0231fdfe8bad3606096c5aa244bd0` |
-| Backend | `a3d30d544334a7f2e3824fd2f890dffaab6f7216` |
-| Orchestrator | `0720bd2df5f639c997a645f3c7a7d01c34ddbd01` |
+| Master | `2743373fd133f7b7f19774d23e63937a44773b19` |
+| Frontend | `a8a69e8e0c31ed2abbb8881f9da2fe249d55019f` |
+| Backend | `6d5ad9bfab473c5548c0f3f1724e1f4f58ec152f` |
+| Orchestrator | `1f0224dc1857ca2ad0198c426aa78f440b3382ad` |
+| MCP Server | `0885dbe64ae601d9790c05c600dbb585eff70800` |
 
 개인별 local-only 변경은 canonical 완료 상태가 아니다. 이를 자동으로 삭제·Reset·Stash·Branch
 전환하지 않으며, 새 작업은 승인된 범위와 깨끗한 최신 `dev` 기반 별도 Branch 또는 Worktree에서 시작한다.
 
 ## 구현 상태
 
-- Master·Frontend·Backend의 축소 CMS 변경은 `origin/dev`에 Merge됐다.
-- Frontend에는 템플릿 적용·미리보기와 페이지 범위 전용 자연어 관리 사이드 패널 목업을 반영했다.
-- Backend에는 CMS를 Controller·Service·Repository·DTO 계층으로 분리하고 업무 데이터 Repository를 Spring Data JPA로 전환했다.
-- 사용자 화면은 `/`, 관리자 화면은 `/admin`으로 분리했다.
-- 관리자 화면은 회원·메뉴·콘텐츠·게시판·템플릿 관리로 구성했다.
-- 메뉴는 정적 콘텐츠 또는 게시판과 연결하고, 템플릿은 Header/Footer·스타일·메인 대표 이미지·문구를 관리한다.
-- 회원·세션과 메뉴·콘텐츠·게시판·게시글·템플릿은 JPA를 사용하며, CMS 업무 데이터의 `JdbcTemplate` 의존은 제거했다.
-- Frontend 테스트 15개·타입 검사·빌드와 Backend 전체 테스트 103개·Docker 이미지 패키징을 통과했다.
-- 최신 이미지로 Backend·Frontend·Nginx를 재기동하고 공개 화면·CMS 공개 API·관리자 로그인과 주요 조회 API를 확인했다.
-- AI 핵심 기능 2~6번 담당자와 공통 경계는 [향후 고려사항](../product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md)에 정리했다.
-  현재는 기능별 조사 단계이며 실제 구현은 중간점검과 최소 완료 범위 확정 후 시작한다.
-- 담당자 배정은 완료됐지만 기능별 첫 Work ID와 상세 작업 목록은 아직 정하지 않았다. 실제 새 작업 지시 시
-  담당 LLM이 다음 Work ID와 work slug를 제안한다.
+- 축소 CMS 기준 구현과 AI 핵심 기능의 과거 Slice·PR은 `origin/dev`에 병합돼 있다.
+- Frontend [#21](https://github.com/urizo-final-org/urizo-final-frontend/pull/21), Backend [#40](https://github.com/urizo-final-org/urizo-final-backend/pull/40), Orchestrator [#16](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/16)은 `dev`에 병합됐다.
+- 미완료 7개, 부분완료 8개, 구원장 14개는 현재 제품 흐름에서 재확인해 `29 / 29 DONE`이다.
+- `AXMS-RC-001`~`AXMS-RC-007`은 모두 `DONE`이다.
+- 저장소 전체 테스트, 인증된 Spring↔MCP 13-tool 왕복, 공식 `full -Rebuild`와 Flyway pending 0을 같은 최종 SHA 조합에서 통과했다.
 
 ## 구현 시작 조건
 
@@ -62,7 +55,7 @@ AI 핵심 기능 2~6번은 담당자 표를 우선한다. 현재 PC의 GitHub ID
 
 ```text
 MASTER UPDATE COMPLETE
-Snapshot-Version: v1.3-light
+Snapshot-Version: v1.5-release-closeout-done
 Slice/Work-Slug: <assigned value>
 Task-Version: <assigned value or N/A>
 Worker: <name / GitHub ID>
