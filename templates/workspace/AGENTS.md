@@ -45,6 +45,13 @@
   전체·로컬 재기동을 명시한 경우도 `-Rebuild -ApproveNetwork`와 네 활성 SourceRoot로 전체 Image와 Container를 갱신한다.
   단일 Service 격리 변경은 `urizo-final-master/scripts/rebuild-local-service.ps1 -Service <spring-app|frontend|coding-runtime|mcp-server> -Profile <spring-core|full> -SourceRoot <활성 Service Worktree>`로
   허용 Service만 갱신하고 해당 Profile 전체 Health를 확인한다.
+- 같은 Work ID의 같은 저장소·PR은 하나의 Worktree를 끝까지 재사용한다. 후보 SHA 고정 전에는 단위·계약·정적 검증을 우선하고
+  코드 수정마다 `full` 재빌드나 Flyway를 반복하지 않는다.
+- 후보 SHA 조합의 `full`·Flyway 통합 검증은 기본 1회, 현재 범위의 Source 결함 수정 후 재검증 1회까지만 허용한다.
+  같은 Work ID에서 세 번째 실행은 팀장 승인이 필요하며, 범위 밖 blocker 또는 같은 원인 2회 실패는 추가 보완 없이
+  `PARTIAL`·`NOT VERIFIED`와 재현 명령으로 종료한다.
+- 병렬 Worktree는 Source 구현·단위 테스트에 사용하고 공유 DB·Volume의 `full`·Flyway는 한 번에 하나만 직렬 실행한다.
+  Flyway는 Migration·Schema 변경 또는 공식 `full` 흐름에 필요할 때만 실행하며 Repair/Clean, DB 초기화, Volume 삭제로 우회하지 않는다.
 - 동기화는 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Master 공통 기준과 공통 문서는 Min Seungjun(`tmdwns0531`)만 수정한다. 단, 팀원별 LLM은
   `urizo-final-master/docs/team/FLYWAY_RESERVATION_LEDGER.md`에 자기 작업 예약 행을 추가하고 상태를 갱신할 수 있다.

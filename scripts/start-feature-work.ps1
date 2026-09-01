@@ -85,24 +85,25 @@ if ($origin -ne [string]$repository.remote) {
     throw "Origin mismatch; no Git state was changed: $origin"
 }
 $branch = Get-GitValue -Path $repositoryPath -Arguments @('branch', '--show-current')
-if ($branch -ne $integrationBranch) {
-    throw "Canonical checkout must be on $integrationBranch before starting feature work; current=$branch"
-}
+$canonicalHeadBeforePull = Get-GitValue -Path $repositoryPath -Arguments @('rev-parse', 'HEAD')
 $dirty = (Invoke-GitCapture -Path $repositoryPath -Arguments @('status', '--porcelain=v1')).Output
+$canonicalStatusBeforePull = @($dirty | ForEach-Object { $_.ToString() }) -join "`n"
 $pullPath = $repositoryPath
 $temporaryPullWorktree = $null
-if (@($dirty | Where-Object { $_ }).Count -gt 0) {
-    $pullGateRoot = Join-Path $WorkspaceRoot '.worktrees/.pull-gates'
-    if (-not (Test-Path -LiteralPath $pullGateRoot -PathType Container)) {
-        New-Item -ItemType Directory -Path $pullGateRoot -Force | Out-Null
-    }
-    $temporaryPullWorktree = Join-Path $pullGateRoot ("$RepositoryName-" + [Guid]::NewGuid().ToString('N'))
-    Invoke-GitCapture -Path $repositoryPath -Arguments @('worktree', 'add', '--detach', $temporaryPullWorktree, "origin/$integrationBranch") | Out-Null
-    $pullPath = $temporaryPullWorktree
-    Write-Host "CANONICAL DIRTY PRESERVED: using isolated dev Pull Worktree=$temporaryPullWorktree"
-}
-
+$canonicalIsDirty = @($dirty | Where-Object { $_ }).Count -gt 0
 try {
+    if ($branch -ne $integrationBranch -or $canonicalIsDirty) {
+        # Keep the transient path short enough for repositories with deep Java package paths on Windows.
+        $pullGateRoot = Join-Path $WorkspaceRoot '.worktrees/.g'
+        if (-not (Test-Path -LiteralPath $pullGateRoot -PathType Container)) {
+            New-Item -ItemType Directory -Path $pullGateRoot -Force | Out-Null
+        }
+        $temporaryPullWorktree = Join-Path $pullGateRoot ([Guid]::NewGuid().ToString('N').Substring(0, 16))
+        Invoke-GitCapture -Path $repositoryPath -Arguments @('worktree', 'add', '--detach', $temporaryPullWorktree, "origin/$integrationBranch") | Out-Null
+        $pullPath = $temporaryPullWorktree
+        Write-Host "CANONICAL CHECKOUT PRESERVED: branch=$branch; dirty=$canonicalIsDirty; using isolated dev Pull Worktree=$temporaryPullWorktree"
+    }
+
     # This exact pull is the enforced pre-work synchronization point.
     $agentsPath = Join-Path $pullPath 'AGENTS.md'
     $agentsBeforePull = Get-AgentsFingerprint -Path $agentsPath
@@ -111,8 +112,22 @@ try {
     $head = Get-GitValue -Path $pullPath -Arguments @('rev-parse', 'HEAD')
 }
 finally {
-    if ($temporaryPullWorktree -and (Test-Path -LiteralPath $temporaryPullWorktree)) {
-        Invoke-GitCapture -Path $repositoryPath -Arguments @('worktree', 'remove', $temporaryPullWorktree) | Out-Null
+    if ($temporaryPullWorktree) {
+        $cleanup = Invoke-GitCapture -Path $repositoryPath `
+            -Arguments @('worktree', 'remove', '--force', $temporaryPullWorktree) -AllowFailure
+        if ($cleanup.ExitCode -ne 0 -and (Test-Path -LiteralPath $temporaryPullWorktree)) {
+            throw "Temporary dev Pull Worktree cleanup failed: $temporaryPullWorktree"
+        }
+    }
+}
+if ($temporaryPullWorktree) {
+    $canonicalBranchAfterPull = Get-GitValue -Path $repositoryPath -Arguments @('branch', '--show-current')
+    $canonicalHeadAfterPull = Get-GitValue -Path $repositoryPath -Arguments @('rev-parse', 'HEAD')
+    $canonicalStatusAfterPull = @((Invoke-GitCapture -Path $repositoryPath -Arguments @('status', '--porcelain=v1')).Output | ForEach-Object { $_.ToString() }) -join "`n"
+    if ($canonicalBranchAfterPull -ne $branch -or
+        $canonicalHeadAfterPull -ne $canonicalHeadBeforePull -or
+        $canonicalStatusAfterPull -ne $canonicalStatusBeforePull) {
+        throw 'Canonical checkout changed while the isolated dev Pull gate was running.'
     }
 }
 $originDev = Get-GitValue -Path $repositoryPath -Arguments @('rev-parse', "origin/$integrationBranch")
@@ -123,6 +138,17 @@ if ($head -ne $originDev) {
 $worktreeRoot = [IO.Path]::GetFullPath((Join-Path $WorkspaceRoot '.worktrees'))
 if (-not $WorktreePath) {
     $safeName = ($RepositoryName + '-' + ($BranchName -replace '^feature/', '')) -replace '[^A-Za-z0-9._-]', '-'
+    if ($safeName.Length -gt 48) {
+        $branchHasher = [Security.Cryptography.SHA256]::Create()
+        try {
+            $branchHashBytes = $branchHasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($BranchName))
+        }
+        finally {
+            $branchHasher.Dispose()
+        }
+        $branchHash = (($branchHashBytes | ForEach-Object { $_.ToString('x2') }) -join '').Substring(0, 12)
+        $safeName = $safeName.Substring(0, 35).TrimEnd('-', '_', '.') + '-' + $branchHash
+    }
     $WorktreePath = Join-Path $worktreeRoot $safeName
 }
 $WorktreePath = [IO.Path]::GetFullPath($WorktreePath)

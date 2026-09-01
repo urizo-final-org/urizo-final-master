@@ -147,6 +147,22 @@
 - `coding-runtime`과 `mcp-server`는 `full`에서만 부분 갱신한다. DB·Flyway·Volume Service는 이 Script의 대상이 아니다.
 - 부분 갱신은 이미 건강한 Profile에서만 수행하며 DB·Volume을 변경하지 않고 완료 후 해당 Profile 전체 Health를 확인한다.
 
+### 검증 빈도와 종료 상한
+
+- 같은 Work ID의 같은 저장소·PR은 하나의 Feature Worktree를 끝까지 재사용한다. 같은 PR의 보완·검증 때문에
+  새 Branch나 Worktree를 만들지 않으며, 독립 PR 또는 동시에 충돌하는 구현만 별도 Worktree로 분리한다.
+- 후보 Source SHA 조합을 고정하기 전에는 변경 범위의 단위·계약·정적 검증을 우선한다. 코드 수정마다
+  `full` 재빌드나 Flyway를 반복하지 않는다.
+- `full` 재빌드·Flyway 통합 검증은 후보 SHA 조합을 고정한 뒤 한 번 실행한다. 첫 실행이 현재 범위의 Source 결함으로
+  실패해 수정 Commit이 생긴 경우에만 한 번 더 실행할 수 있으며, 한 Work ID의 같은 통합 검증에서 총 2회를 넘기지 않는다.
+  세 번째 실행은 팀장의 명시적 승인이 필요하다.
+- 외부 Service, 선행 Product Job, 기존 공유 Volume·Secret처럼 현재 범위 밖 원인으로 실패하면 환경·제품 범위를
+  추가 보완하지 않고 즉시 `PARTIAL` 또는 `NOT VERIFIED`와 재현 명령을 보고한다. 같은 원인으로 두 번 실패하면 세 번째 재시도를 금지한다.
+- 여러 Worktree의 Source 구현과 단위 테스트는 병렬로 진행할 수 있지만, 공유 DB·Volume을 사용하는 `full`·Flyway 검증은
+  한 번에 하나의 통합 작업만 직렬로 실행한다.
+- Flyway는 Migration·Schema 변경 검증 또는 공식 `full` 통합 흐름에 필요한 경우에만 실행한다. 관련 없는 Source 변경의
+  중간 검증으로 단독 실행하지 않으며 Flyway Repair/Clean, DB 초기화, Volume 삭제로 통과시키지 않는다.
+
 ### Frontend Live 개발
 
 - 사용자가 Frontend-only 반영을 명시하고 이번 작업의 Source 변경이 Frontend Live 허용 파일에만 있을 때,

@@ -397,7 +397,11 @@ $prePushPullGateScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path
 $prePushHook = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates/workspace/githooks/pre-push')
 if ($startFeatureWorkScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \$integrationBranch\)' -or
     $startFeatureWorkScript -notmatch '@\(''worktree'', ''add''' -or
-    $startFeatureWorkScript -notmatch 'CANONICAL DIRTY PRESERVED' -or
+    $startFeatureWorkScript -notmatch 'CANONICAL CHECKOUT PRESERVED' -or
+    $startFeatureWorkScript -notmatch '\$branch -ne \$integrationBranch -or \$canonicalIsDirty' -or
+    $startFeatureWorkScript -notmatch '\.worktrees/\.g' -or
+    $startFeatureWorkScript -notmatch '\$safeName\.Length -gt 48' -or
+    $startFeatureWorkScript -notmatch 'Canonical checkout changed while the isolated dev Pull gate was running' -or
     $startFeatureWorkScript -notmatch '@\(''worktree'', ''remove''' -or
     $prepareDevPrScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \$integrationBranch\)' -or
     $prepareDevPrScript -notmatch 'CANONICAL DIRTY PRESERVED' -or
@@ -420,7 +424,14 @@ if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -Profile spring-core
     $startLocalScript -notmatch 'BackendSourceRoot' -or
     $startLocalScript -notmatch 'FrontendSourceRoot' -or
     $startLocalScript -notmatch 'OrchestratorSourceRoot' -or
-    $startLocalScript -notmatch 'McpSourceRoot') {
+    $startLocalScript -notmatch 'McpSourceRoot' -or
+    $startLocalScript -notmatch '\$backendRunnerRoot = if \(\$sourceBindingRequested\)' -or
+    $startLocalScript -notmatch "Get-SourceBinding -RepositoryName 'urizo-final-master'" -or
+    $startLocalScript -notmatch "Get-SourceBinding -RepositoryName 'urizo-final-backend'" -or
+    $startLocalScript -notmatch 'RUNTIME SOURCE BINDING' -or
+    $startLocalScript -notmatch 'RUNTIME SOURCE VERIFIED' -or
+    $startLocalScript -notmatch 'RequireCleanSourceBindings' -or
+    $startLocalScript -notmatch 'rev-parse HEAD') {
     throw 'Master local startup must route natural-language intent to spring-core/full and bind every active Source worktree explicitly.'
 }
 if ($workspaceAgentTemplate -notmatch 'rebuild-local-service\.ps1' -or
