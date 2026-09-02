@@ -466,12 +466,63 @@ if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
     $workspaceAgentTemplate -notmatch '## 팀장 세션 프로토콜' -or
     $teamLeadProtocol -notmatch '팀장 프로토콜로 전환할까요\?' -or
     $teamLeadProtocol -notmatch 'PLAN PASS' -or
+    $teamLeadProtocol -notmatch 'TEAM TRACK PASS' -or
+    $teamLeadProtocol -notmatch 'TEAM PLAN APPROVED' -or
+    $teamLeadProtocol -notmatch 'TEAM DISPATCH PASS' -or
+    $teamLeadProtocol -notmatch 'TEAM DISPATCH BLOCKED' -or
+    $teamLeadProtocol -notmatch 'TEAM MONITOR PASS' -or
+    $teamLeadProtocol -notmatch '독립 Work ID가 둘 이상이면 `MULTI TRACK`' -or
+    $teamLeadProtocol -notmatch '이 작업계획과 세션 배정으로 진행할까요\?' -or
+    $teamLeadProtocol -notmatch '`TEAM DISPATCH PASS` 전에는 시작하지 않는다' -or
+    -not $teamLeadProtocol.Contains('사용자 재배정 없이 해당 Worktree를 직접 수정해 작업자를 대체하지 않는다') -or
     $teamLeadProtocol -notmatch 'STRUCTURE BLOCKED' -or
-    $teamLeadProtocol -notmatch 'MODEL PROFILE PASS' -or
+    $teamLeadProtocol -notmatch 'PROFILE PLAN PASS' -or
+    $teamLeadProtocol -notmatch 'PROFILE PLAN ALTERNATIVE' -or
+    $teamLeadProtocol -notmatch 'MODEL PROFILE BLOCKED' -or
+    $teamLeadProtocol -notmatch 'PROFILE REQUEST' -or
+    $teamLeadProtocol -notmatch 'PROFILE ATTEST' -or
+    $teamLeadProtocol -notmatch 'PROFILE RUNTIME' -or
+    $teamLeadProtocol -notmatch 'readback을 제공하지 않는다' -or
+    $teamLeadProtocol -notmatch '사용자 가시성 표' -or
+    $teamLeadProtocol -notmatch '프로필 검토 세션 생성' -or
+    $teamLeadProtocol -notmatch '예비 승인' -or
+    $teamLeadProtocol -notmatch 'PLAN 전용 세션' -or
+    $teamLeadProtocol -notmatch '최종 작업계획' -or
+    $teamLeadProtocol -notmatch '최종 작업 승인 전 Source 수정은 금지한다' -or
+    $teamLeadProtocol -notmatch 'create_thread' -or
+    $teamLeadProtocol -notmatch 'send_message_to_thread' -or
+    $teamLeadProtocol -notmatch '승인 `model`과 `thinking`' -or
+    $teamLeadProtocol -notmatch '자동 fallback은 금지한다' -or
     $teamLeadProtocol -notmatch '@팀장 종료' -or
     $structureContract -notmatch '하위 작업 기록' -or
     $structureContract -notmatch 'STRUCTURE BLOCKED' -or
-    $teamLeadSkill -notmatch 'TEAM_LEAD_PROTOCOL_v0\.1\.md') {
+    $teamLeadSkill -notmatch 'TEAM_LEAD_PROTOCOL_v0\.1\.md' -or
+    $teamLeadSkill -notmatch 'TEAM TRACK PASS' -or
+    $teamLeadSkill -notmatch 'TEAM PLAN APPROVED' -or
+    $teamLeadSkill -notmatch 'TEAM DISPATCH PASS' -or
+    $teamLeadSkill -notmatch 'TEAM DISPATCH BLOCKED' -or
+    $teamLeadSkill -notmatch 'TEAM MONITOR PASS' -or
+    $teamLeadSkill -notmatch 'PROFILE PLAN PASS' -or
+    $teamLeadSkill -notmatch 'PROFILE PLAN ALTERNATIVE' -or
+    $teamLeadSkill -notmatch 'MODEL PROFILE BLOCKED' -or
+    $teamLeadSkill -notmatch 'PROFILE REQUEST' -or
+    $teamLeadSkill -notmatch 'PROFILE ATTEST' -or
+    $teamLeadSkill -notmatch 'PROFILE RUNTIME' -or
+    $teamLeadSkill -notmatch 'no independent runtime model/thinking readback' -or
+    $teamLeadSkill -notmatch '프로필 검토 세션 생성' -or
+    $teamLeadSkill -notmatch 'preliminary approval' -or
+    $teamLeadSkill -notmatch 'PLAN-only' -or
+    $teamLeadSkill -notmatch 'final work plan' -or
+    $teamLeadSkill -notmatch 'no Source mutation' -or
+    $teamLeadSkill -notmatch 'create_thread' -or
+    $teamLeadSkill -notmatch 'send_message_to_thread' -or
+    $teamLeadSkill -notmatch 'approved `model` and `thinking`' -or
+    $teamLeadSkill -notmatch 'automatic fallback' -or
+    $teamLeadSkill -notmatch 'Two or more independent Work IDs are always `MULTI TRACK`' -or
+    $teamLeadSkill -notmatch '이 작업계획과 세션 배정으로 진행할까요\?' -or
+    $teamLeadSkill -notmatch 'Do not silently replace workers with the lead session or hidden helpers' -or
+    $bootstrapWorkspaceScript -notmatch '\.agents/skills/axms-team-lead/SKILL\.md' -or
+    $bootstrapWorkspaceScript -notmatch 'WorkspaceRoot.*\.agents/skills/axms-team-lead/SKILL\.md') {
     throw 'Master must define the approval-gated lightweight team-lead protocol and AI Core structure contract.'
 }
 $operatingPolicy = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md')
