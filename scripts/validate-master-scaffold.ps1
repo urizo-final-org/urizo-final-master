@@ -21,9 +21,11 @@ $required = @(
     'docs/product/ai-core/04_LIMITED_LLM_DEVOPS.md',
     'docs/product/ai-core/05_NATURAL_LANGUAGE_CMS.md',
     'docs/product/ai-core/06_ORCHESTRATION_CONTROL.md',
+    'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md',
     'docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md',
     'docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md',
     'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md',
+    'docs/team/TEAM_LEAD_PROTOCOL_v0.1.md',
     'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md',
     'docs/team/FLYWAY_RESERVATION_LEDGER.md',
     'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md',
@@ -40,6 +42,7 @@ $required = @(
     'templates/workspace/claude/settings.windows.json',
     'templates/workspace/claude/settings.unix.json',
     'templates/workspace/githooks/pre-push',
+    '.agents/skills/axms-team-lead/SKILL.md',
     'scripts/preflight-workspace.ps1',
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
@@ -455,6 +458,21 @@ if ($statusSnapshot -notmatch 'Snapshot-Version:' -or
     $statusSnapshot -notmatch 'MASTER UPDATE COMPLETE' -or
     $statusSnapshot -notmatch 'MASTER CONTEXT PASS') {
     throw 'LLM project-status snapshot must define the versioned team-lead handoff and local recognition handshake.'
+}
+$teamLeadProtocol = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/team/TEAM_LEAD_PROTOCOL_v0.1.md')
+$structureContract = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md')
+$teamLeadSkill = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot '.agents/skills/axms-team-lead/SKILL.md')
+if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
+    $workspaceAgentTemplate -notmatch '## 팀장 세션 프로토콜' -or
+    $teamLeadProtocol -notmatch '팀장 프로토콜로 전환할까요\?' -or
+    $teamLeadProtocol -notmatch 'PLAN PASS' -or
+    $teamLeadProtocol -notmatch 'STRUCTURE BLOCKED' -or
+    $teamLeadProtocol -notmatch 'MODEL PROFILE PASS' -or
+    $teamLeadProtocol -notmatch '@팀장 종료' -or
+    $structureContract -notmatch '하위 작업 기록' -or
+    $structureContract -notmatch 'STRUCTURE BLOCKED' -or
+    $teamLeadSkill -notmatch 'TEAM_LEAD_PROTOCOL_v0\.1\.md') {
+    throw 'Master must define the approval-gated lightweight team-lead protocol and AI Core structure contract.'
 }
 $operatingPolicy = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md')
 if ($operatingPolicy -notmatch 'Task-Version' -or

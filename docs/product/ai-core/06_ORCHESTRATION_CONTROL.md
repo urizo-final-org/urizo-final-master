@@ -47,6 +47,25 @@ Runtime 구조, Snapshot/Node/Edge/Handler/Result Port 표준, Job/Queue/Checkpo
 
 AI06-002·003은 사용자 흐름 협의를 위한 UI 목업이다. 실제 Runtime 구현 승인을 의미하지 않는다.
 
+### 노드 UX Mock·스크럼 전달 기준
+
+> 상태: 스크럼 논의용 Frontend 시각 Mock이다. Runtime·Job 계약이나 실행 범위의 변경은 아니다.
+
+- Agent·Workflow 화면은 활성 Versioned Snapshot의 설정·편집 Canvas이고, Job별 진행 상태는 별도 실행 모니터링 화면으로 분리한다.
+- 실행 모니터링은 API 연결 전까지 명시적인 Mock으로 둔다. Node 상태는 `대기`·`실행 중`·`완료`·`승인 대기`·`실패`만 사용하고, 실행 중 Node만 강조한다.
+- 스크럼 논의용 화면에서는 메뉴 관리·콘텐츠 관리·템플릿 관리의 세 예시 Lane을 동시에 실행 중인 것처럼 그릴 수 있다. 이는 표시 방식의 합의용 예시일 뿐, Natural CMS Runtime의 병렬 실행·Sub-workflow 지원을 뜻하지 않는다.
+- Canvas는 다크 그레이 배경과 절제된 Dot Grid, Node는 흰 카드로 유지한다. Port는 좌 입력·우 출력, Edge는 기본 중립색, 실행·오류·선택 상태만 Accent로 구분한다. Retry·Reject 우회선은 하단으로 Routing한다.
+- n8n·ComfyUI·Langflow·Dify·Unreal Blueprint·Node-RED는 정보 구조와 시각 규칙의 참고 대상일 뿐이다. 외부 UI Asset·소스·상표 요소는 가져오지 않으며 이미지 제작·도입은 후순위다.
+- 실제 모니터링 계약은 Natural CMS Job 의미(AI05), Runner·Checkpoint(AI06), 실행 기록(Orchestrator), 조회 API(Backend), 표시(Frontend)를 함께 합의한 뒤 별도 Work ID로 연결한다.
+
+#### 후속 구현 작업계획·절차
+
+1. Agent·Workflow 설정 Canvas의 다크 그레이 배경, 흰 Node, Port·Edge·우회선 규칙을 독립 Frontend Work로 처리한다.
+2. 별도 실행 모니터링 화면은 메뉴 관리·콘텐츠 관리·템플릿 관리 세 Lane이 동시에 실행 중인 스크럼용 Mock으로 구현하며 실제 상태 API는 연결하지 않는다.
+3. 통합 검증 Work는 Node 상태 가독성, Edge 겹침, 승인 대기·실패 표현과 Frontend Test·Typecheck·Build만 확인한다. 외부 이미지·Asset 제작은 포함하지 않는다.
+4. Source 구현은 Work ID 승인과 팀원 `PLAN PASS` 후 독립 Worktree에서 시작한다. Canvas와 Monitoring Mock이 같은 파일을 수정하면 병렬화하지 않고 팀장이 순서를 정하며, 통합 검증은 두 Work 뒤에 수행한다.
+5. 실제 Job·현재 Node 조회 API와 Runtime 연결은 Mock 검토 이후 AI05·AI06·Backend·Orchestrator·Frontend가 합의하는 별도 Work ID로 둔다.
+
 ## 확정 Runtime 경계
 
 ```text
@@ -268,6 +287,13 @@ urizo-final-mcp-server
 - [x] Backend 고정 Allowlist와 discovery/`tools/list` 왕복, 전체 회귀·Image 검증
 - [x] MCP Server PR #1 (`e6595aeaeda5a98512004ee3252cc1b02067feec`)과 Backend PR #21 (`e736f7e8a4c87718bb0659b38591ed3c5fed1c3e`) `dev` 병합
 
+### `AXMS-TLP-001` · 팀장 세션 프로토콜
+
+- [x] `@팀장` 승인형 세션 전환과 `[팀장]`·`[작업]`·`[검증]` 역할 규칙 확정
+- [x] GPT·Claude 공통 모델 프로필과 경량 PLAN·STRUCTURE 확인 기준 확정
+- [x] AI Core 개인 기능 문서 구조 계약과 Codex Skill·문서 fallback 연결
+- [ ] Master PR 생성·`dev` 병합 및 팀원 전체 Git 최신화 확인
+
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|
 | `AI06-001` | `axms-ai06-001-agent-settings-menu` | 담당 기능 MD 작업 등록 | Master | 변경 완료·PR 전 | `feature/tmdwns0531_axms-ai06-001-agent-settings-menu_v0.1` | - | - | - |
@@ -281,3 +307,4 @@ urizo-final-mcp-server
 | `AI06-008` | `axms-ai06-008-job-snapshot-binding` | Job–Profile Version 고정·jobId Queue·production Snapshot Runner | Backend, Orchestrator | `dev` 병합 완료 | `feature/tmdwns0531_axms-ai06-008-job-snapshot-binding_v0.1` | Backend `c357a5adef49b6795306dd579620fe08f5582a29` / Orchestrator `db80060772187149634c7eff52f38332ddacf812` | Backend [#16](https://github.com/urizo-final-org/urizo-final-backend/pull/16) / Orchestrator [#9](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/9) · 병합 완료 | Backend `620f09b2032c616daec035fe393469e6092fde35` / Orchestrator `e411fbbfffa85635b9969aa1ce09c38e9d5d6248` |
 | `AI06-009` | `axms-ai06-009-approval-check-guardrail-runtime` | Approval·Check·Guardrail과 Checkpoint 재개 | Backend, Orchestrator | `dev` 병합·종료 검증 완료 | 저장소별 AI06-009 Feature Branch | Backend `a6c8dcfd1461597d721ac19d2f7936906df6d935` / Orchestrator `2f34b7e1185b9466822aef9e835ec6a1d71683e4` | Backend [#19](https://github.com/urizo-final-org/urizo-final-backend/pull/19) / Orchestrator [#10](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/10) · 병합 완료 | Backend `9f0b529e4e0d702b7d30c95db3e48d838097e531` / Orchestrator `8ffdace39ed91309f67759f65238ce50f3a5f324` |
 | `AI06-010` | `axms-ai06-010-mcp-common-platform-bootstrap` | 단일 MCP Service·Catalog와 Spring 왕복 | MCP Server, Backend, Master | Source `dev` 병합 완료·Master 현행화 | `feature/tmdwns0531_axms-ai06-010-mcp-common-platform-bootstrap_v0.1` | MCP `8a91fd3416c80f5d46072700abb6f23ce877481d` / Backend `b64c9e6d595a556113ece3a7988d0df057ee048d` | MCP Server [#1](https://github.com/urizo-final-org/urizo-final-mcp-server/pull/1) / Backend [#21](https://github.com/urizo-final-org/urizo-final-backend/pull/21) · 병합 완료 | MCP `e6595aeaeda5a98512004ee3252cc1b02067feec` / Backend `e736f7e8a4c87718bb0659b38591ed3c5fed1c3e` |
+| `AXMS-TLP-001` | `axms-tlp-001-team-lead-protocol` | 팀장 세션 프로토콜·AI Core 문서 구조 계약 | Master | 문서·검증 완료·PR 전 | `feature/tmdwns0531_team-lead-protocol-v0.1` | - | - | - |
