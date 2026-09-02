@@ -101,6 +101,12 @@
   기록된 PR은 담당 LLM이 GitHub와 `origin/dev`를 확인해 현행화한다. Context Hook은 GitHub·Ledger를 스캔하지 않고 읽기 전용 Checkpoint만 만든다.
 - 상세 채번·기록 규칙은 `docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`만 따른다.
 
+## 팀장 세션 프로토콜
+
+- 사용자 메시지의 첫 유효 토큰이 정확히 `@팀장`이면 인용·설명인지 구분한 뒤 팀장 전환 승인을 한 번 요청한다.
+- 승인 후 발견 가능한 `axms-team-lead` Skill을 사용하고, 없으면 `docs/team/TEAM_LEAD_PROTOCOL_v0.1.md`를 읽는다. 일반 세션은 상세 프로토콜을 로드하지 않는다.
+- 구조 확인은 영향받는 2~6번 개인 MD만 대상으로 하며 기본값은 `STRUCTURE PASS`다. 다른 담당자의 문서는 수정하지 않는다.
+
 ## Git Pull과 전체 동기화
 
 `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
