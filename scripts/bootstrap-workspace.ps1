@@ -270,6 +270,10 @@ function Sync-WorkspaceLlmConfiguration {
         -BeginMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:BEGIN -->' `
         -EndMarker '<!-- AXMS-MANAGED-LOCAL-LLM-POLICY:END -->'
 
+    Sync-ManagedTemplateFile `
+        -Source (Join-Path $masterRoot '.agents/skills/axms-team-lead/SKILL.md') `
+        -Target (Join-Path $WorkspaceRoot '.agents/skills/axms-team-lead/SKILL.md')
+
     $claudeTemplate = Join-Path $templateRoot 'CLAUDE.md'
     $workspaceClaude = Join-Path $WorkspaceRoot 'CLAUDE.md'
     if (-not (Test-Path -LiteralPath $workspaceClaude -PathType Leaf)) {
