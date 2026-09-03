@@ -44,6 +44,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260903065222608` | `RESERVED` | `AI04-009` | `extend_pr_deploy_handler_contracts` | `jcy644542` | `2026-10-03T06:52:22Z` | pending | `20260903023350023` |
 <!-- AI04-009 reserved_at_utc: 2026-09-03T06:52:22Z; expires_at_utc remains 30 days later per ledger policy. -->
 | `20260903065547140` | `MERGED` | `AI05-011` | `grant_natural_cms_outbox_conflict_read` | `tmdwns0531` | `2026-10-03T06:55:47Z` | [Backend #49](https://github.com/urizo-final-org/urizo-final-backend/pull/49) | `20260811211500` |
+| `20260903145703043` | `RESERVED` | `AI06-028` | `create_ai_profile_default_template` | `tmdwns0531` | `2026-10-03T14:57:03Z` | pending | `20260903065547140` |
 
 ## Reservation template
 
