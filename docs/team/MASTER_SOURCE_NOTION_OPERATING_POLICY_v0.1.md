@@ -132,11 +132,13 @@ GitHub ID와 work slug는 명시값이 없을 때 다음처럼 가볍게 정한�
 urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork
 ```
 
-- Master를 먼저 확인하고 이어서 Source 네 저장소를 모두 확인한다.
-- Master 확인 후 Workspace AGENTS, Codex·Claude Context Hook, Git Pull Gate를 자동 동기화한다. AGENTS 지문이 바뀌면 현재 턴에 전체 기준을 한 번 다시 읽고, 바뀌지 않았으면 짧은 Checkpoint만 갱신한다.
+- Master를 먼저 확인하고 이어서 Source 네 저장소를 모두 확인한다. 한 저장소의 보존·차단 결과는 관계없는 깨끗한 Source 동기화를 중단하지 않는다.
+- Dirty canonical은 원격 Ref만 fetch하고 `PRESERVED`로 보고한다. 해당 Working Tree는 갱신하지 않는다.
+- 모든 canonical이 깨끗하고 차단되지 않았을 때만 Workspace AGENTS, Codex·Claude Context Hook, Git Pull Gate를 동기화한다. Dirty·차단 canonical이 있으면 공용 Hook과 현재 컨텍스트 갱신을 보류하고 다음 안전한 전체 동기화에서 재개한다.
+- Hook 갱신 시 AGENTS 지문이 바뀌면 현재 턴에 전체 기준을 한 번 다시 읽고, 바뀌지 않았으면 짧은 Checkpoint만 갱신한다.
 - 깨끗한 `dev`만 `origin/dev`로 Fast-forward한다.
 - Feature Branch는 Branch를 바꾸거나 `dev`를 자동 Merge/Rebase하지 않는다.
-- Dirty, Diverged, Upstream 없음, Origin 불일치는 변경하지 않고 보고한다.
+- Dirty는 `PRESERVED`, Diverged·Origin 불일치는 `BLOCKED`, Upstream 없음은 `WARN`으로 해당 저장소에만 보고한다. 자동 Branch 전환·Merge/Rebase·Reset·Stash는 하지 않는다.
 - 동기화 뒤 Master Spec과 Snapshot을 다시 읽는다.
 
 ## 완료 판단

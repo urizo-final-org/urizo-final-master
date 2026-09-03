@@ -386,6 +386,169 @@ if ($syncWorkspaceScript -notmatch 'bootstrap-workspace\.ps1' -or
     $masterAgents -notmatch 'LOCAL RUNTIME CONTEXT PASS') {
     throw 'Workspace synchronization must install Hooks and select full versus checkpoint refresh from instruction fingerprints.'
 }
+if ($syncWorkspaceScript -notmatch "Status 'PRESERVED'" -or
+    $syncWorkspaceScript -notmatch '\$hookRefreshDeferred' -or
+    $syncWorkspaceScript -notmatch 'HOOK AND CONTEXT REFRESH DEFERRED' -or
+    $syncWorkspaceScript -match 'Master did not reach a current clean dev state\. Source working trees were not updated' -or
+    $masterAgents -notmatch '관계없는 깨끗한 Source' -or
+    $workspaceAgentTemplate -notmatch '관계없는 깨끗한 Source') {
+    throw 'Workspace synchronization must preserve dirty canonical work, continue unrelated clean repositories, and defer shared Hook refresh.'
+}
+$syncFastForwardCommands = @([regex]::Matches($syncWorkspaceScript, "@\('merge'[^\r\n]*"))
+if ($syncWorkspaceScript -match "(?im)@\('(reset|stash|rebase)'" -or
+    @($syncFastForwardCommands | Where-Object { $_.Value -notmatch "'--ff-only'" }).Count -gt 0) {
+    throw 'Workspace synchronization must not reset, stash, rebase, or perform a non-fast-forward merge.'
+}
+
+$syncFixtureRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-sync-validation-" + [Guid]::NewGuid().ToString('N'))
+try {
+    $syncFixtureWorkspace = Join-Path $syncFixtureRoot 'workspace'
+    $syncFixtureRemoteRoot = Join-Path $syncFixtureRoot 'remotes'
+    $syncFixtureSeedRoot = Join-Path $syncFixtureRoot 'seeds'
+    New-Item -ItemType Directory -Path $syncFixtureWorkspace, $syncFixtureRemoteRoot, $syncFixtureSeedRoot -Force | Out-Null
+
+    function Invoke-SyncFixtureGit {
+        param(
+            [Parameter(Mandatory = $true)][string]$RepositoryPath,
+            [Parameter(Mandatory = $true)][string[]]$Arguments
+        )
+
+        $output = @(& git -c "safe.directory=$RepositoryPath" -C $RepositoryPath @Arguments 2>&1)
+        if ($LASTEXITCODE -ne 0) {
+            throw "Sync fixture Git command failed: repository=$RepositoryPath; git=$($Arguments -join ' '); output=$($output -join ' ')"
+        }
+        return @($output | ForEach-Object { $_.ToString() })
+    }
+
+    $syncFixtureRepositories = @(
+        [ordered]@{ name = 'urizo-final-master'; relativePath = 'urizo-final-master'; remote = (Join-Path $syncFixtureRemoteRoot 'urizo-final-master.git') },
+        [ordered]@{ name = 'urizo-final-frontend'; relativePath = 'urizo-final-frontend'; remote = (Join-Path $syncFixtureRemoteRoot 'urizo-final-frontend.git') },
+        [ordered]@{ name = 'urizo-final-backend'; relativePath = 'urizo-final-backend'; remote = (Join-Path $syncFixtureRemoteRoot 'urizo-final-backend.git') }
+    )
+    $syncFixtureManifest = [ordered]@{
+        branches = [ordered]@{ integration = 'dev' }
+        repositories = $syncFixtureRepositories
+    }
+
+    foreach ($fixtureRepository in $syncFixtureRepositories) {
+        $fixtureRemote = [string]$fixtureRepository.remote
+        $fixtureSeed = Join-Path $syncFixtureSeedRoot $fixtureRepository.name
+        $fixtureCanonical = Join-Path $syncFixtureWorkspace $fixtureRepository.relativePath
+        & git init --bare $fixtureRemote | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not initialize sync fixture remote: $fixtureRemote"
+        }
+        & git init -b dev $fixtureSeed | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not initialize sync fixture seed: $fixtureSeed"
+        }
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('config', 'user.name', 'AXMS Validation') | Out-Null
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('config', 'user.email', 'axms-validation@example.invalid') | Out-Null
+        Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureSeed 'AGENTS.md') -Value "fixture instructions: $($fixtureRepository.name)"
+        Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureSeed 'tracked.txt') -Value 'baseline'
+
+        if ($fixtureRepository.name -eq 'urizo-final-master') {
+            $fixtureScripts = Join-Path $fixtureSeed 'scripts'
+            New-Item -ItemType Directory -Path $fixtureScripts -Force | Out-Null
+            Copy-Item -LiteralPath (Join-Path $masterRoot 'scripts/sync-workspace.ps1') -Destination (Join-Path $fixtureScripts 'sync-workspace.ps1')
+            @'
+[CmdletBinding()]
+param(
+    [string]$WorkspaceRoot,
+    [switch]$SyncLlmHooks,
+    [switch]$WhatIf
+)
+Set-Content -Encoding UTF8 -LiteralPath (Join-Path $WorkspaceRoot 'hook-refresh.marker') -Value 'updated'
+'@ | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureScripts 'bootstrap-workspace.ps1')
+            $syncFixtureManifest | ConvertTo-Json -Depth 5 | Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureSeed 'repository-manifest.json')
+        }
+
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('add', '.') | Out-Null
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('commit', '-m', 'fixture baseline') | Out-Null
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('remote', 'add', 'origin', $fixtureRemote) | Out-Null
+        Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('push', '-u', 'origin', 'dev') | Out-Null
+        & git clone --branch dev $fixtureRemote $fixtureCanonical | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not clone sync fixture canonical checkout: $fixtureCanonical"
+        }
+    }
+
+    Set-Content -Encoding UTF8 -LiteralPath (Join-Path $syncFixtureWorkspace 'AGENTS.md') -Value 'fixture workspace instructions'
+    $fixtureFrontendSeed = Join-Path $syncFixtureSeedRoot 'urizo-final-frontend'
+    Add-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureFrontendSeed 'tracked.txt') -Value 'remote update'
+    Invoke-SyncFixtureGit -RepositoryPath $fixtureFrontendSeed -Arguments @('add', 'tracked.txt') | Out-Null
+    Invoke-SyncFixtureGit -RepositoryPath $fixtureFrontendSeed -Arguments @('commit', '-m', 'fixture remote update') | Out-Null
+    Invoke-SyncFixtureGit -RepositoryPath $fixtureFrontendSeed -Arguments @('push', 'origin', 'dev') | Out-Null
+    $expectedFrontendHead = (Invoke-SyncFixtureGit -RepositoryPath $fixtureFrontendSeed -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
+
+    $fixtureMaster = Join-Path $syncFixtureWorkspace 'urizo-final-master'
+    $fixtureBackend = Join-Path $syncFixtureWorkspace 'urizo-final-backend'
+    Add-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureMaster 'tracked.txt') -Value 'master local work'
+    Add-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureBackend 'tracked.txt') -Value 'backend local work'
+    $masterContentBefore = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixtureMaster 'tracked.txt')
+    $backendContentBefore = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixtureBackend 'tracked.txt')
+    $backendHeadBefore = (Invoke-SyncFixtureGit -RepositoryPath $fixtureBackend -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
+    $hookMarker = Join-Path $syncFixtureWorkspace 'hook-refresh.marker'
+    Set-Content -Encoding UTF8 -LiteralPath $hookMarker -Value 'original'
+
+    $powerShellExecutable = (Get-Process -Id $PID).Path
+    $syncFixtureOutput = @(& $powerShellExecutable -NoProfile -File (Join-Path $fixtureMaster 'scripts/sync-workspace.ps1') -WorkspaceRoot $syncFixtureWorkspace -ApproveNetwork -AsJson 2>&1)
+    $syncFixtureExitCode = $LASTEXITCODE
+    if ($syncFixtureExitCode -ne 0) {
+        throw "Scope-aware sync fixture failed: exit=$syncFixtureExitCode; output=$($syncFixtureOutput -join ' ')"
+    }
+    $syncFixtureSummary = ($syncFixtureOutput -join "`n") | ConvertFrom-Json
+    $masterSyncResult = @($syncFixtureSummary.results | Where-Object Repository -eq 'urizo-final-master')
+    $frontendSyncResult = @($syncFixtureSummary.results | Where-Object Repository -eq 'urizo-final-frontend')
+    $backendSyncResult = @($syncFixtureSummary.results | Where-Object Repository -eq 'urizo-final-backend')
+    $frontendHeadAfter = (Invoke-SyncFixtureGit -RepositoryPath (Join-Path $syncFixtureWorkspace 'urizo-final-frontend') -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
+    $backendHeadAfter = (Invoke-SyncFixtureGit -RepositoryPath $fixtureBackend -Arguments @('rev-parse', 'HEAD') | Select-Object -First 1).Trim()
+    $masterDirty = @(Invoke-SyncFixtureGit -RepositoryPath $fixtureMaster -Arguments @('status', '--porcelain=v1')).Count
+    $backendDirty = @(Invoke-SyncFixtureGit -RepositoryPath $fixtureBackend -Arguments @('status', '--porcelain=v1')).Count
+    $masterContentAfter = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixtureMaster 'tracked.txt')
+    $backendContentAfter = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $fixtureBackend 'tracked.txt')
+    $hookMarkerValue = (Get-Content -Raw -Encoding UTF8 -LiteralPath $hookMarker).Trim()
+
+    if ($masterSyncResult.Count -ne 1 -or $masterSyncResult[0].Status -ne 'PRESERVED' -or
+        $frontendSyncResult.Count -ne 1 -or $frontendSyncResult[0].Action -notmatch 'FAST_FORWARDED' -or
+        $backendSyncResult.Count -ne 1 -or $backendSyncResult[0].Status -ne 'PRESERVED' -or
+        $frontendHeadAfter -ne $expectedFrontendHead -or
+        $backendHeadAfter -ne $backendHeadBefore -or
+        $masterDirty -eq 0 -or $backendDirty -eq 0 -or
+        $masterContentAfter -ne $masterContentBefore -or $backendContentAfter -ne $backendContentBefore -or
+        $syncFixtureSummary.preserved -ne 2 -or
+        $syncFixtureSummary.hookRefreshDeferred -ne $true -or
+        $syncFixtureSummary.activeContextReloaded -ne $false -or
+        $hookMarkerValue -ne 'original') {
+        throw 'Scope-aware sync must preserve dirty Master and Source work, continue a clean Source fast-forward, and leave Hooks unchanged.'
+    }
+
+    $fixtureFrontend = Join-Path $syncFixtureWorkspace 'urizo-final-frontend'
+    Invoke-SyncFixtureGit -RepositoryPath $fixtureFrontend -Arguments @('remote', 'set-url', 'origin', (Join-Path $syncFixtureRemoteRoot 'unexpected.git')) | Out-Null
+    $blockedFixtureOutput = @(& $powerShellExecutable -NoProfile -File (Join-Path $fixtureMaster 'scripts/sync-workspace.ps1') -WorkspaceRoot $syncFixtureWorkspace -ApproveNetwork -AsJson 2>&1)
+    $blockedFixtureExitCode = $LASTEXITCODE
+    $blockedFixtureSummary = ($blockedFixtureOutput -join "`n") | ConvertFrom-Json
+    $blockedFrontendResult = @($blockedFixtureSummary.results | Where-Object Repository -eq 'urizo-final-frontend')
+    if ($blockedFixtureExitCode -ne 2 -or
+        $blockedFixtureSummary.blocked -ne 1 -or
+        $blockedFrontendResult.Count -ne 1 -or $blockedFrontendResult[0].Status -ne 'BLOCKED' -or
+        $blockedFixtureSummary.hookRefreshDeferred -ne $true) {
+        throw 'Scope-aware sync must finish independent repository checks but retain exit code 2 when a repository is BLOCKED.'
+    }
+    $global:LASTEXITCODE = 0
+}
+finally {
+    if (Test-Path -LiteralPath $syncFixtureRoot) {
+        $resolvedSyncFixtureRoot = [IO.Path]::GetFullPath($syncFixtureRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedSyncFixtureRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove sync fixture outside the temp root: $resolvedSyncFixtureRoot"
+        }
+        Remove-Item -LiteralPath $resolvedSyncFixtureRoot -Recurse -Force
+    }
+}
+Write-Host 'PASS: scope-aware sync preserves dirty work, continues clean Sources, defers Hooks, and retains blocked exit semantics'
+
 $bootstrapWorkspaceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1')
 if ($bootstrapWorkspaceScript -notmatch 'GetExtension\(\$Target\)' -or
     $bootstrapWorkspaceScript -notmatch 'UTF8Encoding\]::new\(\$writeUtf8Bom\)' -or

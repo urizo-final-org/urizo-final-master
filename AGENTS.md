@@ -77,8 +77,8 @@
   확인할 수 없거나 작업 범위가 불명확하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - 일치하면 `MASTER CONTEXT PASS`와 인식한 범위를 짧게 보고한다.
 - 변경 저장소·최소 완료 결과가 없거나 범위가 충돌하면 `MASTER CONTEXT BLOCKED`를 보고하고 구현하지 않는다.
-- `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 확인한 뒤
-  `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`로 Codex·Claude Hook과 Git Pull Gate를 갱신한다. AGENTS 지문이 바뀐 경우에만 전체 원문을 한 번 주입하고, 바뀌지 않았으면 4KB 이하 Checkpoint만 주입한다.
+- `scripts/sync-workspace.ps1 -ApproveNetwork`는 Master와 Source를 저장소별로 끝까지 확인한다. Dirty canonical은 `PRESERVED`로 보고 Working Tree를 갱신하지 않으며 관계없는 깨끗한 Source 동기화는 계속한다.
+- 모든 canonical이 Hook 갱신에 안전할 때만 `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`로 Codex·Claude Hook과 Git Pull Gate를 갱신한다. Dirty·차단 canonical이 있으면 공용 Hook과 현재 컨텍스트 갱신만 보류하고, AGENTS 지문 기반 Full·Checkpoint 갱신은 다음 안전한 동기화에서 수행한다.
 - 신규 Workspace 설정이나 표준 동기화 스크립트를 거치지 않은 수동 Master 갱신 후에는 활성 LLM이 구현 전에
   `scripts/bootstrap-workspace.ps1 -SyncLlmHooks`를 실행하고 `CONTEXT AND PULL GATE SETUP PASS` 또는 `MASTER CONTEXT BLOCKED`를 보고한다.
 - Codex와 Claude Hook은 같은 AGENTS 로더를 사용한다. `startup|clear|compact`는 Master와 활성 Source 원문을 불러오고, `resume`과 일반 Pull은 짧은 Checkpoint만 불러온다. Pull 결과에 `AGENTS.md` 변경이 있을 때만 전체 원문을 한 번 갱신한다. 원문을 불러오지 못하면 자동 재시도 없이 `continue: false`와 `MASTER CONTEXT BLOCKED`로 해당 턴을 종료한다.
@@ -112,8 +112,9 @@
 `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
 `scripts/sync-workspace.ps1 -ApproveNetwork`를 의미한다. 일반 `git pull`은 요청된 저장소 범위에서 수행할 수 있다.
 
-- Master 먼저, 이어서 Frontend·Backend·Orchestrator·MCP Server를 확인한다.
-- Master 확인이 끝나면 같은 스크립트가 Workspace AGENTS, Codex·Claude Context Hook, Git pre-push Pull Gate를 자동 동기화한다.
+- Master 먼저, 이어서 Frontend·Backend·Orchestrator·MCP Server를 확인하되 한 저장소의 보존·차단 결과 때문에 관계없는 깨끗한 Source 확인을 중단하지 않는다.
+- Dirty canonical은 fetch로 원격 Ref만 갱신하고 `PRESERVED`로 보고하며 Working Tree를 갱신하지 않는다.
+- 모든 canonical이 깨끗하고 차단되지 않았을 때만 같은 스크립트가 Workspace AGENTS, Codex·Claude Context Hook, Git pre-push Pull Gate를 자동 동기화한다. Dirty·차단 canonical이 있으면 공용 Hook과 현재 컨텍스트 갱신을 보류 사유와 함께 보고한다.
 - 자동 Branch 전환, Rebase, 충돌 해결, Reset, Stash Pop, 로컬 변경 삭제를 하지 않는다.
 - Codex·Claude `PostToolUse` Hook은 성공한 일반 `git pull`을 감지하면 4KB 이하 Checkpoint를 주입한다. Pull 결과에 `AGENTS.md` 변경이 나타난 경우에만 Master와 활성 Source 원문을 한 번 주입하며 Workspace AGENTS 원문은 native directory routing과 중복 주입하지 않는다.
 - 활성 LLM은 주입된 `AGENTS.md`와 실제 변경 범위를 기준으로 아래 세 실행 모드 중 적용 대상을 판단하고
