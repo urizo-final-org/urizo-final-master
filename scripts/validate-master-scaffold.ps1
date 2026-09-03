@@ -484,6 +484,13 @@ if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
     $teamLeadProtocol -notmatch 'PROFILE RUNTIME' -or
     $teamLeadProtocol -notmatch 'readback을 제공하지 않는다' -or
     $teamLeadProtocol -notmatch '사용자 가시성 표' -or
+    $teamLeadProtocol -notmatch '역할 프로필.*실제 모델.*추론 수준.*속도' -or
+    $teamLeadProtocol -notmatch 'SIMPLE PASS' -or
+    $teamLeadProtocol -notmatch 'GUARDRAIL PASS' -or
+    $teamLeadProtocol -notmatch '상태 변화마다.*작업 범위.*Git Diff' -or
+    $teamLeadProtocol -notmatch '위반.*즉시 중단' -or
+    $teamLeadProtocol -notmatch 'prepare-dev-pr\.ps1 -ApproveNetwork' -or
+    $teamLeadProtocol -notmatch 'Push·PR은 별도 승인 전 금지' -or
     $teamLeadProtocol -notmatch '프로필 검토 세션 생성' -or
     $teamLeadProtocol -notmatch '예비 승인' -or
     $teamLeadProtocol -notmatch 'PLAN 전용 세션' -or
@@ -509,6 +516,13 @@ if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
     $teamLeadSkill -notmatch 'PROFILE ATTEST' -or
     $teamLeadSkill -notmatch 'PROFILE RUNTIME' -or
     $teamLeadSkill -notmatch 'no independent runtime model/thinking readback' -or
+    $teamLeadSkill -notmatch 'role profile, concrete model, reasoning level, and speed' -or
+    $teamLeadSkill -notmatch 'SIMPLE PASS' -or
+    $teamLeadSkill -notmatch 'GUARDRAIL PASS' -or
+    $teamLeadSkill -notmatch 'every state change.*scope and Git Diff' -or
+    $teamLeadSkill -notmatch 'violated, stop the affected session immediately' -or
+    $teamLeadSkill -notmatch 'prepare-dev-pr\.ps1 -ApproveNetwork' -or
+    $teamLeadSkill -notmatch 'before separate user approval' -or
     $teamLeadSkill -notmatch '프로필 검토 세션 생성' -or
     $teamLeadSkill -notmatch 'preliminary approval' -or
     $teamLeadSkill -notmatch 'PLAN-only' -or
