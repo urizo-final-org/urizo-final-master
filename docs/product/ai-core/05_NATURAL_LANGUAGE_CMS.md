@@ -129,6 +129,16 @@ apply_cms_preview
 | AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Flyway 예약·작업 기록 | Master | PR 검증 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | `924be53` · 2026-09-03 | [Master #54](https://github.com/urizo-final-org/urizo-final-master/pull/54) · OPEN · 2026-09-03 | dev 병합 전 |
 | AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Natural CMS Outbox 최소 권한 보완 | Backend | 완료 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | `d43ea5f` · 2026-09-03 | [Backend #49](https://github.com/urizo-final-org/urizo-final-backend/pull/49) · MERGED · 2026-09-03 | `cd1357c` · 2026-09-03 |
 
+#### `AI05-012` · `Natural CMS Resource Command Prompt`
+- [ ] `cms.preview`가 MENU, BOARD, CONTENT, TEMPLATE별 Resource 타입과 수정 가능 필드를 모델에 전달
+- [ ] 4개 Resource 명령 Context 회귀 테스트와 실제 MENU `WAITING_APPROVAL` 검증
+- 작업자: `tmdwns0531` (팀장 승인 재배정)
+
+| Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
+|---|---|---|---|---|---|---|---|---|---|
+| AI05-012 | axms-ai05-012-natural-cms-resource-command-prompt | 5번 기능 작업 기록 | Master | 진행 중 | `feature/tmdwns0531_axms-ai05-012-natural-cms-resource-command-prompt_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+| AI05-012 | axms-ai05-012-natural-cms-resource-command-prompt | Resource별 Natural CMS 명령 Context | Backend | 진행 중 | `feature/tmdwns0531_axms-ai05-012-natural-cms-resource-command-prompt_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
 
