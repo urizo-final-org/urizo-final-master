@@ -407,17 +407,32 @@ try {
     $syncFixtureSeedRoot = Join-Path $syncFixtureRoot 'seeds'
     New-Item -ItemType Directory -Path $syncFixtureWorkspace, $syncFixtureRemoteRoot, $syncFixtureSeedRoot -Force | Out-Null
 
+    function Invoke-SyncFixtureGitRaw {
+        param([Parameter(Mandatory = $true)][string[]]$Arguments)
+
+        $previousErrorAction = $ErrorActionPreference
+        try {
+            $ErrorActionPreference = 'Continue'
+            $output = @(& git @Arguments 2>&1)
+            $exitCode = $LASTEXITCODE
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorAction
+        }
+        if ($exitCode -ne 0) {
+            throw "Sync fixture Git command failed: git=$($Arguments -join ' '); output=$($output -join ' ')"
+        }
+        return @($output | ForEach-Object { $_.ToString() })
+    }
+
     function Invoke-SyncFixtureGit {
         param(
             [Parameter(Mandatory = $true)][string]$RepositoryPath,
             [Parameter(Mandatory = $true)][string[]]$Arguments
         )
 
-        $output = @(& git -c "safe.directory=$RepositoryPath" -C $RepositoryPath @Arguments 2>&1)
-        if ($LASTEXITCODE -ne 0) {
-            throw "Sync fixture Git command failed: repository=$RepositoryPath; git=$($Arguments -join ' '); output=$($output -join ' ')"
-        }
-        return @($output | ForEach-Object { $_.ToString() })
+        $gitArguments = @('-c', "safe.directory=$RepositoryPath", '-C', $RepositoryPath) + $Arguments
+        return @(Invoke-SyncFixtureGitRaw -Arguments $gitArguments)
     }
 
     $syncFixtureRepositories = @(
@@ -434,14 +449,8 @@ try {
         $fixtureRemote = [string]$fixtureRepository.remote
         $fixtureSeed = Join-Path $syncFixtureSeedRoot $fixtureRepository.name
         $fixtureCanonical = Join-Path $syncFixtureWorkspace $fixtureRepository.relativePath
-        & git init --bare $fixtureRemote | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Could not initialize sync fixture remote: $fixtureRemote"
-        }
-        & git init -b dev $fixtureSeed | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Could not initialize sync fixture seed: $fixtureSeed"
-        }
+        Invoke-SyncFixtureGitRaw -Arguments @('init', '--bare', $fixtureRemote) | Out-Null
+        Invoke-SyncFixtureGitRaw -Arguments @('init', '-b', 'dev', $fixtureSeed) | Out-Null
         Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('config', 'user.name', 'AXMS Validation') | Out-Null
         Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('config', 'user.email', 'axms-validation@example.invalid') | Out-Null
         Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureSeed 'AGENTS.md') -Value "fixture instructions: $($fixtureRepository.name)"
@@ -467,10 +476,7 @@ Set-Content -Encoding UTF8 -LiteralPath (Join-Path $WorkspaceRoot 'hook-refresh.
         Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('commit', '-m', 'fixture baseline') | Out-Null
         Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('remote', 'add', 'origin', $fixtureRemote) | Out-Null
         Invoke-SyncFixtureGit -RepositoryPath $fixtureSeed -Arguments @('push', '-u', 'origin', 'dev') | Out-Null
-        & git clone --branch dev $fixtureRemote $fixtureCanonical | Out-Null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Could not clone sync fixture canonical checkout: $fixtureCanonical"
-        }
+        Invoke-SyncFixtureGitRaw -Arguments @('clone', '--branch', 'dev', $fixtureRemote, $fixtureCanonical) | Out-Null
     }
 
     Set-Content -Encoding UTF8 -LiteralPath (Join-Path $syncFixtureWorkspace 'AGENTS.md') -Value 'fixture workspace instructions'
