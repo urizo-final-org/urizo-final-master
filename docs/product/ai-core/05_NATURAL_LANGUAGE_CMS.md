@@ -107,13 +107,15 @@ apply_cms_preview
 
 #### `AI05-010` · `Natural CMS Resource DB Contract`
 - [x] Natural CMS Job·Handler Result DB CHECK가 MENU, BOARD, CONTENT, TEMPLATE을 허용하도록 확장
-- [ ] Flyway 회귀 테스트와 실제 MENU Job 통합 검증 완료
+- [x] Flyway 회귀 테스트와 PostgreSQL 트랜잭션 적용·롤백 검증 완료
+- [ ] 실제 MENU Job 통합 검증 완료
+- 로컬 통합 차단: 공유 DB에 미병합 `AI06-025` Migration `20260903023350023`이 먼저 적용되어 Flyway validation이 중단됨. Repair·Ignore·DB 초기화로 우회하지 않음.
 - 작업자: `tmdwns0531` (팀장)
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|---|
-| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Flyway 예약·작업 기록 | Master | 진행 중 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `2c41b63` · 2026-09-03 | PR 전 | dev 병합 전 |
-| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Natural CMS Resource DB CHECK 확장 | Backend | PR 열림 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `56c2210` · 2026-09-03 | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) · OPEN · 2026-09-03 | dev 병합 전 |
+| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Flyway 예약·작업 기록 | Master | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `f19b22c` · 2026-09-03 | [Master #51](https://github.com/urizo-final-org/urizo-final-master/pull/51) · MERGED · 2026-09-03 | `93666b3` · 2026-09-03 |
+| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Natural CMS Resource DB CHECK 확장 | Backend | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `56c2210` · 2026-09-03 | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) · MERGED · 2026-09-03 | `071aa97` · 2026-09-03 |
 
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
