@@ -47,6 +47,7 @@ $required = @(
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
     'scripts/start-feature-work.ps1',
+    'scripts/ensure-shared-backend-local-state.ps1',
     'scripts/prepare-dev-pr.ps1',
     'scripts/pre-push-pull-gate.ps1',
     'scripts/health-workspace.ps1',
@@ -564,6 +565,8 @@ if ($bootstrapWorkspaceScript -notmatch 'GetExtension\(\$Target\)' -or
     throw 'Workspace bootstrap must preserve PowerShell encoding and install the managed Git Hook without overwriting an unrelated hooksPath.'
 }
 $startFeatureWorkScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-feature-work.ps1')
+$sharedBackendLocalStateScriptPath = Join-Path $masterRoot 'scripts/ensure-shared-backend-local-state.ps1'
+$sharedBackendLocalStateScript = Get-Content -Raw -Encoding UTF8 -LiteralPath $sharedBackendLocalStateScriptPath
 $prepareDevPrScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/prepare-dev-pr.ps1')
 $prePushPullGateScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/pre-push-pull-gate.ps1')
 $prePushHook = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'templates/workspace/githooks/pre-push')
@@ -575,6 +578,11 @@ if ($startFeatureWorkScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \
     $startFeatureWorkScript -notmatch '\$safeName\.Length -gt 48' -or
     $startFeatureWorkScript -notmatch 'Canonical checkout changed while the isolated dev Pull gate was running' -or
     $startFeatureWorkScript -notmatch '@\(''worktree'', ''remove''' -or
+    $startFeatureWorkScript -notmatch 'ensure-shared-backend-local-state\.ps1' -or
+    $sharedBackendLocalStateScript -notmatch "'Junction'" -or
+    $sharedBackendLocalStateScript -notmatch "'SymbolicLink'" -or
+    $sharedBackendLocalStateScript -notmatch 'independent \.local/secrets exists' -or
+    $sharedBackendLocalStateScript -match 'Copy-Item|Remove-Item' -or
     $prepareDevPrScript -notmatch '@\(''fetch'', ''origin'', \$integrationBranch\)' -or
     $prepareDevPrScript -match '\$canonicalPath|\$temporaryPullWorktree|CANONICAL DIRTY PRESERVED' -or
     $prepareDevPrScript -match '@\(''pull''|@\(''worktree'', ''add''|@\(''worktree'', ''remove''' -or
@@ -587,6 +595,50 @@ if ($startFeatureWorkScript -notmatch '@\(''pull'', ''--ff-only'', ''origin'', \
     $prePushHook -notmatch 'pre-push-pull-gate\.ps1') {
     throw 'The pre-work gate must preserve canonical work, while the pre-PR gate fetches dev directly from its Feature Worktree and pre-push stays network-free.'
 }
+
+$sharedLocalFixtureRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-shared-local-validation-" + [Guid]::NewGuid().ToString('N'))
+try {
+    $fixtureCanonical = Join-Path $sharedLocalFixtureRoot 'canonical-backend'
+    $fixtureWorktree = Join-Path $sharedLocalFixtureRoot 'feature-backend'
+    $fixtureBlockedWorktree = Join-Path $sharedLocalFixtureRoot 'blocked-backend'
+    $fixtureCanonicalSecrets = Join-Path $fixtureCanonical '.local\secrets'
+    New-Item -ItemType Directory -Path $fixtureCanonicalSecrets, $fixtureWorktree, $fixtureBlockedWorktree -Force | Out-Null
+    Set-Content -Encoding UTF8 -LiteralPath (Join-Path $fixtureCanonicalSecrets 'fixture-token') -Value 'dummy-fixture-only'
+
+    & $sharedBackendLocalStateScriptPath -CanonicalBackendRoot $fixtureCanonical -WorktreeRoot $fixtureWorktree | Out-Null
+    & $sharedBackendLocalStateScriptPath -CanonicalBackendRoot $fixtureCanonical -WorktreeRoot $fixtureWorktree | Out-Null
+    $fixtureSecretsItem = Get-Item -LiteralPath (Join-Path $fixtureWorktree '.local\secrets') -Force
+    if (-not $fixtureSecretsItem.Target -or
+        -not (Test-Path -LiteralPath (Join-Path $fixtureWorktree '.local\secrets\fixture-token') -PathType Leaf)) {
+        throw 'Backend Feature Worktree must reuse canonical .local/secrets without copying secret values.'
+    }
+
+    $blockedSecrets = Join-Path $fixtureBlockedWorktree '.local\secrets'
+    New-Item -ItemType Directory -Path $blockedSecrets -Force | Out-Null
+    Set-Content -Encoding UTF8 -LiteralPath (Join-Path $blockedSecrets 'preserve.marker') -Value 'preserve'
+    $independentLocalBlocked = $false
+    try {
+        & $sharedBackendLocalStateScriptPath -CanonicalBackendRoot $fixtureCanonical -WorktreeRoot $fixtureBlockedWorktree | Out-Null
+    }
+    catch {
+        $independentLocalBlocked = $_.Exception.Message -match 'BACKEND LOCAL STATE BLOCKED'
+    }
+    if (-not $independentLocalBlocked -or
+        -not (Test-Path -LiteralPath (Join-Path $blockedSecrets 'preserve.marker') -PathType Leaf)) {
+        throw 'Existing independent Backend .local/secrets must be preserved and block Worktree reuse.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $sharedLocalFixtureRoot) {
+        $resolvedFixtureRoot = [IO.Path]::GetFullPath($sharedLocalFixtureRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedFixtureRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove shared-local fixture outside the temp root: $resolvedFixtureRoot"
+        }
+        Remove-Item -LiteralPath $resolvedFixtureRoot -Recurse -Force
+    }
+}
+Write-Host 'PASS: Backend Feature Worktrees share canonical secrets and preserve conflicting secret directories'
 $startLocalScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/start-local-cms.ps1')
 $rebuildLocalServiceScript = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/rebuild-local-service.ps1')
 if ($workspaceAgentTemplate -notmatch 'start-local-cms\.ps1 -Profile spring-core -ApproveLocalMutation' -or
