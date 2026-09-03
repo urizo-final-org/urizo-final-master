@@ -227,7 +227,7 @@ urizo-final-mcp-server
 | `AI06-022` | Node Canvas 시각 Mock | Frontend · `feature/tmdwns0531_axms-ai06-022-node-canvas-visual-mock_v0.1` | Frontend PR #23으로 `dev` 병합 완료 (`9122880b36fad7f8a44a54f240883909f09350da`) |
 | `AI06-023` | Node 실행 모니터링 스크럼 Mock | Frontend · `feature/tmdwns0531_axms-ai06-023-node-monitoring-scrum-mock_v0.1` | 구현 진행 중이며 Commit·PR·검증 완료 기록은 보류 |
 | `AI06-026` | LLM_OPS PR·배포 Profile v4 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-026-llm-ops-pr-deploy-profile_v0.1` | 구현·Source 검증 완료, 최신 dev 반영·Push·PR 대기 |
-| `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | Source 구현·회귀 검증 완료, Flyway·로컬 통합 검증 대기 |
+| `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | Source·Flyway·로컬 통합 검증 완료, 사용자 승인 후 `dev` 대상 PR 준비 중 |
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
@@ -242,7 +242,11 @@ urizo-final-mcp-server
 - [x] 기존 Profile Authoring Snapshot 구조를 재사용하고 DRAFT·ACTIVE Version 불변 유지
 - [x] 최신 dev 기준 LLM_OPS PR·배포 흐름과 NATURAL_CMS 흐름을 초기 기본값으로 확정
 - [x] Backend 저장·조회 API와 Frontend 저장·불러오기 UI 구현·회귀 검증
-- [ ] Flyway와 로컬 `full` 통합 검증
+- [x] Flyway `20260903145703043`와 공식 `full -Rebuild` 1회 통합 검증: 전체 Health 정상, pending 0
+- [x] Frontend `bd99387`·Backend `8732b66`·Orchestrator `c05b38f`·MCP `ddf775f` 조합에서 Profile별 API 저장·조회·분리, 401/403/400 거부, 화면 불러오기 검증
+- [x] 초기 기본값 LLM_OPS 17-node/24-edge·NATURAL_CMS 8-node/11-edge 확인, 기존 Profile Version 12개 전체 행 해시 불변 확인
+- [x] 후속 UI: 확인 모달·저장본 되돌리기·작업별 툴바·노드 추가 명칭·저장 버튼 가독성 정리. Frontend `bb84c67` 기준 89개 테스트·타입 검사·Vite 빌드 통과
+- 미검증: 별도 빈 DB 마이그레이션은 실행하지 않았으며 기존 공유 DB·공식 반복 실행만 검증했다.
 
 ## 과거 진행 기록
 
