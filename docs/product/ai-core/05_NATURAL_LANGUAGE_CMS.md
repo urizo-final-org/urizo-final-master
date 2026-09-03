@@ -125,8 +125,8 @@ apply_cms_preview
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|---|
-| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Flyway 예약·작업 기록 | Master | 진행 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
-| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Natural CMS Outbox 최소 권한 보완 | Backend | 진행 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Flyway 예약·작업 기록 | Master | PR 검증 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | `924be53` · 2026-09-03 | [Master #54](https://github.com/urizo-final-org/urizo-final-master/pull/54) · OPEN · 2026-09-03 | dev 병합 전 |
+| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Natural CMS Outbox 최소 권한 보완 | Backend | PR 검증 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | `d43ea5f` · 2026-09-03 | [Backend #49](https://github.com/urizo-final-org/urizo-final-backend/pull/49) · OPEN · 2026-09-03 | dev 병합 전 |
 
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
