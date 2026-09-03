@@ -41,6 +41,8 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260831030833217` | `RESERVED` | `axms-ai02-001-knowledge-vector-1024` | `widen_document_chunk_embedding_to_1024` | `emilyjjang-jpg` | `2026-09-30T03:08:33Z` | pending | none |
 | `20260903023350023` | `RESERVED` | `AI06-025` | `create_ai_profile_editor_layout` | `tmdwns0531` | `2026-10-03T02:33:50Z` | pending | `20260901080407912` |
 | `20260903055920035` | `MERGED` | `axms-ai05-010-natural-cms-resource-db-contract` | `allow_natural_cms_resource_types` | `tmdwns0531` | `2026-10-03T05:59:20Z` | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) | `20260830162029912` |
+| `20260903065222608` | `RESERVED` | `AI04-009` | `extend_pr_deploy_handler_contracts` | `jcy644542` | `2026-10-03T06:52:22Z` | pending | `20260903023350023` |
+<!-- AI04-009 reserved_at_utc: 2026-09-03T06:52:22Z; expires_at_utc remains 30 days later per ledger policy. -->
 
 ## Reservation template
 
