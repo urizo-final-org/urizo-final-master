@@ -144,14 +144,15 @@ apply_cms_preview
 #### `AI05-013` · `Natural CMS Command Schema`
 - [x] `cms.preview` 모델 출력을 단일 `validate_cms_command` Tool Call로 제한하고 `operation`·`fields` 명령 구조 강제
 - [x] MENU, BOARD, CONTENT, TEMPLATE 명령 Schema 회귀 테스트
-- [ ] 실제 MENU Job이 `WAITING_APPROVAL`까지 도달하고 승인 전 원본을 변경하지 않는지 검증
+- [x] 실제 MENU Job이 `WAITING_APPROVAL`까지 도달하고 승인 전 원본을 변경하지 않는지 검증
 - 작업자: `tmdwns0531` (팀장 승인 재배정)
 - 검증: 다중 Model·Tool 반복과 자유형 terminal JSON 파싱을 제거했으며 Natural CMS Stage·Resource·Model 경계·Migration 테스트 43개가 통과했다.
+- 통합 결과: Backend 격리 재빌드와 `full` Health 통과 후 실제 MENU Job `269e8600-07ff-4d8b-86be-c4f28ee49f2a`이 `cms.analyze → cms.preview`를 거쳐 `WAITING_APPROVAL`에 도달했다. Preview가 생성됐고 비-MENU Handler Result는 0건이며, 승인 전 MENU 원본 `소개1`·`/about`은 변경되지 않았다.
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|---|
 | AI05-013 | axms-ai05-013-natural-cms-command-schema | 5번 기능 작업 기록 | Master | 진행 중 | `feature/tmdwns0531_axms-ai05-013-natural-cms-command-schema_v0.1` | Push 전 | PR 전 | dev 병합 전 |
-| AI05-013 | axms-ai05-013-natural-cms-command-schema | Natural CMS 명령 구조 강제 | Backend | 구현·검증 완료 | `feature/tmdwns0531_axms-ai05-013-natural-cms-command-schema_v0.1` | Push 전 | PR 전 | dev 병합 전 |
+| AI05-013 | axms-ai05-013-natural-cms-command-schema | Natural CMS 명령 구조 강제 | Backend | 통합 검증 완료 | `feature/tmdwns0531_axms-ai05-013-natural-cms-command-schema_v0.1` | Push 전 | PR 전 | dev 병합 전 |
 
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
