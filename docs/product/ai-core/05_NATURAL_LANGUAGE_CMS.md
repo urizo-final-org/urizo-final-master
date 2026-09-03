@@ -130,14 +130,16 @@ apply_cms_preview
 | AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Natural CMS Outbox 최소 권한 보완 | Backend | 완료 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | `d43ea5f` · 2026-09-03 | [Backend #49](https://github.com/urizo-final-org/urizo-final-backend/pull/49) · MERGED · 2026-09-03 | `cd1357c` · 2026-09-03 |
 
 #### `AI05-012` · `Natural CMS Resource Command Prompt`
-- [ ] `cms.preview`가 MENU, BOARD, CONTENT, TEMPLATE별 Resource 타입과 수정 가능 필드를 모델에 전달
-- [ ] 4개 Resource 명령 Context 회귀 테스트와 실제 MENU `WAITING_APPROVAL` 검증
+- [x] `cms.preview`가 MENU, BOARD, CONTENT, TEMPLATE별 Resource 타입과 수정 가능 필드를 모델에 전달
+- [x] 4개 Resource 명령 Context 회귀 테스트
+- [ ] 실제 MENU `WAITING_APPROVAL` 검증
 - 작업자: `tmdwns0531` (팀장 승인 재배정)
+- 통합 결과: Backend `dev` 반영과 단일 Service 재빌드 후 MENU Job은 `cms.analyze`를 통과했다. `cms.preview` 모델 응답이 최상위 `operation`·`fields` 명령 계약과 일치하지 않아 `CMS_COMMAND_INVALID`로 거절됐으며 MENU 원본은 변경되지 않았다. 현재 Tool schema가 내부 `command`를 일반 object로만 선언하고 최종 응답도 TEXT이므로, 명령 구조를 기계적으로 제한하는 후속 보완은 별도 Work ID로 분리한다.
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|---|
 | AI05-012 | axms-ai05-012-natural-cms-resource-command-prompt | 5번 기능 작업 기록 | Master | PR 검증 중 | `feature/tmdwns0531_axms-ai05-012-natural-cms-resource-command-prompt_v0.1` | `2eb57b3` · 2026-09-03 | [Master #55](https://github.com/urizo-final-org/urizo-final-master/pull/55) · OPEN · 2026-09-03 | dev 병합 전 |
-| AI05-012 | axms-ai05-012-natural-cms-resource-command-prompt | Resource별 Natural CMS 명령 Context | Backend | PR 검증 중 | `feature/tmdwns0531_axms-ai05-012-natural-cms-resource-command-prompt_v0.1` | `e581103` · 2026-09-03 | [Backend #50](https://github.com/urizo-final-org/urizo-final-backend/pull/50) · OPEN · 2026-09-03 | dev 병합 전 |
+| AI05-012 | axms-ai05-012-natural-cms-resource-command-prompt | Resource별 Natural CMS 명령 Context | Backend | 완료 | `feature/tmdwns0531_axms-ai05-012-natural-cms-resource-command-prompt_v0.1` | `e581103` · 2026-09-03 | [Backend #50](https://github.com/urizo-final-org/urizo-final-backend/pull/50) · MERGED · 2026-09-03 | `607bf5e` · 2026-09-03 |
 
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
