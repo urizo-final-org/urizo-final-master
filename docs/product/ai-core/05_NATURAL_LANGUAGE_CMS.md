@@ -96,8 +96,17 @@ apply_cms_preview
 
 ## 하위 작업 기록
 
-현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을
-아래처럼 한 체크리스트로 묶고, 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
+#### `AI05-009` · `Orchestrator Resource Types`
+- [x] Orchestrator의 MENU, BOARD, CONTENT, TEMPLATE Resource 타입 최소 계약 구현·독립 테스트 완료
+- 작업자: 현재 요청에서 `tmdwns0531`으로 재배정·승인됨. 기능 문서 상단 담당자 `LEEJAEWOOK1`은 유지함.
+
+| Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
+|---|---|---|---|---|---|---|---|---|---|
+| AI05-009 | axms-ai05-009-orchestrator-resource-types | Master 작업 기록 | Master | 완료 | `feature/tmdwns0531_axms-ai05-009-orchestrator-resource-types_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+| AI05-009 | axms-ai05-009-orchestrator-resource-types | Orchestrator Resource 타입 최소 계약 | Orchestrator | 완료 | `feature/tmdwns0531_axms-ai05-009-orchestrator-resource-types_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+
+새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
+추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
 
 ```markdown
 #### `<Work ID>` · `<작업명>`
