@@ -230,8 +230,9 @@ function Sync-Repository {
     }
 
     $before = Get-RepositoryState -RepositoryPath $repositoryPath
+    $beforeBranch = if ($before.Branch) { $before.Branch } else { 'DETACHED' }
     if ($before.Origin -ne $Repository.remote) {
-        Add-SyncResult -Repository $Repository.name -Branch $before.Branch -Status 'BLOCKED' -Action 'NONE' -DevDelta 'N/A' -Detail "Origin mismatch: $($before.Origin)"
+        Add-SyncResult -Repository $Repository.name -Branch $beforeBranch -Status 'BLOCKED' -Action 'NONE' -DevDelta 'N/A' -Detail "Origin mismatch: $($before.Origin)"
         return $false
     }
 
@@ -244,15 +245,17 @@ function Sync-Repository {
     }
 
     $state = Get-RepositoryState -RepositoryPath $repositoryPath
+    $displayBranch = if ($state.Branch) { $state.Branch } else { 'DETACHED' }
     $devDelta = Get-DevDelta -RepositoryPath $repositoryPath
+
+    if ($state.DirtyCount -gt 0) {
+        Add-SyncResult -Repository $Repository.name -Branch $displayBranch -Status 'PRESERVED' -Action "$fetchAction+WORKTREE_SKIPPED" -DevDelta $devDelta -Detail "Preserved $($state.DirtyCount) local changes; no working-tree or Hook update performed."
+        return $false
+    }
 
     if ($IsMaster) {
         if ($state.Branch -ne $integrationBranch) {
             Add-SyncResult -Repository $Repository.name -Branch $state.Branch -Status 'BLOCKED' -Action $fetchAction -DevDelta $devDelta -Detail "Master must remain on clean $integrationBranch for teammate workspaces. No branch switch performed."
-            return $false
-        }
-        if ($state.DirtyCount -gt 0) {
-            Add-SyncResult -Repository $Repository.name -Branch $state.Branch -Status 'BLOCKED' -Action $fetchAction -DevDelta $devDelta -Detail "Master has $($state.DirtyCount) local changes; no working-tree update performed."
             return $false
         }
 
@@ -264,10 +267,6 @@ function Sync-Repository {
         return $ff.Status -in @('PASS', 'PLAN')
     }
 
-    if ($state.DirtyCount -gt 0) {
-        Add-SyncResult -Repository $Repository.name -Branch $state.Branch -Status 'WARN' -Action $fetchAction -DevDelta $devDelta -Detail "Preserved $($state.DirtyCount) local changes; fetched refs only."
-        return $true
-    }
     if (-not $state.Branch) {
         Add-SyncResult -Repository $Repository.name -Branch 'DETACHED' -Status 'WARN' -Action $fetchAction -DevDelta $devDelta -Detail 'Detached HEAD preserved; fetched refs only.'
         return $true
@@ -301,64 +300,61 @@ if ($masterRepository.Count -ne 1) {
 }
 
 $masterReady = Sync-Repository -Repository $masterRepository[0] -IsMaster
-if (-not $masterReady) {
-    if ($AsJson) {
-        [pscustomobject]@{ masterReady = $false; results = $results } | ConvertTo-Json -Depth 5
-    }
-    else {
-        $results | Format-Table -AutoSize -Wrap
-        Write-Host 'BLOCKED: Master did not reach a current clean dev state. Source working trees were not updated.'
-    }
-    exit 2
-}
-
 foreach ($repository in $manifest.repositories | Where-Object { $_.name -ne 'urizo-final-master' }) {
     Sync-Repository -Repository $repository | Out-Null
-}
-
-$bootstrapScript = Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1'
-if (-not (Test-Path -LiteralPath $bootstrapScript -PathType Leaf)) {
-    throw 'Workspace bootstrap script is missing after Master synchronization.'
-}
-if ($WhatIf) {
-    & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks -WhatIf
-}
-else {
-    & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks
 }
 
 $activeContext = @()
 $activeContextReloaded = $false
 $activeContextMode = $null
-if (-not $WhatIf) {
-    $contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'
-    if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
-        throw 'Shared SessionStart context loader is missing after LLM Hook synchronization.'
+$hookDeferredRepositories = @($results | Where-Object { $_.Status -in @('PRESERVED', 'BLOCKED') } | ForEach-Object Repository)
+$hookRefreshDeferred = $hookDeferredRepositories.Count -gt 0
+if (-not $hookRefreshDeferred) {
+    $bootstrapScript = Join-Path $masterRoot 'scripts/bootstrap-workspace.ps1'
+    if (-not (Test-Path -LiteralPath $bootstrapScript -PathType Leaf)) {
+        throw 'Workspace bootstrap script is missing after repository synchronization.'
+    }
+    if ($WhatIf) {
+        & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks -WhatIf
+    }
+    else {
+        & $bootstrapScript -WorkspaceRoot $WorkspaceRoot -SyncLlmHooks
     }
 
-    $instructionFingerprintAfter = Get-InstructionFingerprint
-    $activeContextMode = if ($instructionFingerprintBefore -eq $instructionFingerprintAfter) { 'Checkpoint' } else { 'Full' }
-    $activeContextLimit = if ($activeContextMode -eq 'Full') { 24576 } else { 4096 }
-    $activeContext = @(& $contextLoader -WorkspaceRoot $WorkspaceRoot -Mode $activeContextMode -Reason Sync -MaxContextBytes $activeContextLimit)
-    $activeContextText = $activeContext -join [Environment]::NewLine
-    $activeContextFirstLine = @($activeContextText -split "`r?`n", 2)[0].Trim()
-    $expectedFirstLine = if ($activeContextMode -eq 'Full') { 'MASTER CONTEXT PASS' } else { 'AXMS CONTEXT CHECKPOINT v2: reason=Sync' }
-    if ([string]::IsNullOrWhiteSpace($activeContextText) -or $activeContextFirstLine -ne $expectedFirstLine) {
-        throw "Shared context loader did not return a valid $activeContextMode payload."
+    if (-not $WhatIf) {
+        $contextLoader = Join-Path $WorkspaceRoot '.codex/hooks/session-start.ps1'
+        if (-not (Test-Path -LiteralPath $contextLoader -PathType Leaf)) {
+            throw 'Shared SessionStart context loader is missing after LLM Hook synchronization.'
+        }
+
+        $instructionFingerprintAfter = Get-InstructionFingerprint
+        $activeContextMode = if ($instructionFingerprintBefore -eq $instructionFingerprintAfter) { 'Checkpoint' } else { 'Full' }
+        $activeContextLimit = if ($activeContextMode -eq 'Full') { 24576 } else { 4096 }
+        $activeContext = @(& $contextLoader -WorkspaceRoot $WorkspaceRoot -Mode $activeContextMode -Reason Sync -MaxContextBytes $activeContextLimit)
+        $activeContextText = $activeContext -join [Environment]::NewLine
+        $activeContextFirstLine = @($activeContextText -split "`r?`n", 2)[0].Trim()
+        $expectedFirstLine = if ($activeContextMode -eq 'Full') { 'MASTER CONTEXT PASS' } else { 'AXMS CONTEXT CHECKPOINT v2: reason=Sync' }
+        if ([string]::IsNullOrWhiteSpace($activeContextText) -or $activeContextFirstLine -ne $expectedFirstLine) {
+            throw "Shared context loader did not return a valid $activeContextMode payload."
+        }
+        $activeContextReloaded = $true
     }
-    $activeContextReloaded = $true
 }
 
 $blockedCount = @($results | Where-Object Status -eq 'BLOCKED').Count
 $warningCount = @($results | Where-Object Status -eq 'WARN').Count
+$preservedCount = @($results | Where-Object Status -eq 'PRESERVED').Count
 $summary = [pscustomobject]@{
     observedAt = [DateTimeOffset]::Now.ToString('o')
     workspaceRoot = $WorkspaceRoot
-    masterReady = $true
+    masterReady = $masterReady
     activeContextReloaded = $activeContextReloaded
     activeContextMode = $activeContextMode
+    hookRefreshDeferred = $hookRefreshDeferred
+    hookDeferredRepositories = $hookDeferredRepositories
     blocked = $blockedCount
     warnings = $warningCount
+    preserved = $preservedCount
     results = $results
 }
 
@@ -371,8 +367,11 @@ else {
         Write-Host "ACTIVE SESSION CONTEXT REFRESH PASS: mode=$activeContextMode; full instructions are emitted only when an AGENTS.md fingerprint changed."
         $activeContext | Write-Output
     }
-    Write-Host 'LOCAL RUNTIME CONTEXT PASS REQUIRED: report the full-script, Frontend Watch/HMR, and isolated-service update modes from the active context checkpoint.'
-    Write-Host "BLOCKED=$blockedCount WARN=$warningCount"
+    elseif ($hookRefreshDeferred) {
+        Write-Host "HOOK AND CONTEXT REFRESH DEFERRED: repositories=$($hookDeferredRepositories -join ','); preserved or blocked canonical work was not modified."
+    }
+    Write-Host 'LOCAL RUNTIME CONTEXT PASS REQUIRED: select the full-script, Frontend Watch/HMR, or isolated-service mode from the active instructions and synchronized Source results.'
+    Write-Host "BLOCKED=$blockedCount WARN=$warningCount PRESERVED=$preservedCount"
 }
 
 if ($blockedCount -gt 0) {
