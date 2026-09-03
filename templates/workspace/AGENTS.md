@@ -23,7 +23,8 @@
 - 필요 범위를 넘는 구현·리팩터링·추상화·설정·문서·Slice는 승인 전 절대 진행하지 않는다.
 - 일치하면 `MASTER CONTEXT PASS`, 다르거나 범위 확장이 필요하면 `MASTER CONTEXT BLOCKED`를 보고한다.
 - `전체 Git 최신화`, `워크스페이스 최신화`처럼 전체 범위를 명시한 요청은
-  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 확인하고 Hook과 현재 컨텍스트를 갱신한다.
+  `urizo-final-master/scripts/sync-workspace.ps1 -ApproveNetwork`로 Master plus all four Source repositories를 저장소별로 끝까지 확인한다. Dirty canonical은 `PRESERVED`로 보고 Working Tree를 보존하며 관계없는 깨끗한 Source 동기화는 계속한다.
+- Dirty·차단 canonical이 있으면 공용 Hook과 현재 컨텍스트 갱신만 보류한다. 모든 canonical이 안전할 때만 Hook을 갱신하고 AGENTS 지문에 따라 Full 또는 4KB 이하 Checkpoint를 불러온다.
 - Codex·Claude Context Hook은 `startup|clear|compact`에서 Master와 활성 Source 원문을 불러오고 `resume`과 `PostToolUse`가 감지한 일반 Pull에서는 4KB 이하 Checkpoint만 불러온다. Pull 결과에 `AGENTS.md` 변경이 있을 때만 전체 원문을 한 번 갱신하며 Workspace AGENTS 원문은 중복 주입하지 않는다.
 - 새 구현 작업은 `urizo-final-master/scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 시작한다. 이 Gate가 canonical `dev` Pull과 최신 `origin/dev` 기반 독립 Worktree 생성을 수행한다.
 - Push·PR 직전에는 깨끗한 Feature Worktree에서 `urizo-final-master/scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행한다. 이 Gate는 해당 Worktree에서 `git fetch origin dev`를 한 번 실행하고 현재 dev 포함 여부를 검증한 뒤 Head 전용 Receipt를 발급한다. canonical checkout과 다른 Feature upstream은 참조하거나 변경하지 않는다. Managed `pre-push` Hook은 유효한 Receipt가 있을 때만 Feature Push를 허용하고 `dev`·`main` 직접 Push를 차단한다.

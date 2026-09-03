@@ -96,8 +96,29 @@ apply_cms_preview
 
 ## 하위 작업 기록
 
-현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을
-아래처럼 한 체크리스트로 묶고, 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
+#### `AI05-009` · `Orchestrator Resource Types`
+- [x] Orchestrator의 MENU, BOARD, CONTENT, TEMPLATE Resource 타입 최소 계약 구현·독립 테스트 완료
+- 작업자: 현재 요청에서 `tmdwns0531`으로 재배정·승인됨. 기능 문서 상단 담당자 `LEEJAEWOOK1`은 유지함.
+
+| Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
+|---|---|---|---|---|---|---|---|---|---|
+| AI05-009 | axms-ai05-009-orchestrator-resource-types | Master 작업 기록 | Master | 완료 | `feature/tmdwns0531_axms-ai05-009-orchestrator-resource-types_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+| AI05-009 | axms-ai05-009-orchestrator-resource-types | Orchestrator Resource 타입 최소 계약 | Orchestrator | 완료 | `feature/tmdwns0531_axms-ai05-009-orchestrator-resource-types_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+
+#### `AI05-010` · `Natural CMS Resource DB Contract`
+- [x] Natural CMS Job·Handler Result DB CHECK가 MENU, BOARD, CONTENT, TEMPLATE을 허용하도록 확장
+- [x] Flyway 회귀 테스트와 PostgreSQL 트랜잭션 적용·롤백 검증 완료
+- [ ] 실제 MENU Job 통합 검증 완료
+- 로컬 통합 차단: 공유 DB에 미병합 `AI06-025` Migration `20260903023350023`이 먼저 적용되어 Flyway validation이 중단됨. Repair·Ignore·DB 초기화로 우회하지 않음.
+- 작업자: `tmdwns0531` (팀장)
+
+| Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
+|---|---|---|---|---|---|---|---|---|---|
+| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Flyway 예약·작업 기록 | Master | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `f19b22c` · 2026-09-03 | [Master #51](https://github.com/urizo-final-org/urizo-final-master/pull/51) · MERGED · 2026-09-03 | `93666b3` · 2026-09-03 |
+| AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Natural CMS Resource DB CHECK 확장 | Backend | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `56c2210` · 2026-09-03 | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) · MERGED · 2026-09-03 | `071aa97` · 2026-09-03 |
+
+새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
+추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
 
 ```markdown
 #### `<Work ID>` · `<작업명>`

@@ -220,6 +220,13 @@ urizo-final-mcp-server
 | 4번 | 공통 LLM_OPS Runtime 계약과 4번 소유 전용 Handler·Coding Tool 경계 | 담당 문서 소유권 문구 현행화 필요 |
 | 5번 | 공통 NATURAL_CMS Runtime 계약과 5번 소유 전용 Handler·CMS Tool 경계 | 담당 문서 소유권 문구 현행화 필요 |
 
+## 현재 하위 작업 기록
+
+| Work ID | 작업 | 저장소·Branch | 현재 상태 |
+|---|---|---|---|
+| `AI06-022` | Node Canvas 시각 Mock | Frontend · `feature/tmdwns0531_axms-ai06-022-node-canvas-visual-mock_v0.1` | Frontend PR #23으로 `dev` 병합 완료 (`9122880b36fad7f8a44a54f240883909f09350da`) |
+| `AI06-023` | Node 실행 모니터링 스크럼 Mock | Frontend · `feature/tmdwns0531_axms-ai06-023-node-monitoring-scrum-mock_v0.1` | 구현 진행 중이며 Commit·PR·검증 완료 기록은 보류 |
+
 ## 과거 진행 기록
 
 - 당시 상태: AI06-010 단일 MCP 플랫폼 부트스트랩을 MCP Server PR #1과 Backend PR #21로 `dev` 병합했다.

@@ -11,10 +11,6 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $masterRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-if (-not $WorkspaceRoot) {
-    $WorkspaceRoot = Split-Path -Parent $masterRoot
-}
-$WorkspaceRoot = (Resolve-Path -LiteralPath $WorkspaceRoot).Path
 $RepositoryPath = (Resolve-Path -LiteralPath $RepositoryPath).Path
 
 if (-not $ApproveNetwork) {
@@ -60,6 +56,28 @@ function Get-ReceiptName {
         $sha.Dispose()
     }
     return "$hash.json"
+}
+
+if (-not $WorkspaceRoot) {
+    $configuredWorkspaceResult = Invoke-GitCapture `
+        -Path $masterRoot `
+        -Arguments @('config', '--local', '--get', 'axms.workspaceRoot') `
+        -AllowFailure
+    if ($configuredWorkspaceResult.ExitCode -notin @(0, 1)) {
+        throw 'Could not read the AXMS workspace root from local Git config.'
+    }
+    $configuredWorkspace = ($configuredWorkspaceResult.Output -join '').Trim()
+    $WorkspaceRoot = if ($configuredWorkspace) {
+        $configuredWorkspace
+    }
+    else {
+        Split-Path -Parent $masterRoot
+    }
+}
+$WorkspaceRoot = (Resolve-Path -LiteralPath $WorkspaceRoot).Path
+if (-not (Test-Path -LiteralPath (Join-Path $WorkspaceRoot 'AGENTS.md') -PathType Leaf) -or
+    -not (Test-Path -LiteralPath (Join-Path $WorkspaceRoot 'urizo-final-master/AGENTS.md') -PathType Leaf)) {
+    throw "Resolved AXMS workspace root is invalid: $WorkspaceRoot. Run bootstrap-workspace.ps1 -SyncLlmHooks or pass -WorkspaceRoot explicitly."
 }
 
 $repositoryRoot = Get-GitValue -Path $RepositoryPath -Arguments @('rev-parse', '--show-toplevel')
