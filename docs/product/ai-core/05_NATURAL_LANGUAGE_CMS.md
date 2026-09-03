@@ -117,6 +117,17 @@ apply_cms_preview
 | AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Flyway 예약·작업 기록 | Master | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `f19b22c` · 2026-09-03 | [Master #51](https://github.com/urizo-final-org/urizo-final-master/pull/51) · MERGED · 2026-09-03 | `93666b3` · 2026-09-03 |
 | AI05-010 | axms-ai05-010-natural-cms-resource-db-contract | Natural CMS Resource DB CHECK 확장 | Backend | 완료 | `feature/tmdwns0531_axms-ai05-010-natural-cms-resource-db-contract_v0.1` | `56c2210` · 2026-09-03 | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) · MERGED · 2026-09-03 | `071aa97` · 2026-09-03 |
 
+#### `AI05-011` · `Natural CMS Outbox Conflict Privilege`
+- [ ] Natural CMS Job Outbox 멱등 INSERT에 필요한 `event_key` 최소 조회 권한 추가
+- [ ] Flyway 회귀 테스트와 PostgreSQL 권한·트랜잭션 검증
+- [ ] 실제 MENU Job이 `WAITING_APPROVAL`까지 도달하고 승인 전 CMS 원본을 변경하지 않는지 확인
+- 작업자: `tmdwns0531` (팀장 승인 재배정)
+
+| Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
+|---|---|---|---|---|---|---|---|---|---|
+| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Flyway 예약·작업 기록 | Master | 진행 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+| AI05-011 | axms-ai05-011-natural-cms-outbox-conflict-privilege | Natural CMS Outbox 최소 권한 보완 | Backend | 진행 중 | `feature/tmdwns0531_axms-ai05-011-natural-cms-outbox-conflict-privilege_v0.1` | Push 없음 | PR 없음 | dev 병합 전 |
+
 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을 아래처럼 한 체크리스트로 묶고,
 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
 
