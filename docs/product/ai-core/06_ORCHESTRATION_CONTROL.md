@@ -228,6 +228,7 @@ urizo-final-mcp-server
 | `AI06-023` | Node 실행 모니터링 스크럼 Mock | Frontend · `feature/tmdwns0531_axms-ai06-023-node-monitoring-scrum-mock_v0.1` | 구현 진행 중이며 Commit·PR·검증 완료 기록은 보류 |
 | `AI06-026` | LLM_OPS PR·배포 Profile v4 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-026-llm-ops-pr-deploy-profile_v0.1` | 구현·Source 검증 완료, 최신 dev 반영·Push·PR 대기 |
 | `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | [Frontend #27](https://github.com/urizo-final-org/urizo-final-frontend/pull/27)·[Backend #54](https://github.com/urizo-final-org/urizo-final-backend/pull/54) `dev` 병합 완료, Source·Flyway·로컬 통합 검증 완료 |
+| `AI06-029` | 노드별 Primary·Fallback 상세 모델과 추론 설정 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-029-node-model-settings_v0.1` | [Frontend #28](https://github.com/urizo-final-org/urizo-final-frontend/pull/28)·[Backend #55](https://github.com/urizo-final-org/urizo-final-backend/pull/55)·[Orchestrator #21](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/21) `dev` 병합 완료, Source 독립·실제 Provider 검증 완료 |
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
@@ -249,6 +250,17 @@ urizo-final-mcp-server
 - [x] PR 전 Frontend Watch 종료·`bb84c67` 이미지 재빌드·전체 Health 통과, 실행 파일 해시 일치. Backend·DB·Flyway 재실행 없음
 - [x] Frontend `d7c21fb`·Backend `0a4e7c1` 병합 Commit과 최신 `origin/dev` 포함 확인. 모델설정건 `AI06-029`는 별도 최종 계획 승인 및 구현 Gate를 유지
 - 미검증: 별도 빈 DB 마이그레이션은 실행하지 않았으며 기존 공유 DB·공식 반복 실행만 검증했다.
+
+### `AI06-029` · 노드별 상세 모델·추론 설정
+
+- [x] 등록된 Credential Provider의 허용 Model Catalog를 Primary·Fallback 선택 흐름에 연결
+- [x] 기존 `contractVersion: 1.0`과 문자열 Binding 호환을 보존하며 노드별 Provider·Model·추론 설정 저장·검증
+- [x] Spring Model Gateway의 GPT·Claude·Gemini 지원 옵션 전달과 Fallback 순서·실제 Target 중복 검증
+- [x] Frontend 기본 템플릿·DRAFT 저장·불러오기에서 설정 유실 방지, 구버전 작성 경로의 조용한 삭제 금지
+- [x] Python LangGraph는 Provider·Credential을 소유하지 않고 Snapshot 불변성·Digest·Checkpoint 호환만 검증
+- [x] AI04·AI05 Prompt·Handler 업무 로직·Approval·Result Port·상태 전이·Tool 실행 무변경 회귀
+- [x] Frontend PR #28 (`b28ab94c075f854ccd9c8f3d68d33e9e0b4a30db`)·Backend PR #55 (`1c8492828965485e3af872b94d2f7ac126a2889b`)·Orchestrator PR #21 (`6db4c88bfec1daf49233b578873f43dff4ff7f8b`) `dev` 병합 및 최신 `origin/dev` 포함 확인
+- 검증: Backend 전체 543건(4건 Skip) 및 독립 관련 86건, Frontend 30건·Typecheck·Build, Python Snapshot·Checkpoint 53건 통과. 프로세스 전용 truststore로 세 Credential의 `VERIFIED`를 확인하고 OpenAI `gpt-5.6-terra`와 Google `gemini-3.5-flash-lite` 실제 호출을 통과했다. Anthropic `claude-haiku-4-5-20251001`은 인증·모델·thinking 옵션을 수락해 `COMPLETED` 응답을 반환했으나 최소 Prompt의 정확한 `OK` 일치 검증은 실패했다. 공유 Runtime·DB·Flyway는 변경하지 않았다.
 
 ## 과거 진행 기록
 
