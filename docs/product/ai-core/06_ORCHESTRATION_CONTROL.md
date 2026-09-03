@@ -226,6 +226,14 @@ urizo-final-mcp-server
 |---|---|---|---|
 | `AI06-022` | Node Canvas 시각 Mock | Frontend · `feature/tmdwns0531_axms-ai06-022-node-canvas-visual-mock_v0.1` | Frontend PR #23으로 `dev` 병합 완료 (`9122880b36fad7f8a44a54f240883909f09350da`) |
 | `AI06-023` | Node 실행 모니터링 스크럼 Mock | Frontend · `feature/tmdwns0531_axms-ai06-023-node-monitoring-scrum-mock_v0.1` | 구현 진행 중이며 Commit·PR·검증 완료 기록은 보류 |
+| `AI06-026` | LLM_OPS PR·배포 Profile v4 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-026-llm-ops-pr-deploy-profile_v0.1` | 구현·Source 검증 완료, 최신 dev 반영·Push·PR 대기 |
+
+### `AI06-026` · LLM_OPS PR·배포 Profile v4
+
+- [x] 기존 v3 Snapshot 호환을 보존한 v4/new UUID/17-node 기본 Profile 갱신
+- [x] `pr_request → GITHUB approval → pr_complete → deploy_request → DEPLOY approval → dev_merge_check` 및 제한된 `not_merged` 반복 검증
+- [x] Frontend starter/catalog, Backend local seed fixture, Orchestrator default/fixture/test를 동일 Snapshot으로 동기화
+- [x] NATURAL_CMS·MCP Catalog·공통 Runner/Graph Builder·`common.end` 무변경 확인
 
 ## 과거 진행 기록
 
