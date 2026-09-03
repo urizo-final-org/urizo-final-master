@@ -47,11 +47,11 @@
 
 - `PROFILE REQUEST`는 팀장이 계획에 적은 추천·예정값, `PROFILE ATTEST`는 담당 세션의 적합성 자기보고, `PROFILE RUNTIME`은 실제 dispatch 호출의 요청 인자와 호스트 응답을 뜻한다. 세 증거를 서로 대체하지 않는다.
 - 현재 호스트는 독립 세션의 실제 runtime model/thinking 설정을 읽어오는 readback을 제공하지 않는다. `PROFILE RUNTIME`은 호출 receipt까지만 증명하며, 실제 runtime 설정을 확인했다고 보고하지 않는다.
-- MULTI TRACK 계획과 상태 보고에는 아래 사용자 가시성 표를 사용한다.
+- MULTI TRACK 계획과 상태 보고에는 아래 사용자 가시성 표를 사용한다. 계획의 `실제 모델`은 역할 등급이 아닌 제안·승인할 구체 모델명이며, runtime 적용 증거는 `PROFILE RUNTIME`으로 따로 남긴다.
 
-| 세션 | 역할 | 승인 프로필 | PROFILE REQUEST | PROFILE ATTEST | PROFILE RUNTIME / dispatch receipt | 상태 |
-|---|---|---|---|---|---|---|
-| `<제목>` | `<LEAD|WORK|VERIFY|FAST>` | `<provider/model/thinking/speed>` | `<추천값>` | `<PASS|ALTERNATIVE|BLOCKED>` | `<threadId·호출 결과|readback 미지원>` | `<대기|진행|완료|차단>` |
+| 세션 | 역할 프로필 | 실제 모델 | 추론 수준 | 속도 | PROFILE REQUEST | PROFILE ATTEST | PROFILE RUNTIME / dispatch receipt | 상태 |
+|---|---|---|---|---|---|---|---|---|
+| `<제목>` | `<LEAD|WORK|VERIFY|FAST>` | `<구체 모델명>` | `<thinking>` | `<Standard|Fast>` | `<provider/model/thinking/speed 추천값>` | `<PASS|ALTERNATIVE|BLOCKED>` | `<threadId·호출 결과|readback 미지원>` | `<대기|진행|완료|차단>` |
 - `xhigh`·`max`·`ultra` 같은 최고 추론은 기본값으로 쓰지 않고 사용자가 별도로 승인한 어려운 작업에만 사용한다.
 
 ## 작업계획과 팀원 확인
@@ -59,7 +59,7 @@
 1. 현재 GitHub ID와 2~6번 담당자 표, 배정된 개인 기능 MD, 영향 저장소를 확인한다.
 2. Source 변경 전에 `SINGLE TRACK` 또는 `MULTI TRACK`을 판정한다. 필요한 경우에만 Work를 작업·검증 단위로 나누고 의존성과 충돌 파일을 짧게 적는다.
 3. `SINGLE TRACK`은 Work ID·work slug 승인 후 팀장 세션에서 직접 구현할 수 있다. 같은 PR 작업은 한 Work ID로 묶는다.
-4. `MULTI TRACK`은 Work ID, 담당 작업자 세션 제목, 저장소·Worktree, 선후 관계, 충돌 파일, 완료 검증, 검증 세션과 추천 프로필을 한 표로 제시하고 `프로필 검토 세션 생성` 예비 승인을 묻는다. 이 단계는 Source 변경 없이 멈춘다.
+4. `MULTI TRACK`은 Work ID, 담당 작업자 세션 제목, 저장소·Worktree, 선후 관계, 충돌 파일, 완료 검증, 검증 세션과 세션별 역할 프로필·실제 모델·추론 수준·속도를 한 표로 제시하고 `프로필 검토 세션 생성` 예비 승인을 묻는다. 이 단계는 Source 변경 없이 멈춘다.
 5. 예비 승인 뒤 신규 PLAN 전용 세션은 추천 `model`과 `thinking`을 명시한 `create_thread`로만 생성한다. 재사용 task의 PLAN 검토를 깨우는 `send_message_to_thread`에도 같은 추천 override를 전달한다.
 6. 담당 세션의 `PROFILE PLAN PASS` 또는 `PROFILE PLAN ALTERNATIVE`를 받은 뒤, 팀장은 확정 후보와 작업·검증 세션 배정을 포함한 최종 작업계획을 한 표로 제시하고 `이 작업계획과 세션 배정으로 진행할까요?`라고 묻는다.
 7. 이 최종 작업계획의 사용자 승인은 역할 전환 승인, Work ID 승인, 예비 승인 또는 표 제시 전의 일반적인 `승인`·`진행`으로 대체하지 않는다. 최종 승인 전 Source 수정은 금지한다.
@@ -69,7 +69,7 @@
 11. 재사용 task의 `WORK`, `VERIFY`, 보완 등 실행을 깨우는 모든 실질적 `send_message_to_thread` 호출에도 같은 승인 `model`과 `thinking`을 반드시 override로 전달한다.
 12. 호출 직전 승인값·전달값·지원 여부를 비교한다. 하나라도 누락되거나 달라지면 호출하지 않고 `MODEL PROFILE BLOCKED` 및 `TEAM DISPATCH BLOCKED: profile=<원인>`을 보고한다. 자동 fallback은 금지한다.
 13. 세션 생성이나 업무 인계가 실패하면 `TEAM DISPATCH BLOCKED: <원인>`을 보고하고 멈춘다. 사용자 재승인 없이 팀장이 직접 구현하거나 숨은 보조 에이전트로 자동 대체하지 않는다.
-14. 생성된 작업·검증 세션에 계획만 전달하고 Source 변경 전에 `PLAN PASS` 또는 `PLAN BLOCKED`를 받는다. 모든 팀원이 아니라 직접 영향받는 담당자만 확인하며, 가벼운 표현·구조 차이는 계획을 막지 않는다.
+14. 생성된 작업·검증 세션에 계획만 전달하고 Source 변경 전에 `PLAN PASS` 또는 `PLAN BLOCKED`와 최소 범위를 확인하는 `SIMPLE PASS`, 승인·Worktree·금지 작업을 확인하는 `GUARDRAIL PASS`를 받는다. 모든 팀원이 아니라 직접 영향받는 담당자만 확인하며, 가벼운 표현·구조 차이는 계획을 막지 않는다.
 15. 필요한 세션이 모두 `PLAN PASS`이면 `TEAM DISPATCH PASS: works=<Work ID와 세션>; verify=<검증 세션>; order=<실행 순서>`를 보고한 뒤 구현을 시작한다.
 
 ## 개인 기능 MD와 Work ID
@@ -95,9 +95,9 @@
 - 실제 Source 구현은 승인된 Work ID별 독립 Worktree에서 진행한다.
 - `MULTI TRACK` Source 구현은 `TEAM DISPATCH PASS` 전에는 시작하지 않는다.
 - 팀장은 작업자 중간 로그를 복제하지 않고 범위, 충돌, 검증 결과와 차단 여부만 모니터링한다.
-- 호스트의 대기·상태 조회 기능으로 배정 직후 상태를 한 번 확인하고, 이후 각 세션이 완료·차단·사용자 확인 필요 상태가 될 때까지 상태 변화 기준으로 기다린다. 변하지 않은 상태를 반복 보고하지 않는다.
+- 호스트의 대기·상태 조회 기능으로 배정 직후 상태를 한 번 확인하고, 이후 각 세션이 완료·차단·사용자 확인 필요 상태가 될 때까지 상태 변화 기준으로 기다린다. 상태 변화마다 팀장이 작업 범위와 Git Diff를 확인하고, 변하지 않은 상태는 반복 보고하지 않는다.
 - 작업자가 차단되면 팀장은 원인과 최소 결정만 전달한다. 사용자 재배정 없이 해당 Worktree를 직접 수정해 작업자를 대체하지 않는다.
-- 범위 확장·불필요한 추상화·중복 문서·과도한 검증이 보이면 즉시 줄이도록 피드백한다.
+- `SIMPLE PASS` 또는 `GUARDRAIL PASS` 위반, 범위 확장, 불필요한 추상화·중복 문서·과도한 검증이 보이면 영향 세션을 즉시 중단하고 최소 수정 방향만 전달한다.
 - `MULTI TRACK`은 작업자와 다른 검증 세션이 최소 완료 기준을 확인한다. `SINGLE TRACK`은 팀장이 직접 검증할 수 있다.
 - 모든 작업·검증 상태를 확인한 뒤 `TEAM MONITOR PASS: completed=<Work ID 목록>; blocked=<없음|Work ID>`를 보고하고 개인 기능 MD의 종료 기록을 갱신한다.
-- 별도 Push·PR·Merge·배포는 사용자의 기존 승인 규칙을 그대로 따른다.
+- Push·PR은 별도 승인 전 금지한다. 승인 후 Push·PR 직전에는 깨끗한 Feature Worktree에서 `scripts/prepare-dev-pr.ps1 -ApproveNetwork`를 실행하고, Merge·배포를 포함한 나머지 작업은 사용자의 기존 승인 규칙을 그대로 따른다.
