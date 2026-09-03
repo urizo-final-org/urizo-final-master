@@ -133,8 +133,24 @@ scan_changed_files
 
 ## 하위 작업 기록
 
-현재는 상세 작업 분류 전이므로 비워 둔다. 새 Work ID가 승인되면 같은 PR에 포함할 구현·테스트·문서·수정을
-아래처럼 한 체크리스트로 묶고, 추적표에는 저장소별 진행 상태와 Git 정보를 기록한다.
+### AI04-009 · PR·dev 병합 확인·배포 Domain 완결
+
+> Work slug: `axms-ai04-009-llm-ops-pr-deploy-domain`
+> 구현 상태: Backend·Orchestrator·Master 격리 Worktree에서 팀장 검토 대기. Commit·Push·PR·실제 배포·공유 DB Migration은 아직 수행하지 않았다.
+
+- [x] 기존 `coding.pr_request / requested`를 유지하면서 실제 PR 완료 영수증을 `coding.pr_complete / completed`로 분리했다.
+- [x] v4 부작용 순서는 `pr_request → GITHUB 승인 → pr_complete → deploy_request → DEPLOY 승인 → dev_merge_check → deploy`이며, Spring Stage preflight와 결과 저장 경계가 같은 승인 subject를 각각 검사한다.
+- [x] Host Runner가 승인된 MCP Workspace의 staged Diff를 승인 Candidate의 직접 자식인 재현 가능한 commit으로 만든다. PR 영수증은 `repository=backend`, `base=dev`, 발급 Branch, 승인 Candidate SHA, 생성 head SHA, PR 번호·URL을 저장하며 같은 입력의 재실행은 고정 task ID와 동일 head SHA로 기존 PR을 다시 조회한다.
+- [x] `coding.dev_merge_check / merged|not_merged|blocked`를 추가했다. 정확한 repository/base/head/candidate의 열린 PR은 `not_merged`, 병합된 PR은 `merged`, 불일치·미병합 종료·권한 차단은 `blocked`로 처리한다. timeout·rate limit·5xx만 기술 재시도한다.
+- [x] v4 배포 요청은 `jobId + pipelineAttempt + repository + prNumber + candidateSha + source validationHash + server target/config digest`로 고정 `deploymentRequestId`와 승인 subject hash를 만든다. merge SHA는 이 키에 포함하지 않는다.
+- [x] 실제 실행 멱등 키는 `deploymentRequestId + mergeSha`로 만들고 `coding.deploy / completed|blocked` 결과를 저장한다. 결과에 호스트 포트를 공개하지 않는다.
+- [x] 초기 배포 Adapter는 서버 고정 `local-docker-compose / full:backend:spring-app`만 허용한다. Host Runner가 `origin/dev`를 갱신해 승인 merge SHA 포함 여부를 확인하고, 그 SHA를 가리키는 깨끗한 전용 detached deploy Worktree만 `rebuild-local-service.ps1`의 SourceRoot로 사용한다. Snapshot·요청 payload가 Profile·Service·명령을 선택할 수 없다.
+- [x] 기존 LLM_OPS v3 Snapshot과 NATURAL_CMS 계약은 변경하지 않았다. 새 Handler를 사용하는 기본 v4 Snapshot 활성화는 AI06-026 범위로 남긴다.
+- [x] Flyway revision `20260903065222608`을 예약하고 결과 타입·포트·Handler·Runner kind 제약 확장 SQL을 작성했다.
+- [ ] 팀장 Diff 검토 후 저장소별 Commit·Push·dev 대상 PR을 생성한다.
+- [ ] 승인된 후보 조합에서 실제 GitHub·Docker·Flyway 통합 검증을 1회 수행한다.
+
+AWS 전환 시에는 같은 `DeploymentAdapter` 계약의 구현만 교체한다. Handler 결과 타입, 승인 subject, 멱등 키와 Snapshot Port는 유지한다.
 
 ```markdown
 #### `<Work ID>` · `<작업명>`
@@ -143,3 +159,6 @@ scan_changed_files
 
 | Work ID | Work slug | 작업 요약 | 저장소 | 진행 상태 | Branch | 최근 Push SHA·일자 | PR·상태·생성일 | dev 병합 SHA·일자 |
 |---|---|---|---|---|---|---|---|---|
+| `AI04-009` | `axms-ai04-009-llm-ops-pr-deploy-domain` | PR 생성·dev 병합 확인·고정 로컬 배포 Domain | Backend | 로컬 구현·선택 테스트 완료, 검토 대기 | `feature/jcy644542_axms-ai04-009-llm-ops-pr-deploy-domain_v0.1` | 미Push | 미생성 | 해당 없음 |
+| `AI04-009` | `axms-ai04-009-llm-ops-pr-deploy-domain` | Handler·Port·승인 subject 연계 | Orchestrator | 로컬 구현·선택 테스트 완료, 검토 대기 | `feature/jcy644542_axms-ai04-009-llm-ops-pr-deploy-domain_v0.1` | 미Push | 미생성 | 해당 없음 |
+| `AI04-009` | `axms-ai04-009-llm-ops-pr-deploy-domain` | 담당 문서·Flyway 예약 | Master | 로컬 문서 갱신, 검토 대기 | `feature/jcy644542_axms-ai04-009-llm-ops-pr-deploy-domain_v0.1` | 미Push | 미생성 | 해당 없음 |
