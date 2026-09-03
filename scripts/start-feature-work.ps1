@@ -183,6 +183,14 @@ else {
     $action = 'CREATED'
 }
 
+if ($RepositoryName -eq 'urizo-final-backend') {
+    $sharedLocalStateScript = Join-Path $masterRoot 'scripts/ensure-shared-backend-local-state.ps1'
+    if (-not (Test-Path -LiteralPath $sharedLocalStateScript -PathType Leaf)) {
+        throw 'Shared Backend local-state Gate is missing.'
+    }
+    & $sharedLocalStateScript -CanonicalBackendRoot $repositoryPath -WorktreeRoot $WorktreePath
+}
+
 $featureHead = Get-GitValue -Path $WorktreePath -Arguments @('rev-parse', 'HEAD')
 $ancestor = Invoke-GitCapture -Path $WorktreePath -Arguments @('merge-base', '--is-ancestor', "origin/$integrationBranch", $featureHead) -AllowFailure
 if ($ancestor.ExitCode -ne 0) {
