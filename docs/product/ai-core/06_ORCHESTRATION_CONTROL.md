@@ -229,6 +229,7 @@ urizo-final-mcp-server
 | `AI06-026` | LLM_OPS PR·배포 Profile v4 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-026-llm-ops-pr-deploy-profile_v0.1` | 구현·Source 검증 완료, 최신 dev 반영·Push·PR 대기 |
 | `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | [Frontend #27](https://github.com/urizo-final-org/urizo-final-frontend/pull/27)·[Backend #54](https://github.com/urizo-final-org/urizo-final-backend/pull/54) `dev` 병합 완료, Source·Flyway·로컬 통합 검증 완료 |
 | `AI06-029` | 노드별 Primary·Fallback 상세 모델과 추론 설정 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-029-node-model-settings_v0.1` | [Frontend #28](https://github.com/urizo-final-org/urizo-final-frontend/pull/28)·[Backend #55](https://github.com/urizo-final-org/urizo-final-backend/pull/55)·[Orchestrator #21](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/21) `dev` 병합 완료, Source 독립·실제 Provider 검증 완료 |
+| `AI06-030` | Model Catalog 현행화·기본 Model 전환·Tool 정책 최소 UI | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-030-model-catalog-tool-policy-ui_v0.1` | [Frontend #30](https://github.com/urizo-final-org/urizo-final-frontend/pull/30)·[Backend #57](https://github.com/urizo-final-org/urizo-final-backend/pull/57) `dev` 병합 완료, Source·Flyway 독립 검증 완료 |
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
@@ -261,6 +262,18 @@ urizo-final-mcp-server
 - [x] AI04·AI05 Prompt·Handler 업무 로직·Approval·Result Port·상태 전이·Tool 실행 무변경 회귀
 - [x] Frontend PR #28 (`b28ab94c075f854ccd9c8f3d68d33e9e0b4a30db`)·Backend PR #55 (`1c8492828965485e3af872b94d2f7ac126a2889b`)·Orchestrator PR #21 (`6db4c88bfec1daf49233b578873f43dff4ff7f8b`) `dev` 병합 및 최신 `origin/dev` 포함 확인
 - 검증: Backend 전체 543건(4건 Skip) 및 독립 관련 86건, Frontend 30건·Typecheck·Build, Python Snapshot·Checkpoint 53건 통과. 프로세스 전용 truststore로 세 Credential의 `VERIFIED`를 확인하고 OpenAI `gpt-5.6-terra`와 Google `gemini-3.5-flash-lite` 실제 호출을 통과했다. Anthropic `claude-haiku-4-5-20251001`은 인증·모델·thinking 옵션을 수락해 `COMPLETED` 응답을 반환했으나 최소 Prompt의 정확한 `OK` 일치 검증은 실패했다. 공유 Runtime·DB·Flyway는 변경하지 않았다.
+
+### `AI06-030` · Model Catalog·기본 Model·Tool 정책 최소 UI
+
+- [x] Google `gemini-3.7-flash`·`gemini-3.6-flash`·`gemini-3.5-flash-lite`, Anthropic `claude-opus-5`·`claude-sonnet-5`·`claude-haiku-4-5-20251001`을 실제 Provider·Model ID로 Catalog에 등록
+- [x] Gemini별 추론 단계와 기본값을 분리하고, Opus 5·Sonnet 5는 Spring AI 1.1.8의 수동 adaptive 표현 한계 때문에 thinking 필드를 덮어쓰지 않는 Provider 기본 경로로 고정
+- [x] LLM_OPS 3개 Agent와 NATURAL_CMS 2개 Agent의 신규 기본 템플릿을 `google-genai-gemini-3-6-flash`·`MEDIUM`·빈 Fallback·완전한 selection metadata로 전환
+- [x] 새 기본 템플릿·DRAFT 저장은 실제 Catalog selectionId와 사용 중 selection metadata만 저장하며, 기존 Profile Version과 legacy alias 해석은 유지
+- [x] Workflow의 중복 `Profile 허용 도구` 섹션을 제거하고 `Tool·실행 정책` 탭에 등록된 13개 MCP Tool의 Profile별 허용 상한·필수/선택 실행 의미를 읽기 전용으로 표시
+- [x] Flyway `20260903234407711` 예약·DML 작성, 빈 DB head·직전 revision upgrade·반복 migrate·history/guard 검증 통과
+- [x] Frontend PR #30 (`b2519f7e4659075b8e981212e5e5bca0e61a29b7`)·Backend PR #57 (`ef87a6533eaf38174679801a7696429dac6609f2`) `dev` 병합 및 각 최신 `origin/dev`에 Source Commit 포함 확인
+- 검증: Backend 전체 558건(4건 Skip), 관련 계약 23건, Spring AI Adapter 16건, Frontend 전체 99건과 Typecheck·Vite Build 통과. 실제 Provider 호출·제품 Runtime 재빌드·Volume 삭제·제품 DB Migration은 수행하지 않았다. 공식 Flyway 검증기의 역할 동기화 선행 단계가 PostgreSQL·DB gateway Container를 재생성했으며 기존 `axms-spring-dev-core-db` Volume 보존과 두 Container Health 정상은 확인했다.
+- 범위 제외: Node Canvas 원형 MCP 배치, Node 카드·Handler/Runner Badge·잠금 표현·한글 Edge 시각 재설계는 후속 `AI06-031`로 분리한다.
 
 ## 과거 진행 기록
 
