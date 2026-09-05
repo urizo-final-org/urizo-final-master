@@ -254,9 +254,14 @@ urizo-final-mcp-server
   Provider를 호출하지 않은 Node와 Node에 귀속되지 않은 Trace 전체 Score를 임의로 Node에 붙이지 않는다.
 - 정확한 현재 Node는 Langfuse 조회 결과가 아니라 Spring 소유 Monitoring Read Model을 기준으로 한다.
   Orchestrator는 허용된 식별자·상태만 Node 시작·종료·승인 대기·실패 전이로 전달하고 업무 Payload 원문은 보내지 않는다.
+- `DRAFT`·`ACTIVE` Profile Snapshot은 Node·Edge·Config·Model·Tool Binding을 가진 불변 실행 설계도다.
+  `Job Monitoring Snapshot`은 `jobId`와 고정 `profileVersionId`를 참조해 Job·Node 실행 상태를 조회 시 조합하는
+  읽기 전용 응답이며 Profile Snapshot을 복제하거나 수정하지 않는다. Spring에는 복구에 필요한 Job·Node 실행 상태만 저장한다.
 - Job 생성 요청은 Queue 등록과 `jobId` 응답까지 짧게 끝낸다. 원래 HTTP 응답을 Job 완료까지 열어 두지 않는다.
-  Frontend는 최초 Monitoring Snapshot을 한 번 조회한 뒤 Spring의 단방향 SSE로 Node 전이를 수신한다.
-  2~3초 주기 Polling과 WebSocket은 사용하지 않으며, SSE 재연결 시 Snapshot을 다시 읽어 누락 상태를 복구한다.
+  Frontend는 화면이 보이고 Job이 종료되지 않은 동안 Spring의 전체 `Job Monitoring Snapshot`을 1초 간격으로 조회한다.
+  응답에는 `stateVersion`, `updatedAt`, 현재 Node와 전체 Node별 최신 상태를 포함해 Polling 사이에 끝난 짧은 Node도 복구한다.
+  완료·실패 시 Polling을 중단하고 화면이 백그라운드에 있으면 일시 중지하며, 화면 복귀 시 즉시 한 번 조회한다.
+  SSE·WebSocket과 Job 요청 장기 대기는 사용하지 않는다.
 - Langfuse Node·Provider·품질 값은 관측 지연이나 `fail-open`으로 늦거나 없을 수 있으므로 마지막 갱신 시각과
   `관측 대기`·`관측 연결 안 됨` 상태를 표시하고, 이 값으로 Spring Job 상태를 덮어쓰지 않는다.
 - `총괄 상세 대시보드`는 향후 브라우저 인쇄 기반 PDF 보고서로 확장할 수 있는 고정 Section 구조만 유지한다.
@@ -315,7 +320,7 @@ urizo-final-mcp-server
 2. `AI06-035`는 병합된 `AI06-034`를 포함한 최신 `origin/dev` 기반 새 Worktree에서 시작한다.
 3. `AI06-036`은 `AI06-035`의 실제 평가 Score와 사람 검토 표본이 확보된 뒤 시작한다.
 4. `AI06-037`은 앞선 세 Work의 Node·Provider·품질·보완 계약을 재계산 없이 소비해 읽기 전용 Canvas와
-   총괄 상세 대시보드로 조합한다. Spring Monitoring Snapshot·SSE는 Job 상태와 정확한 현재 Node만 제공한다.
+   총괄 상세 대시보드로 조합한다. Spring Job Monitoring Snapshot은 Job 상태와 정확한 현재 Node만 제공한다.
 5. 후속 Work를 앞 Work의 Branch에 선행 구현하지 않는다. 각 Work 시작 시 범위·저장소·세션·완료 조건을 다시 보고한다.
 
 ### `AI06-034` · Langfuse 횡단 Trace·사용량·관측 화면
@@ -358,13 +363,14 @@ urizo-final-mcp-server
   Source를 변경하지 않는다. `AI06-023` 정적 Mock은 시각 참고로만 보존하며 오래된 Dirty Worktree를 구현 기반으로 사용하지 않는다.
 - 범위: LLM Ops·Natural CMS 활성 Job이 고정한 Snapshot·Layout을 읽기 전용 Canvas로 표시하고, 현재 Node 상태와
   `N`·`P`·`Q` 상태 칩, Node 선택 상세 Panel, `Node 계측`·`Provider 계측`·`품질 평가` 총괄 대시보드를 제공한다.
-- 실시간 계약: Job 생성 API는 `jobId`를 즉시 반환한다. Spring Monitoring Snapshot을 최초·재연결 시 조회하고,
-  이후 Node 전이는 단방향 SSE로 수신한다. 원래 Job 요청 장기 대기, 주기 Polling과 WebSocket은 사용하지 않는다.
+- 실시간 계약: Job 생성 API는 `jobId`를 즉시 반환한다. Frontend는 보이는 화면의 종료되지 않은 Job에 한해 Spring
+  `Job Monitoring Snapshot` 전체를 1초 간격으로 조회하고, 완료·실패·백그라운드 전환 시 중단한다.
+  원래 Job 요청 장기 대기, SSE와 WebSocket은 사용하지 않는다.
 - 상태 기준: Spring Monitoring Read Model이 현재 Node·Job 상태의 기준이다. Langfuse는 Node·Provider·품질 계측만
   제공하며 관측 지연·미연결을 Job 실행 실패나 완료로 해석하지 않는다.
 - 제외: Canvas 편집, Job 제어·승인 기능 중복, 임의 종합점수, PDF 생성·다운로드, 새 평가 엔진과 기존 Job 완료 조건 변경.
 - 시작 조건: `AI06-034`~`AI06-036` 저장소별 `dev` 병합과 표시 계약 확인 후 저장소별 Source 범위·Monitoring
-  상태 저장 방식·SSE 복구 기준을 별도 작업계획으로 승인받는다.
+  상태 저장 방식·1초 제한 Polling의 중단·복구 기준을 별도 작업계획으로 승인받는다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
