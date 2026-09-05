@@ -228,6 +228,24 @@ urizo-final-mcp-server
   Provider별 Token·비용 보정, Evaluator 실행과 Score 생성·Pipeline Gate는 포함하지 않으며 현재 계약은
   Score를 만들거나 기존 Job 완료 조건을 바꾸지 않는다.
 
+### CMS `사용량·평가` 정보 구조
+
+기존 `사용량·평가` Tab 안에서 측정 책임과 도입 단계를 섞지 않고 다음 세 하위 Tab으로 구분한다.
+
+| 하위 Tab | 표시 기준 | 연결 Work |
+|---|---|---|
+| `Node 계측` | Job·Node·Tool·Check 실행 상태, Attempt와 지연시간 | `AI06-034` |
+| `Provider 계측` | 실제 Provider·Model 호출 수, Token·지연시간과 Langfuse가 제공하는 비용 | `AI06-034` |
+| `품질 평가` | `correctness`·`faithfulness`·`relevance`·`instruction_following` Score와 평가 근거 상태 | `AI06-035` |
+
+- `품질 평가`는 Provider 자체의 절대 품질이 아니라 Provider·Model이 해당 Profile·질문·근거 Context에서 만든
+  응답 결과의 품질이다. Provider·Model별 비교는 가능하지만 Workflow와 평가 Context를 함께 표시한다.
+- `AI06-034`에서는 `Node 계측`과 `Provider 계측`을 연결하고 `품질 평가`는 `평가 미설정`으로 둔다.
+- `AI06-035`에서 표준 Score를 `품질 평가`에 표시하고, `AI06-036`에서 같은 Tab 안에 `보완지점` 영역을 추가한다.
+- `보완지점`은 별도 네 번째 하위 Tab이 아니다. 낮은 평가 항목, 근거 부족, 사람 평가와의 불일치처럼 실제
+  보정이 필요한 지점과 검토 상태를 시각화하며 근거가 부족하면 개선안을 추측하지 않고 `판단 근거 부족`으로 표시한다.
+- Frontend와 Spring은 세 영역의 값을 합산해 임의 종합점수를 만들지 않는다.
+
 ## 제외·후순위
 
 | 항목 | 현재 판단 |
@@ -274,8 +292,8 @@ urizo-final-mcp-server
 - 상태: 진행 중. 기존 작업·검증 세션과 Worktree를 재사용하며 기존 구현을 폐기하거나 처음부터 다시 만들지 않는다.
 - 범위: LangGraph의 Job·Node·Tool·Check Span, Python→Spring W3C `traceparent`, Spring AI 실제 Provider 호출
   Observation을 같은 Trace로 연결한다. Python의 사후 `modelObservations` 기반 Model Span은 제거한다.
-- 관리자 표시: Metrics v2·Observations v2·Scores v3를 같은 UTC 기간·Filter로 조회해 기존 `사용량·평가` 탭에
-  추가 계산 없이 표시한다. Score가 없으면 `평가 미설정` 상태만 표시한다.
+- 관리자 표시: 기존 `사용량·평가` Tab의 `Node 계측`·`Provider 계측` 하위 Tab에 Metrics v2·Observations v2를
+  같은 UTC 기간·Filter로 조회해 추가 계산 없이 표시한다. `품질 평가`는 `평가 미설정` 상태만 표시한다.
 - 보안: `environment=local`, 비동기 `fail-open`, 폐쇄형 metadata Allowlist·원문 Denylist를 유지한다.
 - 제외: Evaluator·Score 생성, 서비스별 보정, DB·Flyway, Self-host, 별도 OTel Collector, 기존 Job 완료 조건 변경.
 - 시작 조건: 수정된 최종 작업계획 승인과 재사용 세션의 `PLAN PASS`·`SIMPLE PASS`·`GUARDRAIL PASS`, 기존 Dirty
@@ -286,6 +304,8 @@ urizo-final-mcp-server
 - 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-034` 완료 전 세션·Branch·Worktree를 만들거나 Source를 변경하지 않는다.
 - 범위: 비식별·승인된 평가용 입력·출력·근거 Context·기대 결과를 Langfuse 내장 LLM-as-a-Judge·RAGAS 계열
   평가기에 연결하고 `correctness`, `faithfulness`, `relevance`, `instruction_following` Score를 생성한다.
+- 관리자 표시: 기존 `사용량·평가` Tab의 `품질 평가` 하위 Tab에 Score·평가 대상 Provider·Model·Profile과
+  평가 근거 유무를 표시한다. `Node 계측`·`Provider 계측` 화면 구조는 변경하지 않는다.
 - 결정적 항목: `task_success`, `tests_passed`, `schema_valid`처럼 실행 결과로 판정 가능한 값만 우리 시스템에서
   Boolean·Numeric Score로 전달한다. Spring과 Frontend는 Score를 재계산하지 않는다.
 - 제외: 임의 종합 `quality` 점수, 서비스별 Rubric·임계값 보정, Production 원문 전송, Pipeline Gate 적용.
@@ -295,6 +315,8 @@ urizo-final-mcp-server
 
 - 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-035` 평가 표본 확보 전 구현하지 않는다.
 - 범위: 대표 사례의 사람 판정과 자동 Score를 비교해 Rubric·임계값·오탐·미탐을 보정하고 결과를 문서화한다.
+  `품질 평가` 하위 Tab에는 낮은 평가 항목·근거 부족·사람 평가 불일치와 검토 상태를 묶은 `보완지점` 영역을
+  별도로 시각화한다.
 - 제외: 새로운 평가 엔진 자체 개발, Langfuse Score 규격 변경, 근거 없는 종합점수 생성.
 - 시작 조건: `AI06-035`에서 비교 가능한 Score 표본이 확보된 뒤 영향 Source와 검증 기준을 별도 승인받는다.
 
