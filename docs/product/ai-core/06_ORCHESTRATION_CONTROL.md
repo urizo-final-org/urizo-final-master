@@ -261,6 +261,9 @@ urizo-final-mcp-server
   Frontend는 화면이 보이고 Job이 종료되지 않은 동안 Spring의 전체 `Job Monitoring Snapshot`을 1초 간격으로 조회한다.
   응답에는 `stateVersion`, `updatedAt`, 현재 Node와 전체 Node별 최신 상태를 포함해 Polling 사이에 끝난 짧은 Node도 복구한다.
   완료·실패 시 Polling을 중단하고 화면이 백그라운드에 있으면 일시 중지하며, 화면 복귀 시 즉시 한 번 조회한다.
+  이 1초 Polling 대상은 Spring Monitoring API뿐이다. Langfuse Metrics·Observations·Scores는 Tab 진입, Job·Node 선택,
+  `stateVersion` 변경 후 상세 갱신 또는 수동 새로고침 시 Spring의 제한된 Cache를 통해 조회하며 매초 원격 호출하지 않는다.
+  화면의 진행 시간은 `startedAt`을 기준으로 Frontend에서 표시하되 서버 실행 상태나 계측값을 추정·재계산하지 않는다.
   SSE·WebSocket과 Job 요청 장기 대기는 사용하지 않는다.
 - Langfuse Node·Provider·품질 값은 관측 지연이나 `fail-open`으로 늦거나 없을 수 있으므로 마지막 갱신 시각과
   `관측 대기`·`관측 연결 안 됨` 상태를 표시하고, 이 값으로 Spring Job 상태를 덮어쓰지 않는다.
@@ -334,6 +337,12 @@ urizo-final-mcp-server
 - 제외: Evaluator·Score 생성, 서비스별 보정, DB·Flyway, Self-host, 별도 OTel Collector, 기존 Job 완료 조건 변경.
 - 시작 조건: 수정된 최종 작업계획 승인과 재사용 세션의 `PLAN PASS`·`SIMPLE PASS`·`GUARDRAIL PASS`, 기존 Dirty
   변경 보존, 저장소별 최신 `origin/dev` 포함 확인을 먼저 완료한다.
+- 재개 보완: 기존 Backend·Orchestrator 작업의 사후 `modelObservations` 생성·수집 경로를 그대로 완료로 보지 않는다.
+  기존 Worktree를 보존한 채 Spring AI 실제 Provider Observation과 W3C Trace 연결 계약으로 교정하고, 후보 Commit 이후
+  최신 `origin/dev` 포함 여부를 다시 확인한다. 자동 Reset·Rebase·충돌 해결은 하지 않는다.
+- 완료 조건: 같은 `jobId`·Trace에서 LangGraph Node와 실제 Provider 호출이 조회되고, `Node 계측`·`Provider 계측` 화면이
+  같은 UTC 기간·Filter의 Langfuse 값을 재계산 없이 표시하며, Allowlist·Denylist·`fail-open`과 단위·계약 검증을 통과하고
+  영향 저장소의 `dev` 병합을 확인해야 한다.
 
 ### `AI06-035` · Langfuse 표준 자동평가와 Score 생성
 
@@ -347,6 +356,8 @@ urizo-final-mcp-server
   Boolean·Numeric Score로 전달한다. Spring과 Frontend는 Score를 재계산하지 않는다.
 - 제외: 임의 종합 `quality` 점수, 서비스별 Rubric·임계값 보정, Production 원문 전송, Pipeline Gate 적용.
 - 시작 조건: `AI06-034` 저장소별 `dev` 병합과 횡단 Trace·보안 검증 완료 후 별도 작업계획 승인을 받는다.
+- 완료 조건: 네 표준 Score가 생성·조회되고 Trace 전체 Score와 Node·Observation 귀속 Score를 구분해 표시하며,
+  활성 Profile의 설정 모델과 실제 평가 모델을 분리하고 비식별 평가 Payload·근거 상태·실패 격리를 검증해야 한다.
 
 ### `AI06-036` · AX Module Studio 평가 보정·신뢰도 검증
 
@@ -356,6 +367,8 @@ urizo-final-mcp-server
   별도로 시각화한다.
 - 제외: 새로운 평가 엔진 자체 개발, Langfuse Score 규격 변경, 근거 없는 종합점수 생성.
 - 시작 조건: `AI06-035`에서 비교 가능한 Score 표본이 확보된 뒤 영향 Source와 검증 기준을 별도 승인받는다.
+- 완료 조건: 대표 표본에서 사람 판정과 자동 Score의 일치·불일치 근거, 오탐·미탐, 적용 가능한 Rubric·임계값을 문서화하고
+  근거 부족을 포함한 `보완지점` 표시 계약을 확정해야 한다. Source 보완은 이 결과와 별도 승인을 받은 경우에만 진행한다.
 
 ### `AI06-037` · 활성 Job 읽기 전용 Node 모니터링·총괄 대시보드
 
@@ -371,6 +384,9 @@ urizo-final-mcp-server
 - 제외: Canvas 편집, Job 제어·승인 기능 중복, 임의 종합점수, PDF 생성·다운로드, 새 평가 엔진과 기존 Job 완료 조건 변경.
 - 시작 조건: `AI06-034`~`AI06-036` 저장소별 `dev` 병합과 표시 계약 확인 후 저장소별 Source 범위·Monitoring
   상태 저장 방식·1초 제한 Polling의 중단·복구 기준을 별도 작업계획으로 승인받는다.
+- 완료 조건: LLM Ops·Natural CMS 활성 Job을 선택해 불변 Profile Snapshot 기반 읽기 전용 Canvas를 열고, Spring 전체 상태
+  Snapshot의 1초 Polling·중단·복귀·종료와 짧은 Node 복구를 검증해야 한다. Node별 적용 가능한 `N`·`P`·`Q` 칩과 상세 Panel,
+  세 하위 Tab·관측 지연 상태를 표시하되 Profile을 수정하지 않고 Langfuse를 1초 주기로 직접 조회하지 않아야 한다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
