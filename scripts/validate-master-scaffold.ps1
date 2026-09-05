@@ -720,6 +720,15 @@ if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
     $teamLeadProtocol -notmatch 'create_thread' -or
     $teamLeadProtocol -notmatch 'send_message_to_thread' -or
     $teamLeadProtocol -notmatch '승인 `model`과 `thinking`' -or
+    $teamLeadProtocol -notmatch 'Codex·Orca 호스트 어댑터' -or
+    $teamLeadProtocol -notmatch 'orca orchestration worker-start' -or
+    $teamLeadProtocol -notmatch 'worker-start --model <model> --effort <thinking>' -or
+    $teamLeadProtocol -notmatch 'launch\.requested' -or
+    $teamLeadProtocol -notmatch 'launch\.effective' -or
+    $teamLeadProtocol -notmatch '`--terminal`과 `--model`·`--effort`' -or
+    $teamLeadProtocol -notmatch 'start-feature-work\.ps1' -or
+    $teamLeadProtocol -notmatch 'worker_done' -or
+    $teamLeadProtocol -notmatch 'worker-release' -or
     $teamLeadProtocol -notmatch '자동 fallback은 금지한다' -or
     $teamLeadProtocol -notmatch '@팀장 종료' -or
     $structureContract -notmatch '하위 작업 기록' -or
@@ -752,6 +761,14 @@ if ($masterAgents -notmatch '## 팀장 세션 프로토콜' -or
     $teamLeadSkill -notmatch 'create_thread' -or
     $teamLeadSkill -notmatch 'send_message_to_thread' -or
     $teamLeadSkill -notmatch 'approved `model` and `thinking`' -or
+    $teamLeadSkill -notmatch 'orca orchestration worker-start --model <model> --effort <thinking>' -or
+    $teamLeadSkill -notmatch 'launch\.requested' -or
+    $teamLeadSkill -notmatch 'launch\.effective' -or
+    $teamLeadSkill -notmatch 'cannot combine `--terminal` reuse with `--model` or `--effort`' -or
+    $teamLeadSkill -notmatch 'start-feature-work\.ps1' -or
+    $teamLeadSkill -notmatch 'check --wait' -or
+    $teamLeadSkill -notmatch 'worker_done' -or
+    $teamLeadSkill -notmatch 'worker-release' -or
     $teamLeadSkill -notmatch 'automatic fallback' -or
     $teamLeadSkill -notmatch 'Two or more independent Work IDs are always `MULTI TRACK`' -or
     $teamLeadSkill -notmatch '이 작업계획과 세션 배정으로 진행할까요\?' -or

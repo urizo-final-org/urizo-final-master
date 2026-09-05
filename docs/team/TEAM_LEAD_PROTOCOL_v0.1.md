@@ -54,19 +54,54 @@
 | `<제목>` | `<LEAD|WORK|VERIFY|FAST>` | `<구체 모델명>` | `<thinking>` | `<Standard|Fast>` | `<provider/model/thinking/speed 추천값>` | `<PASS|ALTERNATIVE|BLOCKED>` | `<threadId·호출 결과|readback 미지원>` | `<대기|진행|완료|차단>` |
 - `xhigh`·`max`·`ultra` 같은 최고 추론은 기본값으로 쓰지 않고 사용자가 별도로 승인한 어려운 작업에만 사용한다.
 
+### Codex·Orca 호스트 어댑터
+
+- Codex native thread 호스트는 `create_thread`와 `send_message_to_thread`의 `model`·`thinking`
+  override를 사용한다.
+- Orca의 감독형 MULTI TRACK은 일반 터미널 인계가 아니라 하나의 Run 아래 Task와 Dispatch를 만들고
+  `orca orchestration worker-start`로 worker를 시작한다. 신규 worker에는 승인된 실제 모델과 추론 수준을
+  각각 `--model`과 `--effort`로 반드시 전달한다.
+- Orca `worker-start` JSON의 `launch.requested`와 `launch.effective`가 승인값과 모두 일치해야
+  `PROFILE RUNTIME`을 통과한다. 이 receipt는 시작 요청과 호스트 적용값만 증명하며 Provider 내부 runtime
+  readback을 대신하지 않는다. `speed` 전용 인자가 없으면 지원 한계를 표에 남긴다.
+- Orca는 기존 terminal 재사용 시 `--terminal`과 `--model`·`--effort`를 함께 받을 수 없다. 기존 worker는
+  같은 live agent process이고, 승인 프로필이 바뀌지 않았으며, 최초 `launch.requested`·`launch.effective`
+  receipt가 현재 승인값과 일치할 때만 재사용한다. 세 조건 중 하나라도 증명할 수 없거나 모델·추론 수준을
+  바꿔야 하면 같은 Worktree에 승인 프로필의 새 worker를 시작한다.
+- 기존 worker 내부에서 `/model` 같은 대화형 명령으로 프로필을 바꾼 뒤 이를 Orca receipt 없이 승인값으로
+  간주하지 않는다. 누락·불일치·자동 fallback은 `MODEL PROFILE BLOCKED`와 `TEAM DISPATCH BLOCKED`다.
+- AXMS Feature Worktree는 Orca의 기본 base ref에 맡기지 않는다. 먼저
+  `scripts/start-feature-work.ps1 -RepositoryName <repo> -BranchName <feature/...> -ApproveNetwork`로 최신
+  `origin/dev` 기반 Worktree를 생성·재사용하고, Orca는 반환된 정확한 path의 기존 Worktree에 worker를 붙인다.
+- Orca의 작업 지시는 Dispatch에 귀속하고, 후속 안내는 `dispatch:<id>`로 보낸다. 완료는 worker 자신의
+  `worker_done`으로 받고, 팀장이 결과와 Git Diff를 확인한 뒤 즉시 다음 Task로 재사용하거나
+  `worker-release`로 정리한다. `check --wait` timeout은 실패가 아니라 상태 확인 시점이다.
+
 ## 작업계획과 팀원 확인
 
 1. 현재 GitHub ID와 2~6번 담당자 표, 배정된 개인 기능 MD, 영향 저장소를 확인한다.
 2. Source 변경 전에 `SINGLE TRACK` 또는 `MULTI TRACK`을 판정한다. 필요한 경우에만 Work를 작업·검증 단위로 나누고 의존성과 충돌 파일을 짧게 적는다.
 3. `SINGLE TRACK`은 Work ID·work slug 승인 후 팀장 세션에서 직접 구현할 수 있다. 같은 PR 작업은 한 Work ID로 묶는다.
 4. `MULTI TRACK`은 Work ID, 담당 작업자 세션 제목, 저장소·Worktree, 선후 관계, 충돌 파일, 완료 검증, 검증 세션과 세션별 역할 프로필·실제 모델·추론 수준·속도를 한 표로 제시하고 `프로필 검토 세션 생성` 예비 승인을 묻는다. 이 단계는 Source 변경 없이 멈춘다.
-5. 예비 승인 뒤 신규 PLAN 전용 세션은 추천 `model`과 `thinking`을 명시한 `create_thread`로만 생성한다. 재사용 task의 PLAN 검토를 깨우는 `send_message_to_thread`에도 같은 추천 override를 전달한다.
+5. 예비 승인 뒤 Codex native 신규 PLAN 전용 세션은 추천 `model`과 `thinking`을 명시한 `create_thread`로만
+   생성하고, 재사용 task의 PLAN 검토를 깨우는 `send_message_to_thread`에도 같은 추천 override를 전달한다.
+   Orca 신규 PLAN worker는 같은 값을 `worker-start --model <model> --effort <thinking>`으로 전달하고
+   `launch.requested`·`launch.effective` receipt를 확인한다. Orca 기존 terminal 재사용은 위 호스트 어댑터의
+   동일 프로필 증거 조건을 모두 만족할 때만 허용한다.
 6. 담당 세션의 `PROFILE PLAN PASS` 또는 `PROFILE PLAN ALTERNATIVE`를 받은 뒤, 팀장은 확정 후보와 작업·검증 세션 배정을 포함한 최종 작업계획을 한 표로 제시하고 `이 작업계획과 세션 배정으로 진행할까요?`라고 묻는다.
 7. 이 최종 작업계획의 사용자 승인은 역할 전환 승인, Work ID 승인, 예비 승인 또는 표 제시 전의 일반적인 `승인`·`진행`으로 대체하지 않는다. 최종 승인 전 Source 수정은 금지한다.
-8. 사용자가 최종 작업계획을 승인한 뒤 `TEAM PLAN APPROVED: works=<Work ID 목록>; sessions=<작업·검증 세션 수>`를 보고한다. 동일 세션 또는 작업 세션을 실제로 깨우는 모든 `send_message_to_thread`에는 승인 `model`과 `thinking` override를 전달한다.
+8. 사용자가 최종 작업계획을 승인한 뒤 `TEAM PLAN APPROVED: works=<Work ID 목록>; sessions=<작업·검증 세션 수>`를
+   보고한다. 이후 세션 실행은 호스트 어댑터를 따른다. Codex native `send_message_to_thread`에는 승인
+   `model`과 `thinking` override를 전달하고, Orca Dispatch는 신규 worker receipt 또는 기존 worker의 동일
+   불변 프로필 증거를 확인한다.
 9. 작업 세션 제목은 `[작업] <Work ID> <범위>`, 검증 세션 제목은 `[검증] <Work ID 목록> <범위>`로 둔다. 계획 검토만 수행한 보조 에이전트는 실제 Work ID를 인계받은 작업자 세션으로 계산하지 않는다.
-10. 최종 승인 후 신규 task가 필요하면 `create_thread` 호출에는 해당 세션의 승인 `model`과 `thinking`을 반드시 전달한다. provider·speed는 호스트가 별도 호출 인자를 제공하지 않으면 `PROFILE REQUEST`와 receipt에 한계를 남긴다.
-11. 재사용 task의 `WORK`, `VERIFY`, 보완 등 실행을 깨우는 모든 실질적 `send_message_to_thread` 호출에도 같은 승인 `model`과 `thinking`을 반드시 override로 전달한다.
+10. 최종 승인 후 신규 task가 필요하면 Codex native `create_thread`에는 해당 세션의 승인 `model`과
+    `thinking`을, Orca 신규 `worker-start`에는 같은 값의 `--model`과 `--effort`를 반드시 전달한다.
+    provider·speed는 호스트가 별도 호출 인자를 제공하지 않으면 `PROFILE REQUEST`와 receipt에 한계를 남긴다.
+11. Codex native 재사용 task의 `WORK`, `VERIFY`, 보완 등 실행을 깨우는 모든 실질적
+    `send_message_to_thread` 호출에는 같은 승인 `model`과 `thinking`을 반드시 override로 전달한다.
+    Orca 재사용 Dispatch는 별도 profile override가 아니라 최초 receipt와 동일한 live process의 불변 프로필
+    증거로 통과시킨다. 프로필을 바꾸거나 그 증거를 확인할 수 없으면 기존 terminal을 재사용하지 않는다.
 12. 호출 직전 승인값·전달값·지원 여부를 비교한다. 하나라도 누락되거나 달라지면 호출하지 않고 `MODEL PROFILE BLOCKED` 및 `TEAM DISPATCH BLOCKED: profile=<원인>`을 보고한다. 자동 fallback은 금지한다.
 13. 세션 생성이나 업무 인계가 실패하면 `TEAM DISPATCH BLOCKED: <원인>`을 보고하고 멈춘다. 사용자 재승인 없이 팀장이 직접 구현하거나 숨은 보조 에이전트로 자동 대체하지 않는다.
 14. 생성된 작업·검증 세션에 계획만 전달하고 Source 변경 전에 `PLAN PASS` 또는 `PLAN BLOCKED`와 최소 범위를 확인하는 `SIMPLE PASS`, 승인·Worktree·금지 작업을 확인하는 `GUARDRAIL PASS`를 받는다. 모든 팀원이 아니라 직접 영향받는 담당자만 확인하며, 가벼운 표현·구조 차이는 계획을 막지 않는다.
