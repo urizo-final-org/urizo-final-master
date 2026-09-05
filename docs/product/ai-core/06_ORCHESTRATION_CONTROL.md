@@ -236,10 +236,14 @@ urizo-final-mcp-server
 |---|---|---|
 | `Node 계측` | Job·Node·Tool·Check 실행 상태, Attempt와 지연시간 | `AI06-034` |
 | `Provider 계측` | 실제 Provider·Model 호출 수, Token·지연시간과 Langfuse가 제공하는 비용 | `AI06-034` |
-| `품질 평가` | `correctness`·`faithfulness`·`relevance`·`instruction_following` Score와 평가 근거 상태 | `AI06-035` |
+| `품질 평가` | Agent별 현재 적용 모델, 실제 평가 모델, `correctness`·`faithfulness`·`relevance`·`instruction_following` Score와 평가 근거 상태 | `AI06-035` |
 
 - `품질 평가`는 Provider 자체의 절대 품질이 아니라 Provider·Model이 해당 Profile·질문·근거 Context에서 만든
   응답 결과의 품질이다. Provider·Model별 비교는 가능하지만 Workflow와 평가 Context를 함께 표시한다.
+- `품질 평가` 상단의 `현재 에이전트 모델`은 활성 Profile Version을 기준으로 Agent·Node별 Primary·Fallback
+  Provider·Model과 `profileVersionId`를 표시한다. 이는 설정값이며 실제 호출 결과로 표현하지 않는다.
+- 각 Score에는 해당 Trace에서 실제 호출된 Provider·Model을 `실제 평가 모델`로 표시한다. Fallback이 실행됐거나
+  활성 Profile이 바뀐 경우에도 현재 설정 모델과 과거 실행 모델을 합치지 않고 각각 보여준다.
 - `AI06-034`에서는 `Node 계측`과 `Provider 계측`을 연결하고 `품질 평가`는 `평가 미설정`으로 둔다.
 - `AI06-035`에서 표준 Score를 `품질 평가`에 표시하고, `AI06-036`에서 같은 Tab 안에 `보완지점` 영역을 추가한다.
 - `보완지점`은 별도 네 번째 하위 Tab이 아니다. 낮은 평가 항목, 근거 부족, 사람 평가와의 불일치처럼 실제
@@ -304,8 +308,9 @@ urizo-final-mcp-server
 - 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-034` 완료 전 세션·Branch·Worktree를 만들거나 Source를 변경하지 않는다.
 - 범위: 비식별·승인된 평가용 입력·출력·근거 Context·기대 결과를 Langfuse 내장 LLM-as-a-Judge·RAGAS 계열
   평가기에 연결하고 `correctness`, `faithfulness`, `relevance`, `instruction_following` Score를 생성한다.
-- 관리자 표시: 기존 `사용량·평가` Tab의 `품질 평가` 하위 Tab에 Score·평가 대상 Provider·Model·Profile과
-  평가 근거 유무를 표시한다. `Node 계측`·`Provider 계측` 화면 구조는 변경하지 않는다.
+- 관리자 표시: 기존 `사용량·평가` Tab의 `품질 평가` 하위 Tab 상단에 활성 Profile Version 기준 Agent별
+  Primary·Fallback Provider·Model을 표시한다. 각 Score에는 해당 Trace의 실제 평가 Provider·Model·Profile과
+  평가 근거 유무를 별도로 표시하며 `Node 계측`·`Provider 계측` 화면 구조는 변경하지 않는다.
 - 결정적 항목: `task_success`, `tests_passed`, `schema_valid`처럼 실행 결과로 판정 가능한 값만 우리 시스템에서
   Boolean·Numeric Score로 전달한다. Spring과 Frontend는 Score를 재계산하지 않는다.
 - 제외: 임의 종합 `quality` 점수, 서비스별 Rubric·임계값 보정, Production 원문 전송, Pipeline Gate 적용.
