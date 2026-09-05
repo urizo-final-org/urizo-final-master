@@ -197,8 +197,36 @@ urizo-final-mcp-server
 - 인증·Secret·Migration 보호 대상은 고정 Denylist로 항상 차단하며 관리자가 허용 경로로 바꿀 수 없다.
 - Langfuse 전체 Self-host와 Pipeline Node는 도입하지 않는다.
 - SDK·OpenTelemetry·API로 `jobId`, Trace, Model, Token, 지연시간과 Tool·Check 결과를 연결한다.
-- Prompt·Source·Diff 원문은 기본 전송하지 않고 별도 결정이 있을 때만 허용한다.
-- RAGAS와 평가 점수의 Pipeline Gate 사용은 기능 완료 기준이 정해진 뒤 별도 협의한다.
+- `AI06-034`에서는 Prompt·Completion·Source·Diff·Tool I/O·전체 LangGraph State 원문을 전송하지 않는다.
+- 표준 자동평가와 Score 생성은 `AI06-035`, 서비스별 평가 보정은 `AI06-036`으로 순차 분리한다.
+
+### Langfuse 공유 관측·보안 계약
+
+- 관측 대상은 Langfuse Cloud Hobby의 Japan Region(`https://jp.cloud.langfuse.com`) 한 Project와
+  `environment=local`로 고정한다. Self-host와 별도 Pipeline Node는 만들지 않는다.
+- Runtime의 Trace 전송은 비동기·`fail-open`이다. Langfuse 지연·오류·할당량 초과나 전송 실패가 Job 실행,
+  Domain 상태, Approval, Checkpoint와 CMS 반영의 성공·실패를 바꾸거나 재시도를 유발해서는 안 된다.
+- Langfuse Public/Secret Key와 Host는 환경변수로만 주입한다. Key 값은 Source, Profile Snapshot, DB,
+  Trace metadata, Prompt, 로그와 문서에 저장하지 않는다.
+- Trace 이름은 `axms.job`으로 고정한다. Observation 이름은 `axms.node`, `axms.model`, `axms.tool`,
+  `axms.check`만 사용한다. Profile·Job·Node·Operation 식별자를 이름에 넣지 않으며 Approval·Guardrail은
+  별도 Observation 종류를 만들지 않고 Node 종류·상태로 표현한다.
+- 허용 metadata는 `jobId`, `traceId`, `profileVersionId`, `nodeId`, Node 종류·상태, `attempt`,
+  Provider·Model, 입력·출력 Token, 지연시간, 오류 Code, Tool·Check 상태로 닫는다. 관측 시각은 원문
+  Payload가 아닌 플랫폼이 생성한 UTC Timestamp만 사용한다. 이 목록 밖의 값은 전송하지 않는다.
+- Prompt·System Prompt·사용자 입력, Source·Diff·Patch·파일 내용·경로, Tool 인자·출력, CMS Resource의
+  제목·본문·명령·Preview, 개인정보, Credential·Token·Cookie·Authorization Header, 환경변수 값,
+  Prompt·Completion·전체 LangGraph State, 원문 오류 Message·Stack Trace는 전송하지 않는다. 허용 여부가
+  불명확한 값은 전송하지 않는다.
+- 관리자 사용량·평가 조회는 같은 Langfuse Project와 `environment=local`에서 Metrics v2,
+  Observations v2, Scores v3를 사용한다. 세 조회는 같은 UTC 기간, Filter, Aggregation, Model Pricing 설정과
+  Sampling 정책을 적용하며, Sampling된 결과는 전체 모집단으로 환산하지 않는다.
+- Metrics v2는 사용량·Token·비용·지연시간 집계, Observations v2는 Trace·Node·Model·Tool·Check 관측 조회,
+  Scores v3는 이미 저장된 Score 조회에만 사용한다. CMS는 응답을 표시할 뿐 비용·Token·Score를 재계산하거나
+  서로 다른 기간·Filter의 결과를 합치지 않는다.
+- Spring AI의 실제 Provider 호출 Observation과 W3C Trace Context 연결은 `AI06-034`에서 처리한다.
+  Provider별 Token·비용 보정, Evaluator 실행과 Score 생성·Pipeline Gate는 포함하지 않으며 현재 계약은
+  Score를 만들거나 기존 Job 완료 조건을 바꾸지 않는다.
 
 ## 제외·후순위
 
@@ -230,6 +258,45 @@ urizo-final-mcp-server
 | `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | [Frontend #27](https://github.com/urizo-final-org/urizo-final-frontend/pull/27)·[Backend #54](https://github.com/urizo-final-org/urizo-final-backend/pull/54) `dev` 병합 완료, Source·Flyway·로컬 통합 검증 완료 |
 | `AI06-029` | 노드별 Primary·Fallback 상세 모델과 추론 설정 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-029-node-model-settings_v0.1` | [Frontend #28](https://github.com/urizo-final-org/urizo-final-frontend/pull/28)·[Backend #55](https://github.com/urizo-final-org/urizo-final-backend/pull/55)·[Orchestrator #21](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/21) `dev` 병합 완료, Source 독립·실제 Provider 검증 완료 |
 | `AI06-030` | Model Catalog 현행화·기본 Model 전환·Tool 정책 최소 UI | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-030-model-catalog-tool-policy-ui_v0.1` | [Frontend #30](https://github.com/urizo-final-org/urizo-final-frontend/pull/30)·[Backend #57](https://github.com/urizo-final-org/urizo-final-backend/pull/57) `dev` 병합 완료, Source·Flyway 독립 검증 완료 |
+| `AI06-034` | Langfuse 횡단 Trace·사용량·관측 화면 | Master·Backend·Orchestrator 기존 Worktree, Frontend 시작 시 최신 `dev` · `feature/tmdwns0531_axms-ai06-034-langfuse-observability_v0.1` | 기존 세션 재사용·보완 범위 확정, 최종 계획 승인 전 Source 재개 대기 |
+| `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` 예정 | 후속 Work ID·선행조건 확정, `AI06-034` `dev` 병합 전 시작 금지 |
+| `AI06-036` | AX Module Studio 평가 보정·신뢰도 검증 | Master · `feature/tmdwns0531_axms-ai06-036-evaluator-calibration_v0.1` 예정, Source 보완은 결과 확인 후 별도 승인 | 후속 Work ID·선행조건 확정, `AI06-035` 평가 표본 확보 전 시작 금지 |
+
+### 단계적 Work 실행 계약
+
+1. `AI06-034`의 횡단 Trace·관측 기반을 Source 검증하고 저장소별 `dev` 병합까지 확인한다.
+2. `AI06-035`는 병합된 `AI06-034`를 포함한 최신 `origin/dev` 기반 새 Worktree에서 시작한다.
+3. `AI06-036`은 `AI06-035`의 실제 평가 Score와 사람 검토 표본이 확보된 뒤 시작한다.
+4. 후속 Work를 앞 Work의 Branch에 선행 구현하지 않는다. 각 Work 시작 시 범위·저장소·세션·완료 조건을 다시 보고한다.
+
+### `AI06-034` · Langfuse 횡단 Trace·사용량·관측 화면
+
+- 상태: 진행 중. 기존 작업·검증 세션과 Worktree를 재사용하며 기존 구현을 폐기하거나 처음부터 다시 만들지 않는다.
+- 범위: LangGraph의 Job·Node·Tool·Check Span, Python→Spring W3C `traceparent`, Spring AI 실제 Provider 호출
+  Observation을 같은 Trace로 연결한다. Python의 사후 `modelObservations` 기반 Model Span은 제거한다.
+- 관리자 표시: Metrics v2·Observations v2·Scores v3를 같은 UTC 기간·Filter로 조회해 기존 `사용량·평가` 탭에
+  추가 계산 없이 표시한다. Score가 없으면 `평가 미설정` 상태만 표시한다.
+- 보안: `environment=local`, 비동기 `fail-open`, 폐쇄형 metadata Allowlist·원문 Denylist를 유지한다.
+- 제외: Evaluator·Score 생성, 서비스별 보정, DB·Flyway, Self-host, 별도 OTel Collector, 기존 Job 완료 조건 변경.
+- 시작 조건: 수정된 최종 작업계획 승인과 재사용 세션의 `PLAN PASS`·`SIMPLE PASS`·`GUARDRAIL PASS`, 기존 Dirty
+  변경 보존, 저장소별 최신 `origin/dev` 포함 확인을 먼저 완료한다.
+
+### `AI06-035` · Langfuse 표준 자동평가와 Score 생성
+
+- 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-034` 완료 전 세션·Branch·Worktree를 만들거나 Source를 변경하지 않는다.
+- 범위: 비식별·승인된 평가용 입력·출력·근거 Context·기대 결과를 Langfuse 내장 LLM-as-a-Judge·RAGAS 계열
+  평가기에 연결하고 `correctness`, `faithfulness`, `relevance`, `instruction_following` Score를 생성한다.
+- 결정적 항목: `task_success`, `tests_passed`, `schema_valid`처럼 실행 결과로 판정 가능한 값만 우리 시스템에서
+  Boolean·Numeric Score로 전달한다. Spring과 Frontend는 Score를 재계산하지 않는다.
+- 제외: 임의 종합 `quality` 점수, 서비스별 Rubric·임계값 보정, Production 원문 전송, Pipeline Gate 적용.
+- 시작 조건: `AI06-034` 저장소별 `dev` 병합과 횡단 Trace·보안 검증 완료 후 별도 작업계획 승인을 받는다.
+
+### `AI06-036` · AX Module Studio 평가 보정·신뢰도 검증
+
+- 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-035` 평가 표본 확보 전 구현하지 않는다.
+- 범위: 대표 사례의 사람 판정과 자동 Score를 비교해 Rubric·임계값·오탐·미탐을 보정하고 결과를 문서화한다.
+- 제외: 새로운 평가 엔진 자체 개발, Langfuse Score 규격 변경, 근거 없는 종합점수 생성.
+- 시작 조건: `AI06-035`에서 비교 가능한 Score 표본이 확보된 뒤 영향 Source와 검증 기준을 별도 승인받는다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
