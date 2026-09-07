@@ -328,7 +328,7 @@ urizo-final-mcp-server
 
 ### `AI06-034` · Langfuse 횡단 Trace·사용량·관측 화면
 
-- 상태: 완료(2026-09-06). 아래 Source 후보에서 관측·보안·화면 검증을 통과했고 GitHub와 `origin/dev`에서 병합을 확인했다.
+- 상태: 완료(2026-09-07, v0.2 보완 포함). 아래 Source 후보에서 관측·보안·화면 검증을 통과했고 GitHub와 `origin/dev`에서 병합을 확인했다.
 - 범위: LangGraph의 Job·Node·Tool·Check Span, Python→Spring W3C `traceparent`, Spring AI 실제 Provider 호출
   Observation을 같은 Trace로 연결한다. Python의 사후 `modelObservations` 기반 Model Span은 제거한다.
 - 관리자 표시: 기존 `사용량·평가` Tab의 `Node 계측`·`Provider 계측` 하위 Tab에 Metrics v2·Observations v2를
@@ -346,22 +346,24 @@ urizo-final-mcp-server
 
 | 저장소 | PR·상태 | 최종 Push·검증 SHA | `dev` 병합 SHA |
 |---|---|---|---|
-| Backend | [#62](https://github.com/urizo-final-org/urizo-final-backend/pull/62), 2026-09-06 생성·병합 | `b038656c38acaa3bb6f367f9ee067784333c9220` | `64baf100900823596bc0a54d45da01d56b333f7d` |
+| Backend | [#62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63), 2026-09-06~07 생성·병합 | `b038656c38acaa3bb6f367f9ee067784333c9220`·`e713fad2b79669d44d058c7e22361685956ae993` | `64baf100900823596bc0a54d45da01d56b333f7d`·`f821714991eeaae82d9450db074f0761f79d9f0e` |
 | Orchestrator | [#24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24), 2026-09-06 생성·병합 | `cdf690d5375ca12f4a3911f45c53ad73dae0de3b` | `4ca60892ff6cf91fdbd5a05bab32a1fadd6ce9c3` |
 | Frontend | [#38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38), 2026-09-06 생성·병합 | `f8bdb00b0a602e29020ea5f8371405e8d979f77d` | `ba11b29b6df46bd544ba8f9fa7a5e518345e6741` |
 
 - 검증: Backend 전체 702개 중 698 통과·4 skip, 최종 Console 보완 33/33 및 독립 33/33 통과.
   Orchestrator 최종 219개 중 217 통과·2 skip, Frontend 246개·타입 검사·Build 및 최종 표시 보완 35개 통과.
+- v0.2 보완: Backend 전체 708개 중 704 통과·4 skip, Runner·HTTP timeout 대상 7/7을 통과했다. 실제 DB의
+  read-only predicate에서 종료 Job의 잔여 `CREATE_WORKTREE`는 선택 대상 0건이었고 task 원본은 변경하지 않았다.
 - 통합: 고정 후보 조합의 공식 `full`에서 상시 서비스 9개 healthy, Flyway exit 0·pending 0을 확인했다.
   신규 Migration은 없으며 추가 전체 실행 없이 기존 통합 증거로 종료한다.
 - 실제 관측: Coding `7e79edb0-ce31-4361-98c1-b79c9e493c09`와 Natural CMS `3b48e350-02a9-494c-9707-04ce085ac030`에서
   Node와 실제 Spring AI generation 부모 연결, Token·비용·지연시간의 관리자 표시를 확인했다.
   세 신규 Trace의 input/output은 null이고 검증용 원문 표식은 전송되지 않았다.
 - 검증 한계·보존: Coding은 analyze의 infeasible 결과로 정상 완료돼 승인 이후 업무 흐름은 검증하지 않았다.
-  Natural CMS는 preview valid·decision null의 `WAITING_APPROVAL`을 보존했다. AI04·AI05 업무 판단·승인·저장 의미는 변경하지 않았다.
-  잔여 Runner task `e220d3be-7c9d-4f8e-9f2e-5857d4b9c391`은 마지막 확인 기준 `CREATE_WORKTREE / PENDING / attempt 0`이다.
-  종료 확인 때 Docker가 중지돼 현재값은 재조회하지 못했고, 공식 task 취소 경로가 없어 실행·삭제하지 않았다.
-  다음 Runner 기동 전 이 잔여 작업을 별도 범위로 확인해야 한다.
+  Natural CMS는 preview valid·decision null의 `WAITING_APPROVAL`을 보존했다. v0.2에서도 신규 Coding E2E·runner·intake는
+  실행하지 않았고 AI04·AI05 업무 판단·승인·저장 의미와 Orchestrator·LangGraph Core·Snapshot을 변경하지 않았다.
+  잔여 Runner task `e220d3be-7c9d-4f8e-9f2e-5857d4b9c391`은 `CREATE_WORKTREE / PENDING / attempt 0`, lease 없음으로 보존했다.
+  v0.2 predicate가 이 task를 제외함을 read-only로 확인했으며 LangGraph checkpoint 4개 테이블의 행 수는 검증 전후 동일했다.
 
 ### `AI06-035` · Langfuse 표준 자동평가와 Score 생성
 
