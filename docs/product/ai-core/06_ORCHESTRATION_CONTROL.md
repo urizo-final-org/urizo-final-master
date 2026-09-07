@@ -319,10 +319,10 @@ urizo-final-mcp-server
 | `AI06-034` | Langfuse 횡단 Trace·사용량·관측 화면 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-034-langfuse-observability_v0.1`, Backend Preview 보완 `feature/tmdwns0531_axms-ai06-034-portable-coding-preview_v0.3` | [Backend #62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63)·[#65](https://github.com/urizo-final-org/urizo-final-backend/pull/65)·[Orchestrator #24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24)·[Frontend #38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38) `dev` 병합 완료, 횡단 Trace·원문 차단·관리자 화면과 이식 가능한 Coding Preview 검증 통과 |
 | `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` | 후순위, 기존 작업 보존; `AI06-037` 구현·검증과 사용자 화면 확인 후 재개 |
 | `AI06-036` | AX Module Studio 평가 보정·신뢰도 검증 | Master · `feature/tmdwns0531_axms-ai06-036-evaluator-calibration_v0.1` 예정, Source 보완은 결과 확인 후 별도 승인 | 후속 Work ID·선행조건 확정, `AI06-035` 평가 표본 확보 전 시작 금지 |
-| `AI06-037` | 승인 범위 정합화·Migration 예약 | Master · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 승인 계약·예약·Source 후보 기록, 전체 `PARTIAL / NOT VERIFIED`; Push·PR·병합 없음 |
-| `AI06-037` | Monitoring 저장·조회·선택 Job/Node 계측 | Backend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `84f9f45`, 실제 PostgreSQL·Flyway 미검증; Push·PR·병합 없음 |
+| `AI06-037` | 승인 범위 정합화·Migration 예약 | Master · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 승인 계약·예약·후보·로컬 통합 검증 기록, 전체 `PARTIAL / NOT VERIFIED`; Push·PR·병합 없음 |
+| `AI06-037` | Monitoring 저장·조회·선택 Job/Node 계측 | Backend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source·실제 SQL 롤백·기존 DB Flyway·full PASS·후보 `c94ab164`; 빈 DB·실제 Job 미검증; Push·PR·병합 없음 |
 | `AI06-037` | 원문 없는 Node 전이 보고·복구 연결 | Orchestrator · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `4de6c33`, 실제 Job·Langfuse 연결 미검증; Push·PR·병합 없음 |
-| `AI06-037` | 실행 모니터링·우측 상세 Panel | Frontend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `b79f327`, 통합·사용자 화면 확인 미완료; Push·PR·병합 없음 |
+| `AI06-037` | 실행 모니터링·우측 상세 Panel | Frontend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 고정 도구·full·빈 화면 확인 PASS·후보 `b79f327`; 실제 Job·최종 사용자 화면 확인 미완료; Push·PR·병합 없음 |
 
 ### 단계적 Work 실행 계약
 
@@ -404,7 +404,7 @@ urizo-final-mcp-server
 
 ### `AI06-037` · 활성 Job 실행 모니터링
 
-- 상태: 2026-09-07 구현·독립 Source 검증 PASS. 실제 PostgreSQL·통합 Runtime·사용자 화면은 미검증으로 전체 `PARTIAL / NOT VERIFIED`다.
+- 상태: 2026-09-07 구현·독립 Source·실제 SQL 롤백·로컬 full 검증 PASS. 실제 Job·Langfuse 귀속·최종 사용자 화면 및 빈 DB 검증이 남아 전체 `PARTIAL / NOT VERIFIED`다.
 - Work slug: `axms-ai06-037-active-job-node-monitoring`. 기존 035·Mock·Dirty Worktree는 보존하고 구현 기반으로 사용하지 않는다.
 - 범위: 별도 1차 Tab `실행 모니터링`에서 LLM Ops·Natural CMS 활성 Job의 고정 Snapshot·Layout, 현재 Node와
   `N`·`P`·`Q` 칩, Node 선택 우측 상세 Panel을 제공한다. 기존 설정 Canvas의 시각 규칙을 재사용하되 편집기는 변경하지 않는다.
@@ -425,13 +425,17 @@ urizo-final-mcp-server
 
 - 이번 구현 결과: Spring의 전체 Node 최신 상태와 제한된 occurrence 이력을 분리했고, 유효한 늦은 과거 보고는 현재 포인터를 유지하며 `monitorRevision`만 증가시킨다.
   독립 검증에서 발견한 상충 terminal 보고 결함은 동일 상태일 때만 관측 ID 보완을 허용하는 조건과 회귀 3건으로 수정했다.
+  실제 PostgreSQL 검증에서 추가 확인한 거절된 보고의 State Trace·revision 누출은 저장된 occurrence Trace만 전달하도록 보완했다. 양방향 terminal 충돌 무효와 정상 Trace 보완을 실제 SQL 롤백 및 독립 회귀 7/7로 확인했다.
   P는 정확한 occurrence metadata·Trace·기간·환경으로 유일한 Node 앵커를 최대 2건 조회한 뒤 직접 자식만 최대 50건 조회한다. 전체 Trace 스캔·추가 Pagination은 없다.
-- Source 검증: Backend 전체 758개 중 754 PASS·DB opt-in 4 skip, 독립 핵심 19/19 및 최종 보완 7/7 PASS.
+- Source 검증: 최종 Backend 전체 758개 중 754 PASS·DB opt-in 4 skip, Monitoring 관련 12/12 및 독립 최종 보완 7/7 PASS.
   Orchestrator는 기존 고정 Runtime 이미지의 네트워크 차단·읽기 전용 Source mount에서 전체 227개 중 225 PASS·2 skip, 독립 핵심 30/30 PASS.
-  Frontend는 작업자 Vitest 48/48·TypeScript PASS와 독립 코드 검증 PASS다. Host 도구로 실행했으므로 고정 Node·pnpm 환경 검증은 별도이며 임시 의존성 Junction은 제거했다.
-- 검증 한계·다음 Gate: 단위 테스트의 Mock JDBC·Migration 텍스트 검사는 실제 PostgreSQL `ON CONFLICT`·제약 검증이 아니다.
-  2026-09-07 사용자 승인으로 후보 Commit을 고정했다. Frontend `b79f32749abf8189d2dd1888b74fe09084f29d5d`, Backend `84f9f45f5ab845dcbb9c1c658a14bf3214141048`, Orchestrator `4de6c335704ec46e671d67d39a6d0b573d449875`다.
-  승인된 `full` 재빌드·Flyway 통합 검증, 실제 Job·Langfuse 귀속·화면 확인이 남았다. 후보 고정 시점까지 공유 Runtime·DB·Queue는 변경하지 않았고 Push·PR·병합은 없다.
+  Frontend는 고정 이미지의 Node 24.14.0·pnpm 11.9.0에서 Vitest 48/48·app/node TypeScript PASS와 독립 코드 검증 PASS다. 임시 의존성 Junction은 제거했다.
+- 로컬 통합: 승인된 공식 `full -Rebuild` 최초 1회와 Source 결함 보완 후 재검증 1회를 수행했다. 최종 상시 서비스 9개 healthy, Flyway exit 0·pending 0·35개 Migration validate 및 재실행 추가 적용 없음이다.
+  실제 PostgreSQL의 Production SQL을 `ai_workspace` 권한으로 실행해 Trace 보완·상충 terminal 무효·늦은 이력의 현재 포인터 보존·revision 증가를 확인하고 전부 롤백했다. Runtime의 app Schema CREATE 권한 없음과 검증 행 0건도 확인했다.
+  Monitoring 목록 API 200·빈 화면 표시를 확인했다. 기존 Job 수, 대기 Runner 5건의 attempt 0·Lease 없음, Queue 6개 길이 0을 유지했고 DB 초기화·Volume 삭제·기존 대기 작업 소비는 하지 않았다.
+- 검증 한계·다음 Gate: 실제 Coding·Natural CMS Job 생성과 Provider·Langfuse 귀속, 최종 사용자 화면 확인은 별도 승인 전 미검증이다. 빈 DB 및 정확한 dev 기준 upgrade 검증도 미수행이므로 Migration 전체 필수 검증 완료로 보고하지 않는다.
+  최종 Source 후보는 Frontend `b79f32749abf8189d2dd1888b74fe09084f29d5d`, Backend `c94ab164107ab6d97d86a69bc548d1f6dd196dec`, Orchestrator `4de6c335704ec46e671d67d39a6d0b573d449875`다. 통합 실행의 Master는 `b401188b8ded655a073815c2e95646506bf25cae`, 변경 없는 MCP Server는 `5c4de948e254348ddfe1f0b78095262f53b8cbb7`다.
+  같은 Work ID의 full 통합 실행은 총 2회로 마쳤으며 추가 실행은 별도 승인 대상이다. Push·PR·병합은 없다.
   기존 035 Dirty 작업을 보존하고 사용자 화면 확인 전 재개하지 않는다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
