@@ -11,7 +11,7 @@
 
 | 영역 | 6번 플랫폼 소유 범위 |
 |---|---|
-| Agent 설정 | Provider·Model, Agent·Workflow, 자연어 기능 Profile, Tool·실행 정책, 사용량·평가 |
+| Agent 설정 | Provider·Model, Agent·Workflow, 자연어 기능 Profile, Tool·실행 정책, 실행 모니터링, 사용량·평가 |
 | Template | 실행 가능한 Node·Edge·Config 편집·검증, 불변 Versioned Snapshot JSON과 Profile 활성화 |
 | 공통 Runtime | JSON Loader·Snapshot Runner·Graph Builder·Node Registry, `NodeInvocation`·`NodeResult`, Checkpoint와 Approval Interrupt·재개 |
 | 공통 Handler | Agent 호출, Approval, Check, Guardrail과 Node 상태·결과 기록 |
@@ -228,29 +228,30 @@ urizo-final-mcp-server
   Provider별 Token·비용 보정, Evaluator 실행과 Score 생성·Pipeline Gate는 포함하지 않으며 현재 계약은
   Score를 만들거나 기존 Job 완료 조건을 바꾸지 않는다.
 
-### CMS `사용량·평가` 정보 구조
+### CMS `실행 모니터링`·`사용량·평가` 정보 구조
 
-기존 `사용량·평가` Tab 안에는 `실시간 상태`와 `총괄 상세 대시보드` 두 화면만 둔다.
+`Agent 설정`의 `실행 모니터링`과 `사용량·평가`는 동급 1차 Tab으로 분리한다. 나머지 설정 Tab은 유지한다.
 
-| 내부 화면 | 표시 기준 | 연결 Work |
+| 1차 Tab | 표시 기준 | 연결 Work |
 |---|---|---|
-| `실시간 상태` | 활성 LLM Ops·Natural CMS Job의 읽기 전용 Node 흐름과 현재 실행 상태 | `AI06-037` |
-| `총괄 상세 대시보드` | 전체 Node 흐름과 Node·Provider·품질 계측을 기간·Job 기준으로 상세 조회 | `AI06-034`~`AI06-037` |
+| `실행 모니터링` | 활성 LLM Ops·Natural CMS Job의 읽기 전용 Node 흐름·현재 상태와 우측 상세 Panel | `AI06-037` |
+| `사용량·평가` | Node·Provider·품질 계측을 기간·Job 기준으로 상세 조회 | `AI06-034`·`AI06-035`, 필요 시 `AI06-036` |
 
-`총괄 상세 대시보드` 안에서 측정 책임과 도입 단계를 섞지 않고 다음 세 하위 Tab으로 구분한다.
+`사용량·평가`는 다음 세 하위 Tab을 유지하며 AI06-037에서 재구현하지 않는다.
 
 | 하위 Tab | 표시 기준 | 연결 Work |
 |---|---|---|
 | `Node 계측` | Job·Node·Tool·Check 실행 상태, Attempt와 지연시간 | `AI06-034` |
 | `Provider 계측` | 실제 Provider·Model 호출 수, Token·지연시간과 Langfuse가 제공하는 비용 | `AI06-034` |
-| `품질 평가` | Agent별 현재 적용 모델, 실제 평가 모델, `correctness`·`faithfulness`·`relevance`·`instruction_following` Score와 평가 근거 상태 | `AI06-035` |
+| `품질 평가` | 동일 Job·Trace·Node 단위의 034 실행 계측과 035 Score·평가 근거를 함께 표시 | `AI06-034`+`AI06-035` |
 
-- `실시간 상태`는 Job이 고정한 `profileVersionId`의 Snapshot과 저장된 Layout을 편집 기능 없이 재사용한다.
+- `품질 평가`의 실행 계측과 평가 근거는 동등한 행 단위로 연결하며 별도 근거 Tab을 만들지 않는다.
+- `실행 모니터링`은 Job이 고정한 `profileVersionId`의 Snapshot과 저장된 Layout을 편집 기능 없이 재사용한다.
   LLM Ops와 Natural CMS의 활성 Job을 구분하고, 동시에 여러 Job이 있으면 자동으로 하나를 추측하지 않고 선택 목록을 제공한다.
 - Node 상태는 `대기`, `진행 중`, `승인 대기`, `완료`, `실패`로 표시한다. `진행 중`은 움직이는 강조선,
   `승인 대기`는 노랑, `완료`는 초록, `실패`는 빨강으로 구분해 실행과 오류를 같은 색으로 표현하지 않는다.
 - 각 Node에는 `N`(Node 상태·Attempt·지연시간), `P`(실제 Provider·Model·Token·비용),
-  `Q`(품질 Score·근거·보완 필요) 상태 칩만 간략히 표시하고, 선택하면 좌측 또는 우측 상세 Panel을 연다.
+  `Q`(품질 Score·근거·보완 필요) 상태 칩만 간략히 표시하고, 선택하면 우측 상세 Panel을 연다.
   Provider를 호출하지 않은 Node와 Node에 귀속되지 않은 Trace 전체 Score를 임의로 Node에 붙이지 않는다.
 - 정확한 현재 Node는 Langfuse 조회 결과가 아니라 Spring 소유 Monitoring Read Model을 기준으로 한다.
   Orchestrator는 허용된 식별자·상태만 Node 시작·종료·승인 대기·실패 전이로 전달하고 업무 Payload 원문은 보내지 않는다.
@@ -259,15 +260,18 @@ urizo-final-mcp-server
   읽기 전용 응답이며 Profile Snapshot을 복제하거나 수정하지 않는다. Spring에는 복구에 필요한 Job·Node 실행 상태만 저장한다.
 - Job 생성 요청은 Queue 등록과 `jobId` 응답까지 짧게 끝낸다. 원래 HTTP 응답을 Job 완료까지 열어 두지 않는다.
   Frontend는 화면이 보이고 Job이 종료되지 않은 동안 Spring의 전체 `Job Monitoring Snapshot`을 1초 간격으로 조회한다.
-  응답에는 `stateVersion`, `updatedAt`, 현재 Node와 전체 Node별 최신 상태를 포함해 Polling 사이에 끝난 짧은 Node도 복구한다.
-  완료·실패 시 Polling을 중단하고 화면이 백그라운드에 있으면 일시 중지하며, 화면 복귀 시 즉시 한 번 조회한다.
+  응답에는 기존 `stateVersion`, 별도 `monitorRevision`, `updatedAt`, 현재 Node와 Node occurrence 상태를 포함해 짧은 Node도 복구한다.
+  기존 승인·Job의 `stateVersion` 의미와 증가 조건은 변경하지 않는다. 중복·역순 응답은 현재 상태를 되돌리지 않되 유효한 늦은 완료 이력은 보존한다.
+  완료·실패뿐 아니라 기존 Domain의 종료 판정에 따라 Polling을 중단한다. Job 전환·Tab 이탈·백그라운드에서는 요청을 취소하고 복귀 시 즉시 조회한다.
   이 1초 Polling 대상은 Spring Monitoring API뿐이다. Langfuse Metrics·Observations·Scores는 Tab 진입, Job·Node 선택,
-  `stateVersion` 변경 후 상세 갱신 또는 수동 새로고침 시 Spring의 제한된 Cache를 통해 조회하며 매초 원격 호출하지 않는다.
+  `monitorRevision` 변경 후 필요한 상세 갱신 또는 수동 새로고침 시 Spring의 제한된 Cache를 통해 조회하며 매초 원격 호출하지 않는다.
+  P 상세는 선택 Job·Node에 한정한 034 조회를 사용한다. 최근 기간 50건을 Frontend에서 임의로 매칭하지 않으며 Q는 035 전까지 `평가 미설정`이다.
   화면의 진행 시간은 `startedAt`을 기준으로 Frontend에서 표시하되 서버 실행 상태나 계측값을 추정·재계산하지 않는다.
   SSE·WebSocket과 Job 요청 장기 대기는 사용하지 않는다.
 - Langfuse Node·Provider·품질 값은 관측 지연이나 `fail-open`으로 늦거나 없을 수 있으므로 마지막 갱신 시각과
   `관측 대기`·`관측 연결 안 됨` 상태를 표시하고, 이 값으로 Spring Job 상태를 덮어쓰지 않는다.
-- `총괄 상세 대시보드`는 향후 브라우저 인쇄 기반 PDF 보고서로 확장할 수 있는 고정 Section 구조만 유지한다.
+  오래된 갱신 시각만으로 장애를 추정하지 않고 확인된 조회·관측 오류만 구분한다. 새 Heartbeat는 추가하지 않는다.
+- `사용량·평가`는 향후 브라우저 인쇄 기반 PDF 보고서로 확장할 수 있는 고정 Section 구조만 유지한다.
   PDF 생성·다운로드 기능은 `AI06-037`에 포함하지 않고 별도 Work로 승인한다.
 
 - `품질 평가`는 Provider 자체의 절대 품질이 아니라 Provider·Model이 해당 Profile·질문·근거 Context에서 만든
@@ -313,17 +317,19 @@ urizo-final-mcp-server
 | `AI06-029` | 노드별 Primary·Fallback 상세 모델과 추론 설정 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-029-node-model-settings_v0.1` | [Frontend #28](https://github.com/urizo-final-org/urizo-final-frontend/pull/28)·[Backend #55](https://github.com/urizo-final-org/urizo-final-backend/pull/55)·[Orchestrator #21](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/21) `dev` 병합 완료, Source 독립·실제 Provider 검증 완료 |
 | `AI06-030` | Model Catalog 현행화·기본 Model 전환·Tool 정책 최소 UI | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-030-model-catalog-tool-policy-ui_v0.1` | [Frontend #30](https://github.com/urizo-final-org/urizo-final-frontend/pull/30)·[Backend #57](https://github.com/urizo-final-org/urizo-final-backend/pull/57) `dev` 병합 완료, Source·Flyway 독립 검증 완료 |
 | `AI06-034` | Langfuse 횡단 Trace·사용량·관측 화면 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-034-langfuse-observability_v0.1`, Backend Preview 보완 `feature/tmdwns0531_axms-ai06-034-portable-coding-preview_v0.3` | [Backend #62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63)·[#65](https://github.com/urizo-final-org/urizo-final-backend/pull/65)·[Orchestrator #24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24)·[Frontend #38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38) `dev` 병합 완료, 횡단 Trace·원문 차단·관리자 화면과 이식 가능한 Coding Preview 검증 통과 |
-| `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` 예정 | 후속 Work ID·선행조건 확정, `AI06-034` `dev` 병합 전 시작 금지 |
+| `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` | 후순위, 기존 작업 보존; `AI06-037` 구현·검증과 사용자 화면 확인 후 재개 |
 | `AI06-036` | AX Module Studio 평가 보정·신뢰도 검증 | Master · `feature/tmdwns0531_axms-ai06-036-evaluator-calibration_v0.1` 예정, Source 보완은 결과 확인 후 별도 승인 | 후속 Work ID·선행조건 확정, `AI06-035` 평가 표본 확보 전 시작 금지 |
-| `AI06-037` | 활성 Job 읽기 전용 Node 모니터링·총괄 대시보드 | Master·Frontend·Backend·Orchestrator · `feature/tmdwns0531_axms-ai06-037-active-job-monitoring-dashboard_v0.1` 예정 | 후속 Work ID·범위 확정, `AI06-034`~`AI06-036` 완료 전 Source 시작 금지 |
+| `AI06-037` | 승인 범위 정합화·Migration 예약 | Master · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 승인 계약·예약·Source 후보 기록, 전체 `PARTIAL / NOT VERIFIED`; Push·PR·병합 없음 |
+| `AI06-037` | Monitoring 저장·조회·선택 Job/Node 계측 | Backend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `84f9f45`, 실제 PostgreSQL·Flyway 미검증; Push·PR·병합 없음 |
+| `AI06-037` | 원문 없는 Node 전이 보고·복구 연결 | Orchestrator · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `4de6c33`, 실제 Job·Langfuse 연결 미검증; Push·PR·병합 없음 |
+| `AI06-037` | 실행 모니터링·우측 상세 Panel | Frontend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `b79f327`, 통합·사용자 화면 확인 미완료; Push·PR·병합 없음 |
 
 ### 단계적 Work 실행 계약
 
 1. `AI06-034`의 횡단 Trace·관측 기반을 Source 검증하고 저장소별 `dev` 병합까지 확인한다.
-2. `AI06-035`는 병합된 `AI06-034`를 포함한 최신 `origin/dev` 기반 새 Worktree에서 시작한다.
-3. `AI06-036`은 `AI06-035`의 실제 평가 Score와 사람 검토 표본이 확보된 뒤 시작한다.
-4. `AI06-037`은 앞선 세 Work의 Node·Provider·품질·보완 계약을 재계산 없이 소비해 읽기 전용 Canvas와
-   총괄 상세 대시보드로 조합한다. Spring Job Monitoring Snapshot은 Job 상태와 정확한 현재 Node만 제공한다.
+2. 완료된 `AI06-034` 다음은 `AI06-037` 계획·구현·독립 검증이다. 035·036 완료를 선행조건으로 두지 않는다.
+3. `AI06-037`의 최종 사용자 화면 확인 뒤 `AI06-035`를 재개한다. 그 전에는 Q를 `평가 미설정`으로 표시한다.
+4. `AI06-036`은 필요할 때만 `AI06-035`의 비교 가능한 평가·사람 검토 표본을 근거로 진행한다.
 5. 후속 Work를 앞 Work의 Branch에 선행 구현하지 않는다. 각 Work 시작 시 범위·저장소·세션·완료 조건을 다시 보고한다.
 
 ### `AI06-034` · Langfuse 횡단 Trace·사용량·관측 화면
@@ -372,7 +378,7 @@ urizo-final-mcp-server
 
 ### `AI06-035` · Langfuse 표준 자동평가와 Score 생성
 
-- 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-034` 완료 전 세션·Branch·Worktree를 만들거나 Source를 변경하지 않는다.
+- 상태: 후순위다. 기존 미완료 작업을 보존하고 `AI06-037` 구현·검증과 사용자 화면 확인 전 재개하지 않는다.
 - 범위: 비식별·승인된 평가용 입력·출력·근거 Context·기대 결과를 Langfuse 내장 LLM-as-a-Judge·RAGAS 계열
   평가기에 연결하고 `correctness`, `faithfulness`, `relevance`, `instruction_following` Score를 생성한다.
 - 관리자 표시: 기존 `사용량·평가` Tab의 `품질 평가` 하위 Tab 상단에 활성 Profile Version 기준 Agent별
@@ -381,7 +387,7 @@ urizo-final-mcp-server
 - 결정적 항목: `task_success`, `tests_passed`, `schema_valid`처럼 실행 결과로 판정 가능한 값만 우리 시스템에서
   Boolean·Numeric Score로 전달한다. Spring과 Frontend는 Score를 재계산하지 않는다.
 - 제외: 임의 종합 `quality` 점수, 서비스별 Rubric·임계값 보정, Production 원문 전송, Pipeline Gate 적용.
-- 시작 조건: `AI06-034` 저장소별 `dev` 병합과 횡단 Trace·보안 검증 완료 후 별도 작업계획 승인을 받는다.
+- 시작 조건: `AI06-034` 완료와 `AI06-037` 사용자 화면 확인 후 별도 작업계획 승인을 받는다.
 - 완료 조건: 네 표준 Score가 생성·조회되고 Trace 전체 Score와 Node·Observation 귀속 Score를 구분해 표시하며,
   활성 Profile의 설정 모델과 실제 평가 모델을 분리하고 비식별 평가 Payload·근거 상태·실패 격리를 검증해야 한다.
 
@@ -396,23 +402,37 @@ urizo-final-mcp-server
 - 완료 조건: 대표 표본에서 사람 판정과 자동 Score의 일치·불일치 근거, 오탐·미탐, 적용 가능한 Rubric·임계값을 문서화하고
   근거 부족을 포함한 `보완지점` 표시 계약을 확정해야 한다. Source 보완은 이 결과와 별도 승인을 받은 경우에만 진행한다.
 
-### `AI06-037` · 활성 Job 읽기 전용 Node 모니터링·총괄 대시보드
+### `AI06-037` · 활성 Job 실행 모니터링
 
-- 상태: 범위와 Work ID만 확정한 시작 대기 상태다. `AI06-034`~`AI06-036` 완료 전 Branch·Worktree를 만들거나
-  Source를 변경하지 않는다. `AI06-023` 정적 Mock은 시각 참고로만 보존하며 오래된 Dirty Worktree를 구현 기반으로 사용하지 않는다.
-- 범위: LLM Ops·Natural CMS 활성 Job이 고정한 Snapshot·Layout을 읽기 전용 Canvas로 표시하고, 현재 Node 상태와
-  `N`·`P`·`Q` 상태 칩, Node 선택 상세 Panel, `Node 계측`·`Provider 계측`·`품질 평가` 총괄 대시보드를 제공한다.
+- 상태: 2026-09-07 구현·독립 Source 검증 PASS. 실제 PostgreSQL·통합 Runtime·사용자 화면은 미검증으로 전체 `PARTIAL / NOT VERIFIED`다.
+- Work slug: `axms-ai06-037-active-job-node-monitoring`. 기존 035·Mock·Dirty Worktree는 보존하고 구현 기반으로 사용하지 않는다.
+- 범위: 별도 1차 Tab `실행 모니터링`에서 LLM Ops·Natural CMS 활성 Job의 고정 Snapshot·Layout, 현재 Node와
+  `N`·`P`·`Q` 칩, Node 선택 우측 상세 Panel을 제공한다. 기존 설정 Canvas의 시각 규칙을 재사용하되 편집기는 변경하지 않는다.
+- 저장·보고: Spring에 Job Monitoring 상태와 Node occurrence를 저장하고 기존 `stateVersion`과 별도 `monitorRevision`을 사용한다.
+  Orchestrator의 최소 전이 보고는 Langfuse 활성화와 독립되며, 보고 실패가 원래 Handler·Job 결과를 변경하지 않는다.
 - 실시간 계약: Job 생성 API는 `jobId`를 즉시 반환한다. Frontend는 보이는 화면의 종료되지 않은 Job에 한해 Spring
   `Job Monitoring Snapshot` 전체를 1초 간격으로 조회하고, 완료·실패·백그라운드 전환 시 중단한다.
   원래 Job 요청 장기 대기, SSE와 WebSocket은 사용하지 않는다.
 - 상태 기준: Spring Monitoring Read Model이 현재 Node·Job 상태의 기준이다. Langfuse는 Node·Provider·품질 계측만
   제공하며 관측 지연·미연결을 Job 실행 실패나 완료로 해석하지 않는다.
-- 제외: Canvas 편집, Job 제어·승인 기능 중복, 임의 종합점수, PDF 생성·다운로드, 새 평가 엔진과 기존 Job 완료 조건 변경.
-- 시작 조건: `AI06-034`~`AI06-036` 저장소별 `dev` 병합과 표시 계약 확인 후 저장소별 Source 범위·Monitoring
-  상태 저장 방식·1초 제한 Polling의 중단·복구 기준을 별도 작업계획으로 승인받는다.
+- 제외: Canvas 편집, Job 제어·승인 기능 중복, `사용량·평가` 재구현, 임의 종합점수, PDF, 새 평가 엔진과 기존 Job 완료 조건 변경.
+- 시작 조건: 완료된 034 위에서 승인된 세션의 PLAN·SIMPLE·GUARDRAIL 확인 후 상태 계약 → 화면 → 독립 검증 순서로 진행한다.
+  공용 MD 경량화와 병행하되 미검증 로더·Hook을 혼합 적용하지 않고 실제 충돌 파일·규칙만 재확인한다.
 - 완료 조건: LLM Ops·Natural CMS 활성 Job을 선택해 불변 Profile Snapshot 기반 읽기 전용 Canvas를 열고, Spring 전체 상태
   Snapshot의 1초 Polling·중단·복귀·종료와 짧은 Node 복구를 검증해야 한다. Node별 적용 가능한 `N`·`P`·`Q` 칩과 상세 Panel,
-  세 하위 Tab·관측 지연 상태를 표시하되 Profile을 수정하지 않고 Langfuse를 1초 주기로 직접 조회하지 않아야 한다.
+  관측 지연 상태를 표시하되 Profile을 수정하지 않고 Langfuse를 1초 주기로 직접 조회하지 않아야 한다.
+  독립 검증 뒤 사용자가 최종 화면을 확인해야 하며 그 전에는 035·036으로 진행하지 않는다.
+
+- 이번 구현 결과: Spring의 전체 Node 최신 상태와 제한된 occurrence 이력을 분리했고, 유효한 늦은 과거 보고는 현재 포인터를 유지하며 `monitorRevision`만 증가시킨다.
+  독립 검증에서 발견한 상충 terminal 보고 결함은 동일 상태일 때만 관측 ID 보완을 허용하는 조건과 회귀 3건으로 수정했다.
+  P는 정확한 occurrence metadata·Trace·기간·환경으로 유일한 Node 앵커를 최대 2건 조회한 뒤 직접 자식만 최대 50건 조회한다. 전체 Trace 스캔·추가 Pagination은 없다.
+- Source 검증: Backend 전체 758개 중 754 PASS·DB opt-in 4 skip, 독립 핵심 19/19 및 최종 보완 7/7 PASS.
+  Orchestrator는 기존 고정 Runtime 이미지의 네트워크 차단·읽기 전용 Source mount에서 전체 227개 중 225 PASS·2 skip, 독립 핵심 30/30 PASS.
+  Frontend는 작업자 Vitest 48/48·TypeScript PASS와 독립 코드 검증 PASS다. Host 도구로 실행했으므로 고정 Node·pnpm 환경 검증은 별도이며 임시 의존성 Junction은 제거했다.
+- 검증 한계·다음 Gate: 단위 테스트의 Mock JDBC·Migration 텍스트 검사는 실제 PostgreSQL `ON CONFLICT`·제약 검증이 아니다.
+  2026-09-07 사용자 승인으로 후보 Commit을 고정했다. Frontend `b79f32749abf8189d2dd1888b74fe09084f29d5d`, Backend `84f9f45f5ab845dcbb9c1c658a14bf3214141048`, Orchestrator `4de6c335704ec46e671d67d39a6d0b573d449875`다.
+  승인된 `full` 재빌드·Flyway 통합 검증, 실제 Job·Langfuse 귀속·화면 확인이 남았다. 후보 고정 시점까지 공유 Runtime·DB·Queue는 변경하지 않았고 Push·PR·병합은 없다.
+  기존 035 Dirty 작업을 보존하고 사용자 화면 확인 전 재개하지 않는다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
 
