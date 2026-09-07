@@ -312,7 +312,7 @@ urizo-final-mcp-server
 | `AI06-028` | Profile별 기본 템플릿 Snapshot 저장·불러오기 | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-028-default-template-snapshots_v0.1` | [Frontend #27](https://github.com/urizo-final-org/urizo-final-frontend/pull/27)·[Backend #54](https://github.com/urizo-final-org/urizo-final-backend/pull/54) `dev` 병합 완료, Source·Flyway·로컬 통합 검증 완료 |
 | `AI06-029` | 노드별 Primary·Fallback 상세 모델과 추론 설정 | Master, Frontend, Backend, Orchestrator · `feature/tmdwns0531_axms-ai06-029-node-model-settings_v0.1` | [Frontend #28](https://github.com/urizo-final-org/urizo-final-frontend/pull/28)·[Backend #55](https://github.com/urizo-final-org/urizo-final-backend/pull/55)·[Orchestrator #21](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/21) `dev` 병합 완료, Source 독립·실제 Provider 검증 완료 |
 | `AI06-030` | Model Catalog 현행화·기본 Model 전환·Tool 정책 최소 UI | Master, Frontend, Backend · `feature/tmdwns0531_axms-ai06-030-model-catalog-tool-policy-ui_v0.1` | [Frontend #30](https://github.com/urizo-final-org/urizo-final-frontend/pull/30)·[Backend #57](https://github.com/urizo-final-org/urizo-final-backend/pull/57) `dev` 병합 완료, Source·Flyway 독립 검증 완료 |
-| `AI06-034` | Langfuse 횡단 Trace·사용량·관측 화면 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-034-langfuse-observability_v0.1` | [Backend #62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[Orchestrator #24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24)·[Frontend #38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38) `dev` 병합 완료, 횡단 Trace·원문 차단·관리자 화면 검증 통과 |
+| `AI06-034` | Langfuse 횡단 Trace·사용량·관측 화면 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-034-langfuse-observability_v0.1`, Backend Preview 보완 `feature/tmdwns0531_axms-ai06-034-portable-coding-preview_v0.3` | [Backend #62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63)·[#65](https://github.com/urizo-final-org/urizo-final-backend/pull/65)·[Orchestrator #24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24)·[Frontend #38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38) `dev` 병합 완료, 횡단 Trace·원문 차단·관리자 화면과 이식 가능한 Coding Preview 검증 통과 |
 | `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` 예정 | 후속 Work ID·선행조건 확정, `AI06-034` `dev` 병합 전 시작 금지 |
 | `AI06-036` | AX Module Studio 평가 보정·신뢰도 검증 | Master · `feature/tmdwns0531_axms-ai06-036-evaluator-calibration_v0.1` 예정, Source 보완은 결과 확인 후 별도 승인 | 후속 Work ID·선행조건 확정, `AI06-035` 평가 표본 확보 전 시작 금지 |
 | `AI06-037` | 활성 Job 읽기 전용 Node 모니터링·총괄 대시보드 | Master·Frontend·Backend·Orchestrator · `feature/tmdwns0531_axms-ai06-037-active-job-monitoring-dashboard_v0.1` 예정 | 후속 Work ID·범위 확정, `AI06-034`~`AI06-036` 완료 전 Source 시작 금지 |
@@ -328,7 +328,7 @@ urizo-final-mcp-server
 
 ### `AI06-034` · Langfuse 횡단 Trace·사용량·관측 화면
 
-- 상태: 완료(2026-09-07, v0.2 보완 포함). 아래 Source 후보에서 관측·보안·화면 검증을 통과했고 GitHub와 `origin/dev`에서 병합을 확인했다.
+- 상태: 완료(2026-09-07, v0.3 Preview 보완 포함). 아래 Source 후보에서 관측·보안·화면 검증을 통과했고 GitHub와 `origin/dev`에서 병합을 확인했다.
 - 범위: LangGraph의 Job·Node·Tool·Check Span, Python→Spring W3C `traceparent`, Spring AI 실제 Provider 호출
   Observation을 같은 Trace로 연결한다. Python의 사후 `modelObservations` 기반 Model Span은 제거한다.
 - 관리자 표시: 기존 `사용량·평가` Tab의 `Node 계측`·`Provider 계측` 하위 Tab에 Metrics v2·Observations v2를
@@ -346,7 +346,7 @@ urizo-final-mcp-server
 
 | 저장소 | PR·상태 | 최종 Push·검증 SHA | `dev` 병합 SHA |
 |---|---|---|---|
-| Backend | [#62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63), 2026-09-06~07 생성·병합 | `b038656c38acaa3bb6f367f9ee067784333c9220`·`e713fad2b79669d44d058c7e22361685956ae993` | `64baf100900823596bc0a54d45da01d56b333f7d`·`f821714991eeaae82d9450db074f0761f79d9f0e` |
+| Backend | [#62](https://github.com/urizo-final-org/urizo-final-backend/pull/62)·[#63](https://github.com/urizo-final-org/urizo-final-backend/pull/63)·[#65](https://github.com/urizo-final-org/urizo-final-backend/pull/65), 2026-09-06~07 생성·병합 | `b038656c38acaa3bb6f367f9ee067784333c9220`·`e713fad2b79669d44d058c7e22361685956ae993`·`2a31626bd5fef2f17184bbb713a05a93e9e7b996` | `64baf100900823596bc0a54d45da01d56b333f7d`·`f821714991eeaae82d9450db074f0761f79d9f0e`·`c074f7032ea315ad2838e9225ee37c272ac97ef1` |
 | Orchestrator | [#24](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/24), 2026-09-06 생성·병합 | `cdf690d5375ca12f4a3911f45c53ad73dae0de3b` | `4ca60892ff6cf91fdbd5a05bab32a1fadd6ce9c3` |
 | Frontend | [#38](https://github.com/urizo-final-org/urizo-final-frontend/pull/38), 2026-09-06 생성·병합 | `f8bdb00b0a602e29020ea5f8371405e8d979f77d` | `ba11b29b6df46bd544ba8f9fa7a5e518345e6741` |
 
@@ -354,6 +354,10 @@ urizo-final-mcp-server
   Orchestrator 최종 219개 중 217 통과·2 skip, Frontend 246개·타입 검사·Build 및 최종 표시 보완 35개 통과.
 - v0.2 보완: Backend 전체 708개 중 704 통과·4 skip, Runner·HTTP timeout 대상 7/7을 통과했다. 실제 DB의
   read-only predicate에서 종료 Job의 잔여 `CREATE_WORKTREE`는 선택 대상 0건이었고 task 원본은 변경하지 않았다.
+- v0.3 Preview 보완: Backend Job의 Preview BUILD가 canonical Frontend checkout에서 Frontend image를 함께 만들고,
+  PREVIEW_UP도 같은 Source를 read-only mount하도록 고정했다. Backend 전체 727개 중 723 통과·4 skip, Preview image 3종
+  build와 격리 Runtime health, `/`·`/admin`·`/api/site/context`·`/nginx-health` 200을 확인했다. AI04·AI05 업무 로직,
+  Orchestrator·LangGraph Core·Snapshot과 DB Schema는 변경하지 않았다.
 - 통합: 고정 후보 조합의 공식 `full`에서 상시 서비스 9개 healthy, Flyway exit 0·pending 0을 확인했다.
   신규 Migration은 없으며 추가 전체 실행 없이 기존 통합 증거로 종료한다.
 - 실제 관측: Coding `7e79edb0-ce31-4361-98c1-b79c9e493c09`와 Natural CMS `3b48e350-02a9-494c-9707-04ce085ac030`에서
@@ -364,6 +368,7 @@ urizo-final-mcp-server
   실행하지 않았고 AI04·AI05 업무 판단·승인·저장 의미와 Orchestrator·LangGraph Core·Snapshot을 변경하지 않았다.
   잔여 Runner task `e220d3be-7c9d-4f8e-9f2e-5857d4b9c391`은 `CREATE_WORKTREE / PENDING / attempt 0`, lease 없음으로 보존했다.
   v0.2 predicate가 이 task를 제외함을 read-only로 확인했으며 LangGraph checkpoint 4개 테이블의 행 수는 검증 전후 동일했다.
+  v0.3은 새 Coding intake를 만들지 않고 기존 격리 Preview Volume에서 Flyway validate/info와 화면 기동만 재검증했다.
 
 ### `AI06-035` · Langfuse 표준 자동평가와 Score 생성
 
