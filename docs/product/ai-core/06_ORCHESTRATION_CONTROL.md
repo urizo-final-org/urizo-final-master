@@ -320,7 +320,7 @@ urizo-final-mcp-server
 | `AI06-035` | Langfuse 표준 자동평가와 Score 생성 | Master·Backend·Orchestrator·Frontend · `feature/tmdwns0531_axms-ai06-035-safe-evaluation-scores_v0.1` | 후순위, 기존 작업 보존; `AI06-037` 구현·검증과 사용자 화면 확인 후 재개 |
 | `AI06-036` | AX Module Studio 평가 보정·신뢰도 검증 | Master · `feature/tmdwns0531_axms-ai06-036-evaluator-calibration_v0.1` 예정, Source 보완은 결과 확인 후 별도 승인 | 후속 Work ID·선행조건 확정, `AI06-035` 평가 표본 확보 전 시작 금지 |
 | `AI06-037` | 승인 범위 정합화·Migration 예약 | Master · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 승인 계약·예약·후보·로컬 통합 검증 기록, 전체 `PARTIAL / NOT VERIFIED`; Push·PR·병합 없음 |
-| `AI06-037` | Monitoring 저장·조회·선택 Job/Node 계측 | Backend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 후보 `c94ab164`; 단위·full Health PASS, 실제 JDBC 저장 `42804` BLOCKED; Push·PR·병합 없음 |
+| `AI06-037` | Monitoring 저장·조회·선택 Job/Node 계측 | Backend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 후보 `f2d9a786`; Timestamp 보완·실제 JDBC·3차 full PASS, 실제 자동 보고 검증 대기; Push·PR·병합 없음 |
 | `AI06-037` | 원문 없는 Node 전이 보고·복구 연결 | Orchestrator · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | Source 검증 PASS·후보 `4de6c33`, 실제 Job·Langfuse 연결 미검증; Push·PR·병합 없음 |
 | `AI06-037` | 실행 모니터링·우측 상세 Panel | Frontend · `feature/tmdwns0531_axms-ai06-037-active-job-node-monitoring_v0.1` | 고정 도구·full·빈 화면 확인 PASS·후보 `b79f327`; 실제 Job·최종 사용자 화면 확인 미완료; Push·PR·병합 없음 |
 
@@ -404,7 +404,7 @@ urizo-final-mcp-server
 
 ### `AI06-037` · 활성 Job 실행 모니터링
 
-- 상태: 2026-09-08 실제 Job 검증에서 Monitoring 저장 JDBC 결함을 확인해 `PARTIAL / NOT VERIFIED`다. 2026-09-07 단위·독립 Source·타입 명시 SQL 롤백·로컬 full Health PASS는 실제 보고 경로의 정상 동작을 증명하지 않는다.
+- 상태: 2026-09-08 실제 Job에서 발견한 Timestamp JDBC 결함을 최소 보완했고 실제 JDBC·독립 회귀·승인된 3차 full 검증은 PASS다. 실제 자동 보고·Langfuse·최종 화면·Coding 및 빈 DB 검증이 남아 전체 `PARTIAL / NOT VERIFIED`다.
 - Work slug: `axms-ai06-037-active-job-node-monitoring`. 기존 035·Mock·Dirty Worktree는 보존하고 구현 기반으로 사용하지 않는다.
 - 범위: 별도 1차 Tab `실행 모니터링`에서 LLM Ops·Natural CMS 활성 Job의 고정 Snapshot·Layout, 현재 Node와
   `N`·`P`·`Q` 칩, Node 선택 우측 상세 Panel을 제공한다. 기존 설정 Canvas의 시각 규칙을 재사용하되 편집기는 변경하지 않는다.
@@ -427,17 +427,19 @@ urizo-final-mcp-server
   독립 검증에서 발견한 상충 terminal 보고 결함은 동일 상태일 때만 관측 ID 보완을 허용하는 조건과 회귀 3건으로 수정했다.
   실제 PostgreSQL 검증에서 추가 확인한 거절된 보고의 State Trace·revision 누출은 저장된 occurrence Trace만 전달하도록 보완했다. 양방향 terminal 충돌 무효와 정상 Trace 보완을 실제 SQL 롤백 및 독립 회귀 7/7로 확인했다.
   P는 정확한 occurrence metadata·Trace·기간·환경으로 유일한 Node 앵커를 최대 2건 조회한 뒤 직접 자식만 최대 50건 조회한다. 전체 Trace 스캔·추가 Pagination은 없다.
-- Source 검증: 최종 Backend 전체 758개 중 754 PASS·DB opt-in 4 skip, Monitoring 관련 12/12 및 독립 최종 보완 7/7 PASS.
+- Source 검증: 직전 Backend 후보 전체 758개 중 754 PASS·DB opt-in 4 skip. 최종 Timestamp 보완 후보는 Monitoring 관련 12/12 및 독립 회귀 7/7 PASS다.
   Orchestrator는 기존 고정 Runtime 이미지의 네트워크 차단·읽기 전용 Source mount에서 전체 227개 중 225 PASS·2 skip, 독립 핵심 30/30 PASS.
   Frontend는 고정 이미지의 Node 24.14.0·pnpm 11.9.0에서 Vitest 48/48·app/node TypeScript PASS와 독립 코드 검증 PASS다. 임시 의존성 Junction은 제거했다.
-- 로컬 통합: 승인된 공식 `full -Rebuild` 최초 1회와 Source 결함 보완 후 재검증 1회를 수행했다. 최종 상시 서비스 9개 healthy, Flyway exit 0·pending 0·35개 Migration validate 및 재실행 추가 적용 없음이다.
+- 로컬 통합: 공식 `full -Rebuild` 최초 1회와 Source 결함 보완 후 재검증 1회, 사용자 예외 승인된 Timestamp 보완 재검증 1회로 총 3회를 수행했다. 최종 상시 서비스 9개 healthy, Flyway exit 0·pending 0·35개 Migration validate 및 재실행 추가 적용 없음이다.
   실제 PostgreSQL의 Production SQL을 `ai_workspace` 권한으로 실행해 Trace 보완·상충 terminal 무효·늦은 이력의 현재 포인터 보존·revision 증가를 확인하고 전부 롤백했다. Runtime의 app Schema CREATE 권한 없음과 검증 행 0건도 확인했다.
   Monitoring 목록 API 200·빈 화면 표시를 확인했다. 기존 Job 수, 대기 Runner 5건의 attempt 0·Lease 없음, Queue 6개 길이 0을 유지했고 DB 초기화·Volume 삭제·기존 대기 작업 소비는 하지 않았다.
 - 검증 한계·다음 Gate: 실제 Coding·Natural CMS Job의 Monitoring·Provider·Langfuse 귀속과 최종 사용자 화면 검증은 미완료다. 빈 DB 및 정확한 dev 기준 upgrade 검증도 미수행이므로 Migration 전체 필수 검증 완료로 보고하지 않는다.
   2026-09-08 실제 Job 각 1건 검증 승인 후 Natural CMS `a2db2645-92fe-4747-802d-3704f6537d01`은 미리보기 승인 대기에 도달했으나 Monitoring 행은 0건이었다. Production SQL의 `CASE WHEN ... THEN ? ELSE NULL` Timestamp 바인딩을 실제 PostgreSQL JDBC 42.7.3으로 재현한 결과 `SQLSTATE 42804` (`started_at`: timestamptz에 text 식 전달)로 실패했고 전부 롤백했다. 앞선 타입 명시 SQL 검증의 누락 경계다. 사용자 승인으로 기존 담당·독립 검증 세션에서 Timestamp 최소 보완 후 실제 JDBC 회귀 검증과 예외적 3차 full 1회를 진행한다.
   Coding은 Runner `alive=false`·`lastSeenAt=null`로 새 Job 생성을 보류했다. Runner의 claim은 오래된 PENDING부터 처리하며 taskId 제한이 없어 기존 대기 5건을 보존하는 조건으로 시작하지 않았다. 생성한 Natural CMS Job의 적용·승인·재실행 및 기존 대기 작업 소비는 하지 않았다.
-  최종 Source 후보는 Frontend `b79f32749abf8189d2dd1888b74fe09084f29d5d`, Backend `c94ab164107ab6d97d86a69bc548d1f6dd196dec`, Orchestrator `4de6c335704ec46e671d67d39a6d0b573d449875`다. 통합 실행의 Master는 `b401188b8ded655a073815c2e95646506bf25cae`, 변경 없는 MCP Server는 `5c4de948e254348ddfe1f0b78095262f53b8cbb7`다.
-  같은 Work ID의 full 통합 실행은 총 2회로 마쳤으며 추가 실행은 별도 승인 대상이다. Push·PR·병합은 없다.
+  Timestamp 보완은 CASE 네 곳의 `CAST(? AS TIMESTAMPTZ)`와 회귀 테스트, Backend 2파일만 변경했다. 실제 PGJDBC 42.7.3의 `setTimestamp`로 네 상태 시각·Trace 보완·양방향 terminal 충돌 무효·늦은 이력의 포인터 보존·롤백 잔여 0건을 포함한 10개 assertion을 통과했다.
+  3차 full 이후 Monitoring 목록 API는 200·0건이며 기존 Natural CMS 검증 Job은 승인 대기로 보존했다. 자동 보고 재검증을 위한 추가 Natural CMS Job은 승인 전 생성하지 않았고, 0건 응답을 실제 Node 모니터링 성공으로 판단하지 않는다.
+  최종 Source 후보는 Frontend `b79f32749abf8189d2dd1888b74fe09084f29d5d`, Backend `f2d9a786343eeeedf6172b1bb093a1170bcc61ee`, Orchestrator `4de6c335704ec46e671d67d39a6d0b573d449875`다. 3차 통합 실행의 Master는 `270d6d4e1f0784836d9127ab08e2c13229924700`, 변경 없는 MCP Server는 `5c4de948e254348ddfe1f0b78095262f53b8cbb7`다.
+  승인된 3차 full 1회는 완료했으며 추가 실행은 별도 승인 대상이다. Push·PR·병합은 없다.
   기존 035 Dirty 작업을 보존하고 사용자 화면 확인 전 재개하지 않는다.
 
 ### `AI06-026` · LLM_OPS PR·배포 Profile v4
