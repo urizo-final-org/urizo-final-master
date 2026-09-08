@@ -1,6 +1,6 @@
 # AX Module Studio multi-model LLM instruction routing v0.1
 
-> Updated: 2026-08-20 (Asia/Seoul)
+> Updated: 2026-09-07 (Asia/Seoul)
 > Owner: Min Seungjun (`tmdwns0531`)
 > Scope: Codex-compatible GPT coding agents and Claude Code used by the five-person team
 
@@ -43,11 +43,11 @@ status and current-scope authority.
 Both model families must perform the same sequence:
 
 1. read the parent Workspace and Master instructions;
-2. run Master-first safe synchronization when asked to update Git;
-3. re-read the checked-in Master status snapshot and operating policy;
-4. match Snapshot version, assigned work slug, worker, target repositories, and approved scope;
-5. read the current CMS scope and applicable Source `AGENTS.md` files;
-6. return `MASTER CONTEXT PASS` or `MASTER CONTEXT BLOCKED` before implementation.
+2. classify the task using the Master `AGENTS.md` trigger table;
+3. run `scripts/load-task-context.ps1` once with the ordered list of every required Profile and read every ordered Chunk;
+4. read the applicable Source `AGENTS.md` and compare the task with the loaded scope and ownership;
+5. run Master-first safe synchronization when the task requires Git freshness;
+6. return `TASK CONTEXT PASS` and `MASTER CONTEXT PASS`, or stop with the exact blocker before mutation.
 
 Model identity never changes Repository ownership, approval boundaries, Git naming, Definition of Done,
 or Notion-write authority.
@@ -56,7 +56,62 @@ Both model families also inherit the same `Simple is best` rule, scope-expansion
 short status-report format from Master `AGENTS.md`. These behaviors are not copied into model-specific
 files.
 
-## 4. What may be model- or Source-repository-specific
+## 4. Bounded task-context loading
+
+An ordinary Markdown link is routing text, not an import. The SessionStart Hook automatically loads only
+the Workspace, Master, and active Source `AGENTS.md` authorities. A linked document is authoritative only
+after its content has been emitted and read for the matching task.
+
+Use the shared loader from the active Master checkout or Worktree:
+
+```powershell
+./scripts/load-task-context.ps1 -Profile Git
+./scripts/load-task-context.ps1 -Profile AiFeature -FeatureNumber 6
+./scripts/load-task-context.ps1 -Profile Database -BackendSourceRoot <absolute-active-backend-worktree>
+./scripts/load-task-context.ps1 -Profile Runtime,Database,Git -BackendSourceRoot <absolute-active-backend-worktree>
+```
+
+| Profile | Required documents |
+|---|---|
+| `Product` | current CMS minimum scope and project-status Snapshot |
+| `Git` | Git/team operating policy and repository/bootstrap specification |
+| `Runtime` | current local infrastructure and multi-OS local-development specification |
+| `Database` | Git/team operating policy, Flyway reservation ledger, Runtime/Flyway rules, and the active Backend database policy |
+| `AiFeature` | Snapshot, AI common boundary, structure contract, and the selected AI 2~6 document |
+| `TeamLead` | team-lead protocol after the explicit activation approval |
+| `Master` | this routing contract, Snapshot, and Git/team operating policy |
+
+`-Profile` accepts one Profile or an ordered list. For a list, the loader walks Profiles in input order,
+keeps each Profile's document order, and emits the first occurrence of each normalized document path once.
+It does not summarize or remove document content. A one-Profile call keeps the existing body and Receipt contract.
+
+The loader validates every allowlisted path, rejects missing or empty files, fingerprints the exact UTF-8
+content, and emits bounded output. The default limits are 128 KiB for the complete normalized union bundle and
+16 KiB for each Receipt; exceeding either fails closed. Large profiles are split at line boundaries. Start with the default
+`-ChunkNumber 1`, read the returned `chunk=1/N`, then call the same command with `-ChunkNumber 2` through
+`N`, preserving the same ordered Profile list. Every call after Chunk 1 must pass the first Receipt's `bundleSha256` through
+`-ExpectedBundleSha256` and the immediately preceding Receipt's `chunkSha256` through
+`-PreviousChunkSha256`. A missing or mismatched bundle hash detects documents changed between calls;
+a missing or mismatched Chunk hash detects an out-of-order sequence. Both fail closed. `complete=true`
+identifies only the final Chunk and does not waive the earlier Chunks.
+
+Any Profile list containing `Database` requires an explicit absolute `-BackendSourceRoot`. It reads only
+`docs/DATABASE_MIGRATION_POLICY_v0.2.md` below that exact checkout or Worktree and records both the normalized
+Source root and policy SHA-256 in the Receipt. There is no parent-directory search or implicit canonical fallback.
+The Profile also loads `TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md`, so Runtime and Database receive the
+same a~e Runtime/Flyway rules without copying them. A local `full` operation that executes Flyway uses one
+`-Profile Runtime,Database,Git` union call.
+
+`TASK CONTEXT PASS` is valid only after all Chunks were read in order and the active Source `AGENTS.md`
+was also read when applicable. A missing file, unreadable file, invalid Feature number, missing Chunk,
+out-of-order sequence, or byte-limit failure is `TASK CONTEXT BLOCKED`. No affected Source, Git, runtime,
+database, or external mutation may continue from a partial Receipt.
+
+The loader does not fetch Git, query GitHub or Notion, mutate a file, or infer which Profile applies.
+Master `AGENTS.md` owns task classification. Operational safety remains enforced by the existing
+feature-work, pre-PR, pre-push, runtime, and database gates; linked prose is not their substitute.
+
+## 5. What may be model- or Source-repository-specific
 
 Model-specific and Source-repository entry files may contain only:
 
@@ -71,7 +126,7 @@ Git workflow, or safety rules. Those facts change over time and remain in their 
 Source `AGENTS.md` files are therefore routing stubs, not secondary policy authorities. Source
 `CLAUDE.md` files import the corresponding `AGENTS.md` and add no duplicate common policy.
 
-## 5. Update behavior
+## 6. Update behavior
 
 - The team lead updates common policy in Master `AGENTS.md` and task/version state in
   `LLM_PROJECT_STATUS_SNAPSHOT.md`.
@@ -79,8 +134,10 @@ Source `AGENTS.md` files are therefore routing stubs, not secondary policy autho
   bootstrap synchronizes those blocks without replacing teammate custom text.
 - A model-routing change requires Master scaffold validation. A product-scope change normally does not
   require editing `CLAUDE.md` because Claude imports the shared authority.
+- A Profile or required-document change must update the allowlist in `scripts/load-task-context.ps1`, the
+  Master `AGENTS.md` trigger table, and the scaffold validation in one Master change.
 
-## 6. Acceptance
+## 7. Acceptance
 
 Routing passes only when:
 
@@ -88,4 +145,8 @@ Routing passes only when:
 - Master `CLAUDE.md` imports `@AGENTS.md`;
 - the parent Claude template imports both parent and Master `AGENTS.md`;
 - bootstrap can append or replace exactly one managed Claude-routing block idempotently;
-- Codex-compatible and Claude sessions report the same assigned Slice/Task version after one Git sync.
+- Codex-compatible and Claude sessions report the same assigned Slice/Task version after one Git sync;
+- the Master `AGENTS.md` remains within its byte budget and Full Hook output remains within the combined
+  Master-plus-Source budget;
+- every Profile returns fingerprinted, bounded Chunks and fails closed for missing or invalid input.
+- `Database` fails closed without the explicit Backend root or exact Backend policy and fingerprints both in its Receipt.

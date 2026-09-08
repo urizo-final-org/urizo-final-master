@@ -1,6 +1,6 @@
 # AX Module Studio AI 핵심 기능 후속 고려사항
 
-> 상태: 담당자 배정 완료 · 공통 계약 확정 · 기능별 최소 완료 범위 검토 중
+> 상태: 공통 경계 문서 · 현재 제품 범위 밖 · 기능별 현재 상태는 담당 문서와 Git에서 확인
 > 목적: AI 핵심 기능의 공통 경계와 담당 문서를 짧게 보존
 > 범위: 현재 CMS MVP 구현 기준이 아니며, 이 문서만으로 구현을 시작하지 않는다.
 
@@ -136,7 +136,7 @@ urizo-final-mcp-server
 - Spring은 유효 Job, 고정 Tool Allowlist와 Workspace·CMS 권한을 확인한 뒤 MCP를 호출한다.
 - MCP는 Core DB에 직접 접근하지 않는다. CMS 최종 DB Transaction과 Version 게시는 기존 Spring CMS Domain Service가 수행한다.
 - 임의 MCP Server·Tool·Shell, Marketplace, 복잡한 Policy DSL과 다중 MCP Routing은 초기 범위에서 제외한다.
-- 별도 MCP Repository 생성과 실제 Service 계약은 새 Work ID 승인 후 진행한다.
+- 기존 `urizo-final-mcp-server`의 Service·Catalog 변경은 승인된 Work ID와 담당 Package 경계를 따른다.
 
 ## 전체 목표 아키텍처
 
@@ -161,7 +161,9 @@ flowchart LR
 Spring과 PostgreSQL이 Job·권한·Profile Version·Domain 상태의 기준이다. LangGraph는 검증된 Snapshot을
 조립·실행하고 MCP는 고정 Tool만 수행한다. 세 Runtime은 서로의 저장 책임을 중복하지 않는다.
 
-## 기능별 전달 상태
+## 기능별 전달 상태 기록
+
+아래 표는 공통 경계를 정할 때의 전달 기록이며 현재 완료 상태가 아니다. 현재 상태는 담당 문서와 Git에서 확인한다.
 
 | 기능 | 공통 전달 내용 | 상태 |
 |---|---|---|

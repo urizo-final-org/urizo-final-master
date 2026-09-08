@@ -10,6 +10,7 @@
 - 자연어 CMS, Model Mapping, Coding, LLM DevOps, RAG와 챗봇은 현재 MVP에서 제외돼 있다.
 - 이 문서는 제외된 기능을 제품 범위로 되돌리거나 현재 MVP 완료를 선언하지 않는다.
 - 과거 `AXMS-RC-001`~`AXMS-RC-007`과 병합 PR은 구현 이력이며 현재 통합 완료 증거가 아니다.
+- 아래 Snapshot-only 실행은 해당 SHA 조합의 제한된 과거 증거이며 현재 제품 전체 완료나 현재 Runtime·DB 검증을 뜻하지 않는다.
 
 ## RC-008 현재 판정
 

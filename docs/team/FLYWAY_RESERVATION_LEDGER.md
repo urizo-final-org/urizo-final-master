@@ -21,6 +21,14 @@
 
 The baseline is present in the preserved local Backend/Core DB, but at the 2026-08-12 checkpoint the implementation was still uncommitted locally. `MERGED_LOCAL_BASELINE` does not claim that canonical `origin/dev` contains it.
 
+## 관찰 범위
+
+- 2026-09-07 Backend `origin/dev` `c074f7032ea315ad2838e9225ee37c272ac97ef1`에서 Migration 파일명 33개를 확인했다.
+  이 문서의 baseline 1개와 `RESERVED` 5개 Revision에 대응하는 Migration 파일명 6개도 해당 Source에 존재한다.
+- Ledger 상태는 예약·PR·Source 기록이다. `MERGED`나 Source 파일 존재만으로 특정 로컬 DB 또는 공유 DB에 적용됐다고 판단하지 않는다.
+- 실제 DB 적용은 명시된 Backend Source SHA와 대상 DB의 Flyway history·pending 검증을 같은 실행에서 확인해야 한다.
+- 아래 기존 행과 다른 Owner의 행은 이 관찰 기록 때문에 수정하지 않는다.
+
 ## Active reservations
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
