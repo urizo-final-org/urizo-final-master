@@ -19,6 +19,8 @@ param(
 
     [switch]$Rebuild,
 
+    [switch]$RefreshLocalObservability,
+
     [switch]$RequireCleanSourceBindings,
 
     [ValidateRange(30, 1800)]
@@ -43,6 +45,9 @@ if (Test-Path -LiteralPath (Join-Path $WorkspaceRoot '.git')) {
 
 if ($Profile -eq 'spring-core' -and ($OrchestratorSourceRoot -or $McpSourceRoot)) {
     throw 'OrchestratorSourceRoot and McpSourceRoot are valid only with -Profile full.'
+}
+if ($RefreshLocalObservability -and $Profile -ne 'full') {
+    throw 'RefreshLocalObservability requires -Profile full.'
 }
 $repositoryManifest = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'repository-manifest.json') | ConvertFrom-Json
 
@@ -161,6 +166,7 @@ $runnerArguments = @{
 if ($ApproveLocalMutation) { $runnerArguments.ApproveLocalMutation = $true }
 if ($ApproveNetwork) { $runnerArguments.ApproveNetwork = $true }
 if ($Rebuild) { $runnerArguments.Rebuild = $true }
+if ($RefreshLocalObservability) { $runnerArguments.RefreshLocalObservability = $true }
 if ($BackendSourceRoot) { $runnerArguments.BackendSourceRoot = $BackendSourceRoot }
 if ($FrontendSourceRoot) { $runnerArguments.FrontendSourceRoot = $FrontendSourceRoot }
 if ($OrchestratorSourceRoot) { $runnerArguments.OrchestratorSourceRoot = $OrchestratorSourceRoot }
