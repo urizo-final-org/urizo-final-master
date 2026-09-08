@@ -35,6 +35,33 @@ AX-Module-Studio-Workspace/          # no .git
 
 ## Workspace 명령
 
+작업별 필수 문서를 bounded Chunk로 불러오기:
+
+```powershell
+.\scripts\load-task-context.ps1 -Profile <Profile>[,<Profile>...]
+.\scripts\load-task-context.ps1 -Profile Runtime,Database,Git -BackendSourceRoot <absolute-active-backend-worktree>
+```
+
+Profile은 `Product|Git|Runtime|Database|AiFeature|TeamLead|Master` 중에서 고른다. 여러 Profile은 한 호출에서
+입력 순서대로 합치며 같은 문서 경로는 첫 등장 한 번만 출력한다. 단일 Profile 호출도 그대로 지원한다.
+`AiFeature`는 `-FeatureNumber <2|3|4|5|6>`을 함께 사용한다. 두 번째 이후 Chunk에는 첫 Receipt의
+`bundleSha256`과 직전 Receipt의 `chunkSha256`을 각각 `-ExpectedBundleSha256`,
+`-PreviousChunkSha256`으로 전달해야 한다.
+`Database`는 활성 Backend checkout·Worktree의 절대 경로를
+`-BackendSourceRoot <absolute-active-backend-worktree>`로 함께 전달한다.
+
+개인 기능 문서 본문을 읽지 않는 공용 Routing 검증:
+
+```powershell
+.\scripts\validate-master-scaffold.ps1 -PublicOnly -BackendSourceRoot <absolute-active-backend-worktree>
+```
+
+기존 기준과 변경본의 AGENTS 크기·Source별 Full Hook payload 비교:
+
+```powershell
+.\scripts\compare-context-routing.ps1 -BaselineRef origin/dev -WorkspaceRoot <non-Git-workspace-parent>
+```
+
 전체 동기화:
 
 ```powershell

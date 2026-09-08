@@ -7,6 +7,7 @@
 3. [Master·Source Git·Notion 운영 정책](team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
 4. [Flyway 예약표](team/FLYWAY_RESERVATION_LEDGER.md)
 5. [저장소별 기술스택과 사용 근거](architecture/TECH_STACK_AND_RATIONALE_v0.1.md)
+6. [열린 AI Core Release Closeout](product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)
 
 ## 작업 환경
 
@@ -14,6 +15,8 @@
 - [팀 Multi-OS 로컬 개발](workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md)
 - [현재 로컬 인프라](architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md)
 - [Workspace Bootstrap](workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md)
+- 작업별 문서 Loader: `scripts/load-task-context.ps1`
+- 공용 문서 전용 검증: `scripts/validate-master-scaffold.ps1 -PublicOnly -BackendSourceRoot <path>`
 - CMS 빠른 로컬 실행: `scripts/start-local-cms.ps1`
 - [팀원 로컬 설정 Prompt](onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md)
 - [팀원 작업 시작 Prompt](onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md)

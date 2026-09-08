@@ -1,6 +1,8 @@
 # AX Module Studio current local infrastructure baseline v0.1
 
-> Observed: 2026-08-14 (Asia/Seoul) from fetched canonical `origin/dev` refs
+> Source baseline observed: 2026-08-14 (Asia/Seoul) from fetched canonical `origin/dev` refs
+> Topology note updated: 2026-09-07 (Asia/Seoul); Source structure only, current Runtime not executed
+> 2026-09-07 Backend Source observation: `c074f7032ea315ad2838e9225ee37c272ac97ef1`
 > Backend: `e0a702dbfaf6f1c46d9ba21e88a08c013047e2fb`
 > Frontend: `0ba4295cf55e4b33c4fbacce6d8f75c4df837817`
 > Orchestrator: `eaeb3a380035e8ddb13e42fb1877baabd9f57549`
@@ -37,13 +39,18 @@ Valkey; do not add a second Redis container.
 | `database_gateway` | loopback-only DBeaver/read-only relay | always | host `127.0.0.1:15432`; no public bind |
 | `valkey` | Product/Coding queues and transient coordination | `spring-core`, `coding-agent`, `full` | internal `6379`; append-only volume `axms-spring-dev-valkey` |
 | `coding-runtime` | Python LangGraph checkpoint/interrupt/resume consumer | `coding-agent`, `full` | internal health `8090`; not host-published |
+| `mcp-server` | one MCP service and catalog with bounded Coding 7 + CMS 6 tools | `coding-agent`, `full` | internal Compose service; Coding `/workspaces` uses named Volume `axms-spring-dev-mcp-workspaces`; current mount and reachability not verified |
 | `checkpoint_database` | encrypted LangGraph checkpoint persistence | `coding-agent`, `full` | internal `5432`; separate volume `axms-spring-dev-checkpoint-db` |
 | `flyway-migration` | forward-only Core DB migration/validation | `spring-core`, `coding-agent`, `full` | one-shot; must exit 0 before Spring starts |
 | `coding_credential_registrar` | registers the internal Coding service credential | `ops` | explicit one-shot; never a long-running product service |
 
-The `full` profile is the canonical team integration environment. `spring-core` omits the Coding
-runtime/checkpoint pair. `coding-agent` omits browser ingress/Frontend. `ops` is only for the explicit
-credential registrar operation.
+The `full` profile is the canonical team integration environment and includes the MCP Server.
+`spring-core` omits the Coding runtime/checkpoint pair and MCP Server. `coding-agent` omits browser
+ingress/Frontend. `ops` is only for the explicit credential registrar operation.
+
+This table separates Source configuration from execution evidence. A service, Profile, or named Volume
+observed in Compose and catalog Source is not a claim that its current mount, Image, health, tool
+round-trip, or database state was verified on 2026-09-07.
 
 ## 3. Ingress and trust boundaries
 

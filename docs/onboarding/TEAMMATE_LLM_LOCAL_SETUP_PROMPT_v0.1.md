@@ -25,11 +25,11 @@ AX Module Studio 팀 개발환경을 안전하게 구성하라.
 
 2. 상위 AX-Module-Studio-Workspace에는 .git을 만들지 마라.
 3. Master가 없다면 canonical Master를 먼저 clone하라.
-4. Master AGENTS.md와 현재 CMS 최소 범위, 상태 Snapshot, bootstrap spec을 읽어라.
-   과거 handoff, traceability, Wave, 업무분장은 요구하거나 복원하지 마라.
-5. Master의 모델별 지시 라우팅, 다중 OS 로컬 개발 명세, 현재 인프라
-   기준을 읽어라. Codex-compatible agent는 AGENTS.md, Claude Code는
-   CLAUDE.md import를 통해 동일한 공통 규칙을 사용하라.
+4. Master AGENTS.md를 읽고 `scripts/load-task-context.ps1 -Profile Product,Git,Runtime,Master`로
+   필요한 Profile을 한 번 합쳐 모든 Chunk를 읽어라. 과거 handoff, traceability, Wave,
+   업무분장은 요구하거나 복원하지 마라.
+5. Codex-compatible agent는 AGENTS.md, Claude Code는 CLAUDE.md import를 통해 동일한 공통 규칙을
+   사용하라. DB/Flyway 작업은 Backend가 구성된 뒤 `Database -BackendSourceRoot <절대경로>`를 추가한다.
 6. 먼저 읽기 전용 Preflight를 수행하고 Host OS, PowerShell Version,
    Git, branch/HEAD/dirty, Docker/WSL, DB, Port, Health 상태를 보고하라.
    macOS/Linux에서는 pwsh, Windows에서는 지원되는 PowerShell을 사용하고
@@ -46,7 +46,7 @@ AX Module Studio 팀 개발환경을 안전하게 구성하라.
 12. 마지막에 workspace health를 실행하고 다음 형식으로 보고하라.
 
    SETUP PASS 또는 SETUP BLOCKED
-   - 네 canonical origin
+   - 다섯 canonical origin
    - 각 branch/HEAD/dirty
    - 상위 .git 부재
    - Docker/local-full 상태

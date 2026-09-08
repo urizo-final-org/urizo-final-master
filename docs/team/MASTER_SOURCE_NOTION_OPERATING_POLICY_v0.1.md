@@ -30,6 +30,16 @@ Main-Promotion: manual-team-lead-only
 - 여러 저장소를 변경하면 같은 Slice ID/work slug로 저장소별 Commit과 PR을 분리한다.
 - 로컬 변경, local-only Commit, Dirty·Diverged Branch를 자동 삭제·Reset·Stash·전환하지 않는다.
 
+### 승인 병합과 안전 정리
+
+- `GIT-ADMIN-MERGE-GATE`: GitHub 계정이 Min Seungjun(`tmdwns0531`)이고 현재 요청에서 Merge가 명시적으로
+  승인됐으며 PR Base가 `dev`, Head SHA가 승인한 Commit, `mergeable=MERGEABLE`이고 일반 Merge가 필수 리뷰로만
+  차단된 경우에만 `gh pr merge --merge --admin`을 사용할 수 있다. 이 예외는 직접 Push, 자동 Merge,
+  `main` 대상 PR, Force Push 또는 다른 계정의 우회를 허용하지 않는다.
+- `GIT-MERGED-CLEANUP-GATE`: 현재 Work ID의 PR Base가 `dev`이고 GitHub에서 병합됐으며 그 Head가
+  `origin/dev`의 조상임을 모두 확인한 뒤에만 원격 Head Branch와 로컬 Branch를 제거하며, 연결 Worktree는 깨끗할 때만 제거한다.
+  열린 PR, 미병합 Branch, 병합 뒤 추가 Commit, Dirty·Diverged·local-only 작업은 보존하고 보고한다.
+
 Branch·Commit·PR 이름은 다음 형식을 사용한다.
 
 ```text

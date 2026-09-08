@@ -84,8 +84,16 @@ function Invoke-GitRead {
         [Parameter(Mandatory = $true)][string[]]$Arguments
     )
 
-    $output = @(& git -c "safe.directory=$RepositoryPath" -C $RepositoryPath @Arguments 2>$null)
-    if ($LASTEXITCODE -ne 0) {
+    $previousErrorAction = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $output = @(& git -c "safe.directory=$RepositoryPath" -C $RepositoryPath @Arguments 2>$null)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
+    if ($exitCode -ne 0) {
         return $null
     }
     return (($output | ForEach-Object { $_.ToString() }) -join "`n").Trim()
@@ -183,6 +191,8 @@ function Add-Checkpoint {
     [void]$Builder.AppendLine('- Before implementation: update canonical dev first, then create/reuse the isolated Worktree with the approved Work ID.')
     [void]$Builder.AppendLine('- Before PR: pass the dev freshness gate again; PR base is dev; never push directly to dev or main.')
     [void]$Builder.AppendLine('- Preserve dirty, diverged, local-only, open-PR, and unmerged work. Never expose secrets or expand scope without approval.')
+    [void]$Builder.AppendLine('- Before scoped mutation: run scripts/load-task-context.ps1 for every matched Profile and read all Chunks with the first bundle hash and previous Chunk hash; any missing or changed content is TASK CONTEXT BLOCKED.')
+    [void]$Builder.AppendLine('- Database Profile requires the absolute active BackendSourceRoot; a local full run with Flyway requires Runtime, Database, and Git Profiles together.')
     [void]$Builder.AppendLine('- Runtime: choose full, frontend-live, or isolated from the actual changed Sources and report LOCAL RUNTIME CONTEXT PASS before mutation.')
     [void]$Builder.AppendLine('- Response: report MASTER CONTEXT PASS/BLOCKED and keep the common response format from the active instructions.')
     [void]$Builder.AppendLine('- Full canonical instructions are loaded only for startup/clear/compact or when an instruction file changes.')
