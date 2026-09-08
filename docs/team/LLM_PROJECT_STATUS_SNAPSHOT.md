@@ -1,16 +1,17 @@
 # AX Module Studio 현재 상태
 
-> Updated: 2026-09-01 (Asia/Seoul)
-> Snapshot-Version: `v1.5-release-closeout-done`
+> Updated: 2026-09-07 (Asia/Seoul)
+> Snapshot-Version: `v1.6-release-closeout-open`
 > Owner: Min Seungjun (`tmdwns0531`)
 
 ## 현재 기준
 
 - 제품 범위: [로컬 데모 CMS 최소 범위](../product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md)
 - Git·팀 운영: [Master·Source 운영 정책](MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md)
-- 현재 상태: [AI Core Release Closeout](../product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)의 활성 29개 항목과 7개 Work를 최종 통합 SHA에서 모두 닫았다.
+- 현재 상태: [AI Core Release Closeout](../product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md)은 `OPEN`이다.
+  아래 SHA와 Snapshot-only 결과는 과거 범위 검증 증거이며 현재 제품 전체 완료 선언이 아니다.
 - 이전 CMS Spec, Wave, 업무분장, 추적표, 인수인계 이력은 현재 권한이 아니다.
-- AI 핵심 기능의 과거 Work·PR 병합 이력은 완료 판정이 아니다. 현재 상태와 완료 증거는 Release Closeout만 관리한다.
+- AI 핵심 기능의 과거 Work·PR 병합 이력은 현재 완료 판정이 아니다. 현재 상태는 Git과 열린 Release Closeout에서 다시 확인한다.
 
 ## 최종 검증 저장소 기준
 
@@ -25,13 +26,12 @@
 개인별 local-only 변경은 canonical 완료 상태가 아니다. 이를 자동으로 삭제·Reset·Stash·Branch
 전환하지 않으며, 새 작업은 승인된 범위와 깨끗한 최신 `dev` 기반 별도 Branch 또는 Worktree에서 시작한다.
 
-## 구현 상태
+## 기록된 통합 증거
 
-- 축소 CMS 기준 구현과 AI 핵심 기능의 과거 Slice·PR은 `origin/dev`에 병합돼 있다.
+- 아래 항목은 표에 고정된 2026-09-01 SHA 조합의 기록이며 현재 Runtime·DB 상태를 뜻하지 않는다.
 - Frontend [#21](https://github.com/urizo-final-org/urizo-final-frontend/pull/21), Backend [#40](https://github.com/urizo-final-org/urizo-final-backend/pull/40), Orchestrator [#16](https://github.com/urizo-final-org/urizo-final-orchestrator/pull/16)은 `dev`에 병합됐다.
-- 미완료 7개, 부분완료 8개, 구원장 14개는 현재 제품 흐름에서 재확인해 `29 / 29 DONE`이다.
-- `AXMS-RC-001`~`AXMS-RC-007`은 모두 `DONE`이다.
-- 저장소 전체 테스트, 인증된 Spring↔MCP 13-tool 왕복, 공식 `full -Rebuild`와 Flyway pending 0을 같은 최종 SHA 조합에서 통과했다.
+- 당시 저장소 테스트, Spring↔MCP 13-tool 왕복, 공식 `full -Rebuild`와 Flyway pending 0 결과가 기록됐다.
+  이 과거 결과를 새 Work, 현재 Image 또는 현재 DB에 자동 승계하지 않는다.
 
 ## 구현 시작 조건
 
@@ -55,7 +55,7 @@ AI 핵심 기능 2~6번은 담당자 표를 우선한다. 현재 PC의 GitHub ID
 
 ```text
 MASTER UPDATE COMPLETE
-Snapshot-Version: v1.5-release-closeout-done
+Snapshot-Version: v1.6-release-closeout-open
 Slice/Work-Slug: <assigned value>
 Task-Version: <assigned value or N/A>
 Worker: <name / GitHub ID>

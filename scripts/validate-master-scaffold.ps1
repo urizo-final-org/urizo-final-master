@@ -1,5 +1,9 @@
 ﻿[CmdletBinding()]
-param()
+param(
+    [switch]$PublicOnly,
+
+    [string]$BackendSourceRoot
+)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -44,6 +48,8 @@ $required = @(
     'templates/workspace/githooks/pre-push',
     '.agents/skills/axms-team-lead/SKILL.md',
     'scripts/preflight-workspace.ps1',
+    'scripts/load-task-context.ps1',
+    'scripts/compare-context-routing.ps1',
     'scripts/bootstrap-workspace.ps1',
     'scripts/sync-workspace.ps1',
     'scripts/start-feature-work.ps1',
@@ -156,6 +162,7 @@ if ($sessionStartScript -notmatch 'continue\s*=\s*\$false' -or
 if ($sessionStartScript -notmatch "ValidateSet\('Full', 'Checkpoint'\)" -or
     $sessionStartScript -notmatch 'AXMS CONTEXT CHECKPOINT v2' -or
     $sessionStartScript -notmatch 'Get-FileFingerprint' -or
+    $sessionStartScript -notmatch 'load-task-context\.ps1' -or
     $sessionStartScript -match 'AI FEATURE SESSION CONTEXT|auth status --active|Next candidate|Tracked PR sync') {
     throw 'SessionStart Hook must provide fingerprinted bounded checkpoints without GitHub or AI-ledger scans.'
 }
@@ -193,6 +200,7 @@ if ($checkpointOutput -notmatch '^AXMS CONTEXT CHECKPOINT v2: reason=Resume' -or
     $checkpointOutput -match '===== BEGIN' -or
     $checkpointOutput -notmatch 'Before implementation:' -or
     $checkpointOutput -notmatch 'Before PR:' -or
+    $checkpointOutput -notmatch 'load-task-context\.ps1' -or
     $checkpointBytes -gt 4096) {
     throw "Checkpoint mode must stay below 4096 bytes and repeat both Git gates; bytes=$checkpointBytes"
 }
@@ -205,6 +213,23 @@ if ($fullOutput -notmatch '^MASTER CONTEXT PASS' -or
     $fullOutput -match 'AI FEATURE SESSION CONTEXT|Next candidate|auth status --active' -or
     $fullBytes -gt 24576) {
     throw "Full mode must load Master without duplicating Workspace AGENTS or dynamic ledger state; bytes=$fullBytes"
+}
+
+$fixtureSourceRoot = Join-Path $testWorkspaceRoot 'urizo-final-backend'
+New-Item -ItemType Directory -Path $fixtureSourceRoot -Force | Out-Null
+$fixtureSourceContent = "# Fixture Backend Rules`n" + ('x' * 12000)
+Set-Content -LiteralPath (Join-Path $fixtureSourceRoot 'AGENTS.md') -Encoding UTF8 -NoNewline -Value $fixtureSourceContent
+Push-Location $fixtureSourceRoot
+try {
+    $sourceFullOutput = @(& $sessionStartScriptPath -WorkspaceRoot $testWorkspaceRoot -Mode Full -Reason Lifecycle -MaxContextBytes 24576) -join "`n"
+}
+finally {
+    Pop-Location
+}
+$sourceFullBytes = [Text.Encoding]::UTF8.GetByteCount($sourceFullOutput)
+if ($sourceFullOutput -notmatch '===== BEGIN urizo-final-backend/AGENTS\.md =====' -or
+    $sourceFullBytes -gt 24576) {
+    throw "Full mode must preserve room for a 12KB Source AGENTS file; bytes=$sourceFullBytes"
 }
 
 function Invoke-PostPullValidationCase {
@@ -273,6 +298,559 @@ if (-not [string]::IsNullOrWhiteSpace($functionsExecFailedPullOutput)) {
 finally {
     if (Test-Path -LiteralPath $testWorkspaceRoot) {
         Remove-Item -LiteralPath $testWorkspaceRoot -Recurse -Force
+    }
+}
+
+$taskContextLoaderPath = Join-Path $masterRoot 'scripts/load-task-context.ps1'
+$validationPowerShell = (Get-Process -Id $PID).Path
+function Get-ValidationTextSha256 {
+    param([Parameter(Mandatory = $true)][string]$Text)
+
+    $hasher = [Security.Cryptography.SHA256]::Create()
+    try {
+        $hash = $hasher.ComputeHash([Text.Encoding]::UTF8.GetBytes($Text))
+    }
+    finally {
+        $hasher.Dispose()
+    }
+    return ($hash | ForEach-Object { $_.ToString('x2') }) -join ''
+}
+
+function Get-ExpectedTaskContextValidation {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$RelativePaths,
+        [string]$RootPath = $masterRoot,
+        [string]$BackendPolicyPath
+    )
+
+    $documentLines = [System.Collections.Generic.List[string]]::new()
+    $contentBuilder = [Text.StringBuilder]::new()
+    foreach ($relativePath in $RelativePaths) {
+        $documentPath = if ($relativePath -eq 'backend-source/docs/DATABASE_MIGRATION_POLICY_v0.2.md') {
+            if (-not $BackendPolicyPath) {
+                throw 'Expected context validation requires BackendPolicyPath for the Backend policy.'
+            }
+            $BackendPolicyPath
+        }
+        else {
+            Join-Path $RootPath $relativePath
+        }
+        $content = [IO.File]::ReadAllText($documentPath, [Text.Encoding]::UTF8)
+        $normalizedPath = $relativePath.Replace('\', '/')
+        $bytes = [Text.Encoding]::UTF8.GetByteCount($content)
+        $sha256 = Get-ValidationTextSha256 -Text $content
+        $documentLines.Add("- $normalizedPath; bytes=$bytes; sha256=$sha256")
+        [void]$contentBuilder.AppendLine("===== BEGIN $normalizedPath =====")
+        [void]$contentBuilder.AppendLine($content.TrimEnd())
+        [void]$contentBuilder.AppendLine("===== END $normalizedPath =====")
+        [void]$contentBuilder.AppendLine()
+    }
+
+    $chunkContentLimit = 16384 - 4096
+    $chunkHashes = [System.Collections.Generic.List[string]]::new()
+    $chunkTexts = [System.Collections.Generic.List[string]]::new()
+    $chunkBuilder = [Text.StringBuilder]::new()
+    $reader = [IO.StringReader]::new($contentBuilder.ToString())
+    try {
+        while (($line = $reader.ReadLine()) -ne $null) {
+            $unit = $line + "`n"
+            $candidateBytes = [Text.Encoding]::UTF8.GetByteCount($chunkBuilder.ToString() + $unit)
+            if ($chunkBuilder.Length -gt 0 -and $candidateBytes -gt $chunkContentLimit) {
+                $chunkText = $chunkBuilder.ToString()
+                $chunkTexts.Add($chunkText)
+                $chunkHashes.Add((Get-ValidationTextSha256 -Text $chunkText))
+                $chunkBuilder.Length = 0
+            }
+            [void]$chunkBuilder.Append($unit)
+        }
+    }
+    finally {
+        $reader.Dispose()
+    }
+    if ($chunkBuilder.Length -gt 0) {
+        $chunkText = $chunkBuilder.ToString()
+        $chunkTexts.Add($chunkText)
+        $chunkHashes.Add((Get-ValidationTextSha256 -Text $chunkText))
+    }
+    $bundleText = $chunkTexts -join ''
+
+    return [pscustomobject]@{
+        BundleHash = Get-ValidationTextSha256 -Text $bundleText
+        BundleBytes = [Text.Encoding]::UTF8.GetByteCount($bundleText)
+        ChunkHashes = @($chunkHashes)
+        DocumentLines = @($documentLines)
+    }
+}
+
+function Invoke-TaskContextLoaderValidation {
+    param(
+        [Parameter(Mandatory = $true)][string[]]$Profile,
+        [int]$FeatureNumber = 0,
+        [int]$ChunkNumber = 1,
+        [string]$PreviousChunkSha256,
+        [string]$ExpectedBundleSha256,
+        [string]$LoaderPath,
+        [string]$BackendRoot
+    )
+
+    if (-not $LoaderPath) {
+        $LoaderPath = $taskContextLoaderPath
+    }
+    $arguments = @('-NoProfile')
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        $arguments += @('-ExecutionPolicy', 'Bypass')
+    }
+    $arguments += @(
+        '-File', $LoaderPath,
+        '-Profile', ($Profile -join ','),
+        '-ChunkNumber', $ChunkNumber,
+        '-MaxContextBytes', 16384
+    )
+    if ($FeatureNumber -gt 0) {
+        $arguments += @('-FeatureNumber', $FeatureNumber)
+    }
+    if ($BackendRoot) {
+        $arguments += @('-BackendSourceRoot', $BackendRoot)
+    }
+    if ($PreviousChunkSha256) {
+        $arguments += @('-PreviousChunkSha256', $PreviousChunkSha256)
+    }
+    if ($ExpectedBundleSha256) {
+        $arguments += @('-ExpectedBundleSha256', $ExpectedBundleSha256)
+    }
+    $previousErrorAction = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $output = @(& $validationPowerShell @arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
+    return [pscustomobject]@{
+        ExitCode = $exitCode
+        Text = ($output | ForEach-Object { $_.ToString() }) -join "`n"
+    }
+}
+
+$backendPolicyPath = $null
+if (-not $BackendSourceRoot -or -not [IO.Path]::IsPathRooted($BackendSourceRoot)) {
+    throw 'Scaffold validation requires an explicit absolute BackendSourceRoot.'
+}
+$BackendSourceRoot = (Resolve-Path -LiteralPath $BackendSourceRoot).Path
+$backendPolicyPath = Join-Path $BackendSourceRoot 'docs/DATABASE_MIGRATION_POLICY_v0.2.md'
+if (-not (Test-Path -LiteralPath $backendPolicyPath -PathType Leaf)) {
+    throw 'Scaffold validation requires Backend docs/DATABASE_MIGRATION_POLICY_v0.2.md.'
+}
+
+$taskContextCases = @(
+    [pscustomobject]@{ Profile = 'Product'; FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md', 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md') }
+    [pscustomobject]@{ Profile = 'Git'; FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md', 'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md') }
+    [pscustomobject]@{ Profile = 'Runtime'; FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md', 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md') }
+    [pscustomobject]@{ Profile = 'Database'; FeatureNumber = 0; BackendRoot = $BackendSourceRoot; Documents = @('docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md', 'docs/team/FLYWAY_RESERVATION_LEDGER.md', 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md', 'backend-source/docs/DATABASE_MIGRATION_POLICY_v0.2.md') }
+    [pscustomobject]@{ Profile = 'TeamLead'; FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/team/TEAM_LEAD_PROTOCOL_v0.1.md') }
+    [pscustomobject]@{ Profile = 'Master'; FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md', 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md') }
+    [pscustomobject]@{ Profile = @('Runtime', 'Database', 'Git'); FeatureNumber = 0; BackendRoot = $BackendSourceRoot; Documents = @('docs/architecture/CURRENT_LOCAL_INFRASTRUCTURE_BASELINE_v0.1.md', 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md', 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md', 'docs/team/FLYWAY_RESERVATION_LEDGER.md', 'backend-source/docs/DATABASE_MIGRATION_POLICY_v0.2.md', 'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md') }
+    [pscustomobject]@{ Profile = @('Master', 'Git'); FeatureNumber = 0; BackendRoot = $null; Documents = @('docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md', 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md', 'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md') }
+)
+if (-not $PublicOnly) {
+    $taskContextCases += @(
+        [pscustomobject]@{ Profile = 'AiFeature'; FeatureNumber = 2; BackendRoot = $null; Documents = @('docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md', 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md', 'docs/product/ai-core/02_DOMAIN_RAG_REPLACEMENT.md') }
+        [pscustomobject]@{ Profile = 'AiFeature'; FeatureNumber = 3; BackendRoot = $null; Documents = @('docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md', 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md', 'docs/product/ai-core/03_RAG_QUALITY.md') }
+        [pscustomobject]@{ Profile = 'AiFeature'; FeatureNumber = 4; BackendRoot = $null; Documents = @('docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md', 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md', 'docs/product/ai-core/04_LIMITED_LLM_DEVOPS.md') }
+        [pscustomobject]@{ Profile = 'AiFeature'; FeatureNumber = 5; BackendRoot = $null; Documents = @('docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md', 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md', 'docs/product/ai-core/05_NATURAL_LANGUAGE_CMS.md') }
+        [pscustomobject]@{ Profile = 'AiFeature'; FeatureNumber = 6; BackendRoot = $null; Documents = @('docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md', 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md', 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md', 'docs/product/ai-core/06_ORCHESTRATION_CONTROL.md') }
+    )
+}
+$profileBundles = @{}
+foreach ($case in $taskContextCases) {
+    $profileList = @($case.Profile)
+    $profileLabel = $profileList -join ','
+    $expectedArguments = @{ RelativePaths = $case.Documents }
+    if ($profileList -contains 'Database') {
+        $expectedArguments.BackendPolicyPath = $backendPolicyPath
+    }
+    $expected = Get-ExpectedTaskContextValidation @expectedArguments
+    $first = Invoke-TaskContextLoaderValidation -Profile $profileList -FeatureNumber $case.FeatureNumber -ChunkNumber 1 -BackendRoot $case.BackendRoot
+    $chunkMatch = [regex]::Match($first.Text, '(?m)^chunk=1/(?<total>[0-9]+)$')
+    $bundleMatch = [regex]::Match($first.Text, '(?m)^bundleSha256=(?<hash>[0-9a-f]{64})$')
+    if ($first.ExitCode -ne 0 -or
+        $first.Text -notmatch '^TASK CONTEXT RECEIPT v1' -or
+        $first.Text -notmatch '(?m)^status=PASS$' -or
+        $first.Text -notmatch "(?m)^profile=$([regex]::Escape($profileLabel))$" -or
+        $first.Text -notmatch '===== BEGIN ' -or
+        $first.Text -notmatch 'sha256=[0-9a-f]{64}' -or
+        $first.Text -notmatch '(?m)^chunkSha256=[0-9a-f]{64}$' -or
+        $first.Text -notmatch "(?m)^bundleBytes=$($expected.BundleBytes)$" -or
+        -not $chunkMatch.Success -or
+        -not $bundleMatch.Success -or
+        $bundleMatch.Groups['hash'].Value -ne $expected.BundleHash -or
+        [Text.Encoding]::UTF8.GetByteCount($first.Text) -gt 16384) {
+        throw "Task context loader did not return a bounded first Chunk: Profile=$profileLabel; FeatureNumber=$($case.FeatureNumber)"
+    }
+    if ($profileList -contains 'Database' -and
+        ($first.Text -notmatch "(?m)^backendSourceRoot=$([regex]::Escape($BackendSourceRoot))$" -or
+         $first.Text -notmatch '(?m)^backendPolicySha256=[0-9a-f]{64}$')) {
+        throw 'Database context Receipt must identify the explicit Backend Source root and policy fingerprint.'
+    }
+
+    $totalChunks = [int]$chunkMatch.Groups['total'].Value
+    $bundleHash = $bundleMatch.Groups['hash'].Value
+    if ($totalChunks -ne $expected.ChunkHashes.Count) {
+        throw "Task context loader returned the wrong Chunk count: Profile=$profileLabel; expected=$($expected.ChunkHashes.Count); actual=$totalChunks"
+    }
+    $receiptHeader = $first.Text.Substring(0, $first.Text.IndexOf('===== BEGIN '))
+    $actualDocumentLines = @([regex]::Matches($receiptHeader, '(?m)^- .+; bytes=[0-9]+; sha256=[0-9a-f]{64}$') | ForEach-Object { $_.Value })
+    if ($actualDocumentLines.Count -ne $expected.DocumentLines.Count) {
+        throw "Task context loader returned the wrong document count: Profile=$profileLabel"
+    }
+    foreach ($documentIndex in 0..($expected.DocumentLines.Count - 1)) {
+        if ($actualDocumentLines[$documentIndex] -ne $expected.DocumentLines[$documentIndex]) {
+            throw "Task context loader returned the wrong document mapping or fingerprint: Profile=$profileLabel; index=$documentIndex"
+        }
+    }
+    $last = $null
+    $previousChunkHash = $null
+    $emittedBundleBuilder = [Text.StringBuilder]::new()
+    foreach ($chunkNumber in 1..$totalChunks) {
+        $chunk = if ($chunkNumber -eq 1) {
+            $first
+        }
+        else {
+            Invoke-TaskContextLoaderValidation -Profile $profileList -FeatureNumber $case.FeatureNumber -ChunkNumber $chunkNumber -PreviousChunkSha256 $previousChunkHash -ExpectedBundleSha256 $bundleHash -BackendRoot $case.BackendRoot
+        }
+        $receiptSeparatorIndex = $chunk.Text.IndexOf("`n`n")
+        if ($receiptSeparatorIndex -lt 0) {
+            throw "Task context loader did not separate the Receipt from its body: Profile=$profileLabel; Chunk=$chunkNumber/$totalChunks"
+        }
+        $chunkBody = $chunk.Text.Substring($receiptSeparatorIndex + 2)
+        $recalculatedChunkHash = Get-ValidationTextSha256 -Text $chunkBody
+        [void]$emittedBundleBuilder.Append($chunkBody)
+        $chunkHashMatch = [regex]::Match($chunk.Text, '(?m)^chunkSha256=(?<hash>[0-9a-f]{64})$')
+        $expectedComplete = if ($chunkNumber -eq $totalChunks) { 'true' } else { 'false' }
+        if ($chunk.ExitCode -ne 0 -or
+            $chunk.Text -notmatch "(?m)^chunk=$chunkNumber/$totalChunks$" -or
+            $chunk.Text -notmatch "(?m)^complete=$expectedComplete$" -or
+            $chunk.Text -notmatch "(?m)^bundleSha256=$bundleHash$" -or
+            $chunk.Text -notmatch "(?m)^chunkSha256=$($expected.ChunkHashes[$chunkNumber - 1])$" -or
+            $recalculatedChunkHash -ne $expected.ChunkHashes[$chunkNumber - 1] -or
+            -not $chunkHashMatch.Success -or
+            [Text.Encoding]::UTF8.GetByteCount($chunk.Text) -gt 16384) {
+            throw "Task context loader sequence is incomplete or inconsistent: Profile=$profileLabel; FeatureNumber=$($case.FeatureNumber); Chunk=$chunkNumber/$totalChunks"
+        }
+        $previousChunkHash = $chunkHashMatch.Groups['hash'].Value
+        $last = $chunk
+    }
+    if ($last.ExitCode -ne 0 -or
+        $last.Text -notmatch "(?m)^chunk=$totalChunks/$totalChunks$" -or
+        $last.Text -notmatch '(?m)^complete=true$' -or
+        $last.Text -notmatch '===== END ' -or
+        [Text.Encoding]::UTF8.GetByteCount($last.Text) -gt 16384) {
+        throw "Task context loader did not return a bounded final Chunk: Profile=$profileLabel; FeatureNumber=$($case.FeatureNumber)"
+    }
+    if ((Get-ValidationTextSha256 -Text $emittedBundleBuilder.ToString()) -ne $bundleHash) {
+        throw "Task context loader emitted bodies that do not reconstruct the advertised bundle: Profile=$profileLabel"
+    }
+    $profileBundles[$profileLabel] = $emittedBundleBuilder.ToString()
+}
+
+function Test-RequiredProfileRule {
+    param(
+        [Parameter(Mandatory = $true)][string]$Bundle,
+        [Parameter(Mandatory = $true)]$Rule
+    )
+
+    $beginMarker = "===== BEGIN $($Rule.OwnerPath) ====="
+    $endMarker = "===== END $($Rule.OwnerPath) ====="
+    $beginIndex = $Bundle.IndexOf($beginMarker, [StringComparison]::Ordinal)
+    $endIndex = $Bundle.IndexOf($endMarker, [StringComparison]::Ordinal)
+    if ($beginIndex -lt 0 -or $endIndex -le $beginIndex) {
+        return $false
+    }
+    $ownerSection = $Bundle.Substring($beginIndex, ($endIndex + $endMarker.Length) - $beginIndex)
+    foreach ($clause in $Rule.Clauses) {
+        if ($ownerSection -notmatch $clause) {
+            return $false
+        }
+    }
+    return $true
+}
+
+$requiredProfileRules = @(
+    [pscustomobject]@{ Id = 'RUNTIME-CHANGE-SCOPE'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-CHANGE-SCOPE', 'staged·unstaged·untracked', 'origin/dev.+현재 Work ID Commit', '다른 Work ID.+범위에 넣지 않는다', '함께 보고 정한다', '확정한 Profile·Service·SourceRoot만', '모호함이 남으면 추측하지 않고 한 번 질문'); WeakeningPattern = '함께 보고 정한다'; WeakeningReplacement = '선택적으로 본다' }
+    [pscustomobject]@{ Id = 'RUNTIME-HMR-BAN'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-HMR-BAN', 'package\.json.+Lockfile.+Dockerfile.+Vite·Nginx', 'Backend·Orchestrator·\s*MCP Server', 'HMR을 사용하지 않고.+full'); WeakeningPattern = 'HMR을 사용하지 않고'; WeakeningReplacement = 'HMR을 사용할 수 있고' }
+    [pscustomobject]@{ Id = 'RUNTIME-FULL-REBUILD'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-FULL-REBUILD', '전체 동기화에서 Source가 하나라도 갱신', '전체·로컬 재기동을', '명시하면 `full -Rebuild -ApproveNetwork`', '네 활성 SourceRoot', '여러 Source 변경', '전체 재빌드 요청', 'DB·Flyway·Compose·Network·Secret 영향', 'Frontend 비-Live 변경', 'BackendSourceRoot', 'FrontendSourceRoot', 'OrchestratorSourceRoot', 'McpSourceRoot', 'Rebuild 없는 기존 Image 기동으로 약화하지 않는다'); WeakeningPattern = 'Rebuild 없는 기존 Image 기동으로 약화하지 않는다'; WeakeningReplacement = 'Rebuild 없는 기존 Image 기동도 허용한다' }
+    [pscustomobject]@{ Id = 'RUNTIME-ISOLATED-HEALTH'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-ISOLATED-HEALTH', '건강한 Profile의 단일 Service만', '선택한 Profile 전체 Health를 확인', 'coding-runtime.+mcp-server.+격리 갱신', 'full.+에서만 허용', 'DB·Flyway·Volume Service는 대상에서 제외', 'DB·Volume을 변경하지 않는다'); WeakeningPattern = '선택한 Profile 전체 Health를 확인한다'; WeakeningReplacement = '해당 Service 상태만 확인한다' }
+    [pscustomobject]@{ Id = 'RUNTIME-FAIL-CLOSEOUT'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-FAIL-CLOSEOUT', '같은 원인이 두 번 실패', 'PARTIAL.+NOT VERIFIED', '정확한 재현 명령', '세 번째 재시도를 중단'); WeakeningPattern = '세 번째 재시도를 중단'; WeakeningReplacement = '세 번째 재시도를 계속' }
+    [pscustomobject]@{ Id = 'RUNTIME-SERIAL-INTEGRATION'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-SERIAL-INTEGRATION', 'Source 구현·단위 테스트는 병렬', '공유 DB·Volume', 'full.+Flyway.+한 번에 하나만 직렬 실행'); WeakeningPattern = '한 번에 하나만 직렬 실행한다'; WeakeningReplacement = '병렬 실행할 수 있다' }
+    [pscustomobject]@{ Id = 'DATABASE-FLYWAY-LIMIT'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('DATABASE-FLYWAY-LIMIT', 'Migration·Schema 변경 검증 또는 공식.+full.+필요할 때만 실행', '후보 SHA 조합을 고정하기 전에는 단위·계약·정적 검증을 우선', '코드 수정마다.+full.+Flyway를 반복하지 않는다', '세 번째 실행은 팀장 승인', 'Repair/Clean.+DB 초기화.+History 수정.+Volume 삭제'); WeakeningPattern = '필요할 때만 실행한다'; WeakeningReplacement = '언제든 실행할 수 있다' }
+    [pscustomobject]@{ Id = 'RUNTIME-LOCAL-WRAPPER'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-LOCAL-WRAPPER', 'start-local-cms\.ps1', 'ApproveLocalMutation', 'CMS-only는 `spring-core`', 'MCP Server를 포함한 `full`', '이미 정상이고 반영할 Source 변경이 없으면 기존 Container를 재사용하고 즉시 종료', 'Image가 없으면 Network 승인', 'spring-core.+Coding Runtime과 MCP Server를 성공 조건에서 제외', '임의 Docker 명령으로 우회하지 않는다'); WeakeningPattern = '임의 Docker 명령으로 우회하지 않는다'; WeakeningReplacement = '임의 Docker 명령으로 우회할 수 있다' }
+    [pscustomobject]@{ Id = 'RUNTIME-FRONTEND-LIVE'; Profiles = @('Runtime', 'Database'); OwnerPath = 'docs/workspace/TEAM_MULTI_OS_LOCAL_DEVELOPMENT_SPEC_v0.1.md'; Clauses = @('RUNTIME-FRONTEND-LIVE', '사용자가 Frontend-only 반영을 명시', '`src`', '`public`', '`index\.html`', 'CMS가 건강할 때만', '한 번에 하나의 활성 Work ID', 'Worktree 전환 전에 기존 Watch를 종료', 'Git·Secret·`node_modules`', 'RestoreImageOnly', 'PR 전에는 Watch를', '종료하고 실제 Image Build', 'Frontend 테스트·타입 검사와 전체 Health'); WeakeningPattern = 'CMS가 건강할 때만'; WeakeningReplacement = 'CMS 상태와 관계없이' }
+    [pscustomobject]@{ Id = 'GIT-ADMIN-MERGE-GATE'; Profiles = @('Git'); OwnerPath = 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md'; Clauses = @('GIT-ADMIN-MERGE-GATE', 'tmdwns0531', 'Merge가 명시적으로', '승인됐으며 PR Base가 `dev`', 'Head SHA', 'mergeable=MERGEABLE', '필수 리뷰로만', 'gh pr merge --merge --admin', '경우에만'); WeakeningPattern = '경우에만'; WeakeningReplacement = '경우에도' }
+    [pscustomobject]@{ Id = 'GIT-MERGED-CLEANUP-GATE'; Profiles = @('Git'); OwnerPath = 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md'; Clauses = @('GIT-MERGED-CLEANUP-GATE`: 현재 Work ID의 PR Base가 `dev`', 'GitHub에서 병합', 'origin/dev.+조상', 'Worktree는 깨끗할 때만', '열린 PR.+미병합 Branch.+추가 Commit.+Dirty·Diverged·local-only', '확인한 뒤에만'); WeakeningPattern = '확인한 뒤에만'; WeakeningReplacement = '확인 전에도' }
+    [pscustomobject]@{ Id = 'BACKEND-DB-PR-SEVEN'; Profiles = @('Database'); OwnerPath = 'backend-source/docs/DATABASE_MIGRATION_POLICY_v0.2.md'; Clauses = @('PR 전 필수 검증', '빈 Core DB에서 Head까지 Upgrade', 'origin/dev.+새 Head까지 Upgrade', 'flyway_schema_history.+단일 성공 History', '미적용 Revision 0건·변경 0건', 'Runtime Role의 DDL 시도 실패', '자동 DDL 0건', 'Extension·Index·Constraint 존재 확인'); WeakeningPattern = 'PR 전 필수 검증'; WeakeningReplacement = 'PR 전 선택 검증' }
+    [pscustomobject]@{ Id = 'TEAMLEAD-ACTIVATION'; Profiles = @('TeamLead'); OwnerPath = 'docs/team/TEAM_LEAD_PROTOCOL_v0.1.md'; Clauses = @('Simple is best', '팀장 역할 전환을 승인', '팀장 프로토콜로 전환할까요\?', '승인 전에는'); WeakeningPattern = '승인 전에는'; WeakeningReplacement = '승인 전에도' }
+)
+
+foreach ($rule in $requiredProfileRules) {
+    foreach ($profile in $rule.Profiles) {
+        $bundle = $profileBundles[$profile]
+        if (-not $bundle -or -not (Test-RequiredProfileRule -Bundle $bundle -Rule $rule)) {
+            throw "Required Profile rule is missing or unreachable: id=$($rule.Id); profile=$profile; owner=$($rule.OwnerPath)"
+        }
+        $deletedRule = $bundle.Replace($rule.Clauses[0], 'REMOVED_REQUIRED_RULE')
+        if (Test-RequiredProfileRule -Bundle $deletedRule -Rule $rule) {
+            throw "Required Profile rule deletion was not detected: id=$($rule.Id); profile=$profile"
+        }
+        $weakenedRule = $bundle.Replace($rule.WeakeningPattern, $rule.WeakeningReplacement)
+        if ($weakenedRule -eq $bundle -or (Test-RequiredProfileRule -Bundle $weakenedRule -Rule $rule)) {
+            throw "Required Profile rule weakening was not detected: id=$($rule.Id); profile=$profile"
+        }
+        $unreachableRule = $bundle.Replace("===== BEGIN $($rule.OwnerPath) =====", '===== BEGIN omitted-owner.md =====')
+        if (Test-RequiredProfileRule -Bundle $unreachableRule -Rule $rule) {
+            throw "Required Profile owner omission was not detected: id=$($rule.Id); profile=$profile"
+        }
+    }
+}
+
+$gitCleanupRule = @($requiredProfileRules | Where-Object Id -eq 'GIT-MERGED-CLEANUP-GATE')[0]
+$gitCleanupBundle = $profileBundles['Git']
+$gitCleanupWithoutBase = $gitCleanupBundle.Replace(
+    'GIT-MERGED-CLEANUP-GATE`: 현재 Work ID의 PR Base가 `dev`이고',
+    'GIT-MERGED-CLEANUP-GATE`: 현재 Work ID의 PR이'
+)
+if ($gitCleanupWithoutBase -eq $gitCleanupBundle -or
+    $gitCleanupWithoutBase -notmatch '(?s)GIT-ADMIN-MERGE-GATE.*?PR Base가 `dev`' -or
+    (Test-RequiredProfileRule -Bundle $gitCleanupWithoutBase -Rule $gitCleanupRule)) {
+    throw 'Merged cleanup validation must reject a missing cleanup PR Base=dev condition while preserving the admin-merge condition.'
+}
+
+if ($PublicOnly) {
+    $syntheticAiRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-public-ai-context-" + [Guid]::NewGuid().ToString('N'))
+    try {
+        $syntheticAiScript = Join-Path $syntheticAiRoot 'scripts/load-task-context.ps1'
+        $syntheticAiCore = Join-Path $syntheticAiRoot 'docs/product/ai-core'
+        $syntheticAiTeam = Join-Path $syntheticAiRoot 'docs/team'
+        New-Item -ItemType Directory -Path (Split-Path -Parent $syntheticAiScript), $syntheticAiCore, $syntheticAiTeam -Force | Out-Null
+        Copy-Item -LiteralPath $taskContextLoaderPath -Destination $syntheticAiScript
+        Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md') -Destination $syntheticAiTeam
+        Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md') -Destination (Split-Path -Parent $syntheticAiCore)
+        Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md') -Destination $syntheticAiCore
+        $syntheticAiDocuments = @(
+            [pscustomobject]@{ Number = 2; Name = '02_DOMAIN_RAG_REPLACEMENT.md' }
+            [pscustomobject]@{ Number = 3; Name = '03_RAG_QUALITY.md' }
+            [pscustomobject]@{ Number = 4; Name = '04_LIMITED_LLM_DEVOPS.md' }
+            [pscustomobject]@{ Number = 5; Name = '05_NATURAL_LANGUAGE_CMS.md' }
+            [pscustomobject]@{ Number = 6; Name = '06_ORCHESTRATION_CONTROL.md' }
+        )
+        foreach ($syntheticDocument in $syntheticAiDocuments) {
+            [IO.File]::WriteAllText(
+                (Join-Path $syntheticAiCore $syntheticDocument.Name),
+                "# Synthetic assigned AI feature $($syntheticDocument.Number)`n",
+                [Text.UTF8Encoding]::new($false)
+            )
+        }
+        foreach ($selectedDocument in $syntheticAiDocuments) {
+            $syntheticAi = Invoke-TaskContextLoaderValidation -Profile 'AiFeature' -FeatureNumber $selectedDocument.Number -ChunkNumber 1 -LoaderPath $syntheticAiScript
+            if ($syntheticAi.ExitCode -ne 0 -or
+                $syntheticAi.Text -notmatch 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0\.1\.md' -or
+                $syntheticAi.Text -notmatch [regex]::Escape("docs/product/ai-core/$($selectedDocument.Name)")) {
+                throw "Public-only validation did not preserve the synthetic AiFeature routing contract: feature=$($selectedDocument.Number)"
+            }
+            foreach ($unselectedDocument in @($syntheticAiDocuments | Where-Object Number -ne $selectedDocument.Number)) {
+                if ($syntheticAi.Text -match [regex]::Escape("docs/product/ai-core/$($unselectedDocument.Name)")) {
+                    throw "Public-only validation loaded an unselected synthetic AiFeature document: selected=$($selectedDocument.Number); unexpected=$($unselectedDocument.Number)"
+                }
+            }
+        }
+    }
+    finally {
+        if (Test-Path -LiteralPath $syntheticAiRoot) {
+            $resolvedSyntheticAiRoot = [IO.Path]::GetFullPath($syntheticAiRoot)
+            $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+            if (-not $resolvedSyntheticAiRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Refusing to remove public-only AiFeature fixture outside the temp root: $resolvedSyntheticAiRoot"
+            }
+            Remove-Item -LiteralPath $resolvedSyntheticAiRoot -Recurse -Force
+        }
+    }
+}
+
+$invalidAiContext = Invoke-TaskContextLoaderValidation -Profile 'AiFeature'
+if ($invalidAiContext.ExitCode -eq 0 -or $invalidAiContext.Text -notmatch 'TASK CONTEXT BLOCKED:') {
+    throw 'AiFeature context loading must fail closed without a valid FeatureNumber.'
+}
+
+$missingBackendRoot = Invoke-TaskContextLoaderValidation -Profile 'Database'
+if ($missingBackendRoot.ExitCode -eq 0 -or
+    $missingBackendRoot.Text -notmatch 'TASK CONTEXT BLOCKED:.*explicit absolute BackendSourceRoot') {
+    throw 'Database context loading must fail closed without BackendSourceRoot.'
+}
+$missingMultiBackendRoot = Invoke-TaskContextLoaderValidation -Profile @('Runtime', 'Database', 'Git')
+if ($missingMultiBackendRoot.ExitCode -eq 0 -or
+    $missingMultiBackendRoot.Text -notmatch 'TASK CONTEXT BLOCKED:.*explicit absolute BackendSourceRoot') {
+    throw 'A multi-Profile context including Database must fail closed without BackendSourceRoot.'
+}
+
+$missingBackendPolicyRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-missing-backend-policy-" + [Guid]::NewGuid().ToString('N'))
+try {
+    New-Item -ItemType Directory -Path $missingBackendPolicyRoot -Force | Out-Null
+    [IO.File]::WriteAllText((Join-Path $missingBackendPolicyRoot '.git'), "gitdir: validation-only`n", [Text.UTF8Encoding]::new($false))
+    $missingBackendPolicy = Invoke-TaskContextLoaderValidation -Profile 'Database' -BackendRoot $missingBackendPolicyRoot
+    if ($missingBackendPolicy.ExitCode -eq 0 -or
+        $missingBackendPolicy.Text -notmatch 'TASK CONTEXT BLOCKED:.*Required Backend database policy is missing') {
+        throw 'Database context loading must fail closed when the exact Backend policy is missing.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $missingBackendPolicyRoot) {
+        $resolvedMissingBackendPolicyRoot = [IO.Path]::GetFullPath($missingBackendPolicyRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedMissingBackendPolicyRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove missing Backend policy fixture outside the temp root: $resolvedMissingBackendPolicyRoot"
+        }
+        Remove-Item -LiteralPath $resolvedMissingBackendPolicyRoot -Recurse -Force
+    }
+}
+
+$wrongProfileBackendRoot = Invoke-TaskContextLoaderValidation -Profile 'Git' -BackendRoot $BackendSourceRoot
+if ($wrongProfileBackendRoot.ExitCode -eq 0 -or
+    $wrongProfileBackendRoot.Text -notmatch 'TASK CONTEXT BLOCKED:.*accepted only when Profile includes Database') {
+    throw 'BackendSourceRoot must not be accepted by non-Database Profiles.'
+}
+
+$invalidMultiProfile = Invoke-TaskContextLoaderValidation -Profile @('Git', 'Unknown')
+if ($invalidMultiProfile.ExitCode -eq 0 -or
+    $invalidMultiProfile.Text -notmatch "TASK CONTEXT BLOCKED:.*Invalid Profile 'Unknown'") {
+    throw 'A multi-Profile context must fail closed when any requested Profile is invalid.'
+}
+
+$invalidChunk = Invoke-TaskContextLoaderValidation -Profile 'Product' -ChunkNumber 9999
+if ($invalidChunk.ExitCode -eq 0 -or $invalidChunk.Text -notmatch 'TASK CONTEXT BLOCKED:.*ChunkNumber is out of range') {
+    throw 'Task context loading must fail closed for a missing Chunk.'
+}
+
+$outOfOrderChunk = Invoke-TaskContextLoaderValidation -Profile 'Git' -ChunkNumber 2
+if ($outOfOrderChunk.ExitCode -eq 0 -or $outOfOrderChunk.Text -notmatch 'TASK CONTEXT BLOCKED:.*requires the first Receipt bundleSha256') {
+    throw 'Task context loading must fail closed for an out-of-order Chunk.'
+}
+
+$gitFirstForOrder = Invoke-TaskContextLoaderValidation -Profile 'Git' -ChunkNumber 1
+$gitBundleForOrder = [regex]::Match($gitFirstForOrder.Text, '(?m)^bundleSha256=(?<hash>[0-9a-f]{64})$').Groups['hash'].Value
+$wrongPreviousChunk = Invoke-TaskContextLoaderValidation -Profile 'Git' -ChunkNumber 2 -ExpectedBundleSha256 $gitBundleForOrder -PreviousChunkSha256 ('0' * 64)
+if ($wrongPreviousChunk.ExitCode -eq 0 -or
+    $wrongPreviousChunk.Text -notmatch 'TASK CONTEXT BLOCKED:.*PreviousChunkSha256 does not match ChunkNumber=1') {
+    throw 'Task context loading must fail closed for an incorrect previous Chunk hash.'
+}
+
+$mutableContextRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-context-mutable-" + [Guid]::NewGuid().ToString('N'))
+try {
+    $mutableLoaderPath = Join-Path $mutableContextRoot 'scripts/load-task-context.ps1'
+    $mutableTeamPath = Join-Path $mutableContextRoot 'docs/team'
+    $mutableWorkspacePath = Join-Path $mutableContextRoot 'docs/workspace'
+    New-Item -ItemType Directory -Path (Split-Path -Parent $mutableLoaderPath), $mutableTeamPath, $mutableWorkspacePath -Force | Out-Null
+    Copy-Item -LiteralPath $taskContextLoaderPath -Destination $mutableLoaderPath
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/team/MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md') -Destination $mutableTeamPath
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md') -Destination $mutableTeamPath
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md') -Destination $mutableWorkspacePath
+    $mutableBootstrapPath = Join-Path $mutableWorkspacePath 'MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md'
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/workspace/MASTER_REPOSITORY_AND_BOOTSTRAP_SPEC_v0.2.md') -Destination $mutableBootstrapPath
+
+    $mutableFirst = Invoke-TaskContextLoaderValidation -Profile @('Master', 'Git') -ChunkNumber 1 -LoaderPath $mutableLoaderPath
+    $mutableBundleHash = [regex]::Match($mutableFirst.Text, '(?m)^bundleSha256=(?<hash>[0-9a-f]{64})$').Groups['hash'].Value
+    $mutableChunkHash = [regex]::Match($mutableFirst.Text, '(?m)^chunkSha256=(?<hash>[0-9a-f]{64})$').Groups['hash'].Value
+    if ($mutableFirst.ExitCode -ne 0 -or -not $mutableBundleHash -or -not $mutableChunkHash) {
+        throw 'Mutable context fixture could not produce its first Receipt.'
+    }
+    [IO.File]::AppendAllText($mutableBootstrapPath, "`nvalidation-only bundle mutation`n", [Text.UTF8Encoding]::new($false))
+    $staleBundleChunk = Invoke-TaskContextLoaderValidation -Profile @('Master', 'Git') -ChunkNumber 2 -PreviousChunkSha256 $mutableChunkHash -ExpectedBundleSha256 $mutableBundleHash -LoaderPath $mutableLoaderPath
+    if ($staleBundleChunk.ExitCode -eq 0 -or
+        $staleBundleChunk.Text -notmatch 'TASK CONTEXT BLOCKED:.*ExpectedBundleSha256 does not match the current document bundle') {
+        throw 'Multi-Profile context loading must fail closed when documents change between Chunks.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $mutableContextRoot) {
+        $resolvedMutableRoot = [IO.Path]::GetFullPath($mutableContextRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedMutableRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove mutable-context fixture outside the temp root: $resolvedMutableRoot"
+        }
+        Remove-Item -LiteralPath $resolvedMutableRoot -Recurse -Force
+    }
+}
+
+$oversizedContextRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-context-oversized-" + [Guid]::NewGuid().ToString('N'))
+try {
+    $oversizedLoaderPath = Join-Path $oversizedContextRoot 'scripts/load-task-context.ps1'
+    $oversizedProductPath = Join-Path $oversizedContextRoot 'docs/product'
+    $oversizedTeamPath = Join-Path $oversizedContextRoot 'docs/team'
+    New-Item -ItemType Directory -Path (Split-Path -Parent $oversizedLoaderPath), $oversizedProductPath, $oversizedTeamPath -Force | Out-Null
+    Copy-Item -LiteralPath $taskContextLoaderPath -Destination $oversizedLoaderPath
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md') -Destination $oversizedProductPath
+    $oversizedBuilder = [Text.StringBuilder]::new()
+    foreach ($lineNumber in 1..10000) {
+        [void]$oversizedBuilder.AppendLine("validation context line $lineNumber")
+    }
+    [IO.File]::WriteAllText(
+        (Join-Path $oversizedTeamPath 'LLM_PROJECT_STATUS_SNAPSHOT.md'),
+        $oversizedBuilder.ToString(),
+        [Text.UTF8Encoding]::new($false)
+    )
+    $oversizedBundle = Invoke-TaskContextLoaderValidation -Profile 'Product' -ChunkNumber 1 -LoaderPath $oversizedLoaderPath
+    if ($oversizedBundle.ExitCode -eq 0 -or
+        $oversizedBundle.Text -notmatch 'TASK CONTEXT BLOCKED:.*Context bundle exceeds the safety limit') {
+        throw 'Task context loading must fail closed when the complete bundle exceeds its safety limit.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $oversizedContextRoot) {
+        $resolvedOversizedRoot = [IO.Path]::GetFullPath($oversizedContextRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedOversizedRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove oversized-context fixture outside the temp root: $resolvedOversizedRoot"
+        }
+        Remove-Item -LiteralPath $resolvedOversizedRoot -Recurse -Force
+    }
+}
+
+$missingContextRoot = Join-Path ([IO.Path]::GetTempPath()) ("axms-context-missing-" + [Guid]::NewGuid().ToString('N'))
+try {
+    $missingContextScripts = Join-Path $missingContextRoot 'scripts'
+    $missingContextProduct = Join-Path $missingContextRoot 'docs/product'
+    New-Item -ItemType Directory -Path $missingContextScripts, $missingContextProduct -Force | Out-Null
+    Copy-Item -LiteralPath $taskContextLoaderPath -Destination (Join-Path $missingContextScripts 'load-task-context.ps1')
+    Copy-Item -LiteralPath (Join-Path $masterRoot 'docs/product/AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md') `
+        -Destination (Join-Path $missingContextProduct 'AX_Module_Studio_CMS_LOCAL_DEMO_MVP_SPEC_v1.0.md')
+
+    $missingDocumentArguments = @('-NoProfile')
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        $missingDocumentArguments += @('-ExecutionPolicy', 'Bypass')
+    }
+    $missingDocumentArguments += @('-File', (Join-Path $missingContextScripts 'load-task-context.ps1'), '-Profile', 'Product')
+    $previousErrorAction = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        $missingDocumentOutput = @(& $validationPowerShell @missingDocumentArguments 2>&1)
+        $missingDocumentExit = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
+    $missingDocumentText = ($missingDocumentOutput | ForEach-Object { $_.ToString() }) -join "`n"
+    if ($missingDocumentExit -eq 0 -or
+        $missingDocumentText -notmatch 'TASK CONTEXT BLOCKED:.*Required context document is missing: docs/team/LLM_PROJECT_STATUS_SNAPSHOT\.md') {
+        throw 'Task context loading must fail closed when a required document is missing.'
+    }
+}
+finally {
+    if (Test-Path -LiteralPath $missingContextRoot) {
+        $resolvedMissingRoot = [IO.Path]::GetFullPath($missingContextRoot)
+        $resolvedTempRoot = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
+        if (-not $resolvedMissingRoot.StartsWith($resolvedTempRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to remove missing-context fixture outside the temp root: $resolvedMissingRoot"
+        }
+        Remove-Item -LiteralPath $resolvedMissingRoot -Recurse -Force
     }
 }
 
@@ -349,7 +927,78 @@ if ($workspaceAgentTemplate -notmatch 'scripts/sync-workspace\.ps1') {
 if ($workspaceAgentTemplate -notmatch 'Master plus all four Source repositories') {
     throw 'Workspace AGENTS template must make five-repository synchronization the default pull scope.'
 }
-$masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'AGENTS.md')
+$masterAgentsPath = Join-Path $masterRoot 'AGENTS.md'
+$masterAgents = Get-Content -Raw -Encoding UTF8 -LiteralPath $masterAgentsPath
+$masterAgentsBytes = [Text.Encoding]::UTF8.GetByteCount($masterAgents)
+$instructionRouting = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/workspace/LLM_MODEL_INSTRUCTION_ROUTING_v0.1.md')
+$taskContextLoader = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'scripts/load-task-context.ps1')
+if ($masterAgentsBytes -gt 10240 -or
+    $masterAgents -notmatch 'Markdown 링크는 문서 본문을 자동으로 불러오지 않는다' -or
+    $masterAgents -notmatch 'load-task-context\.ps1' -or
+    $masterAgents -notmatch 'Profile을 입력 순서대로 한 번 호출' -or
+    $masterAgents -notmatch '같은 정규화 경로는 첫 등장 한 번만 출력' -or
+    $masterAgents -notmatch 'TASK CONTEXT BLOCKED' -or
+    $masterAgents -notmatch 'chunk=1/N' -or
+    $instructionRouting -notmatch 'ordinary Markdown link is routing text, not an import' -or
+    $instructionRouting -notmatch 'TASK CONTEXT PASS' -or
+    $instructionRouting -notmatch 'complete=true' -or
+    $instructionRouting -notmatch 'ExpectedBundleSha256' -or
+    $instructionRouting -notmatch '128 KiB' -or
+    $instructionRouting -notmatch 'BackendSourceRoot' -or
+    $instructionRouting -notmatch 'There is no parent-directory search or implicit canonical fallback' -or
+    $instructionRouting -notmatch 'first occurrence of each normalized document path once' -or
+    $instructionRouting -notmatch 'one-Profile call keeps the existing body and Receipt contract' -or
+    $workspaceAgentTemplate -notmatch 'Profile 목록을.+입력 순서대로 한 번 전달' -or
+    $taskContextLoader -notmatch '\[string\[\]\]\$Profile' -or
+    $taskContextLoader -notmatch '\$allowedProfiles' -or
+    $taskContextLoader -notmatch '\$seenDocuments' -or
+    $taskContextLoader -notmatch 'BackendSourceRoot' -or
+    $taskContextLoader -notmatch 'backend-source/docs/DATABASE_MIGRATION_POLICY_v0\.2\.md' -or
+    $taskContextLoader -notmatch 'backendPolicySha256' -or
+    $taskContextLoader -notmatch 'TASK CONTEXT RECEIPT v1' -or
+    $taskContextLoader -notmatch 'PreviousChunkSha256' -or
+    $taskContextLoader -notmatch 'ExpectedBundleSha256' -or
+    $taskContextLoader -notmatch 'MaxBundleBytes' -or
+    $taskContextLoader -notmatch 'TASK CONTEXT BLOCKED') {
+    throw "Master task-context routing must be fail-closed and AGENTS.md must stay at or below 10240 bytes; bytes=$masterAgentsBytes"
+}
+$requiredMasterRules = [ordered]@{
+    'five repository boundary' = 'Master, Frontend, Backend, Orchestrator, MCP Server'
+    'Master common document owner' = 'Master 공통 기준과 공통 문서는 Min Seungjun'
+    'assigned AI document owner' = 'AI 핵심 기능 담당자는 배정된 상세 문서만 수정'
+    'simple scope' = 'Simple is best'
+    'scope expansion approval' = '범위를 넘는.+승인'
+    'Git as implementation truth' = 'Git이 구현 상태의 기준'
+    'dirty and local-only preservation' = 'Dirty·Diverged·local-only'
+    'destructive action ban' = '자동 Reset, Clean, Stash, Checkout, Rebase, 충돌 해결, DB 초기화, Flyway Repair/Clean, Volume 삭제를 금지'
+    'secret protection' = 'Secret 값을 Prompt, Chat, 명령, Log, Commit, PR에 넣지 않는다'
+    'privileged and external access approval' = 'Network, 로그인/MFA, 관리자 권한, 설치, 재부팅, Cloud/Prod/SSH는 명시적 승인 후 수행'
+    'external action approval' = 'Notion 쓰기, Git Push, PR 생성·Merge, 배포는 각각 현재 요청에서 승인된 경우에만 수행'
+    'fail closed context' = 'MASTER CONTEXT BLOCKED'
+    'bounded task loader' = 'load-task-context\.ps1'
+    'latest dev feature worktree' = '최신 `origin/dev` 기반 독립 Worktree'
+    'pre-work gate' = 'start-feature-work\.ps1'
+    'pre-PR gate' = 'prepare-dev-pr\.ps1'
+    'AI work loads Git policy' = '(?m)^\| AI 2~6 .+\| `AiFeature`, `Git` \|'
+    'Flyway self-reservation exception' = 'FLYWAY_RESERVATION_LEDGER\.md`의 자기 작업 예약 행'
+    'shared contract conflict check' = '공개 계약, API, Schema, App Shell, Compose.+진행 중인 의존 작업'
+    'dev-only PR' = 'Every agent-created pull request.+targets `dev`'
+    'direct push ban' = '`dev`와 `main` 직접 Push'
+    'unmerged work preservation' = '열린 PR, 미병합 Branch, 병합 후 추가 Commit, Dirty Worktree를 자동 삭제하지 않는다'
+    'document change is not Git approval' = '문서 변경은 Commit, Push, PR, Merge를 자동으로 승인하지 않는다'
+    'runtime mode selection' = '(?s)`full`.*`frontend-live`.*`isolated`'
+    'unsafe partial runtime update ban' = 'DB·Flyway·Compose·Network·Secret 영향 또는 여러 Source 변경은 부분 갱신하지 않는다'
+    'third integration run approval' = '세 번째 실행은 팀장 승인이 필요'
+    'team-lead activation approval' = '전환 승인을 한 번 요청'
+    'other owner document protection' = '다른 담당자의 문서는 수정하지 않는다'
+    'functional claim evidence' = '기능 claim은 실행한 테스트, 코드로 확인한 경계, 미검증 항목을 구분'
+    'final Git status' = '완료 직전에 Git 상태를 다시 확인'
+}
+foreach ($rule in $requiredMasterRules.GetEnumerator()) {
+    if ($masterAgents -notmatch $rule.Value) {
+        throw "Reduced Master AGENTS is missing a required invariant: $($rule.Key)"
+    }
+}
 $fullSyncAliases = @('전체 Git 최신화', '워크스페이스 최신화')
 foreach ($pullAlias in $fullSyncAliases) {
     if ($workspaceAgentTemplate -notmatch [regex]::Escape($pullAlias) -or
@@ -358,9 +1007,8 @@ foreach ($pullAlias in $fullSyncAliases) {
     }
 }
 if ($workspaceAgentTemplate -notmatch 'PostToolUse' -or
-    $masterAgents -notmatch 'PostToolUse' -or
     $workspaceAgentTemplate -notmatch '적용 모드를 LLM이 판단' -or
-    $masterAgents -notmatch '적용 대상을 판단') {
+    $masterAgents -notmatch '(?s)`full`.*`frontend-live`.*`isolated`') {
     throw 'Master and Workspace AGENTS policies must checkpoint successful Git pulls and leave runtime-mode selection to the LLM.'
 }
 if ($workspaceAgentTemplate -notmatch 'start-feature-work\.ps1' -or
@@ -675,10 +1323,60 @@ if ($masterAgents -notmatch $devOnlyPrPattern -or
     throw 'Master and Workspace AGENTS policies must route every agent-created PR to dev and reserve main for manual promotion.'
 }
 $statusSnapshot = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/team/LLM_PROJECT_STATUS_SNAPSHOT.md')
+$releaseCloseout = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/product/ai-core/AI_CORE_RELEASE_CLOSEOUT.md')
 if ($statusSnapshot -notmatch 'Snapshot-Version:' -or
     $statusSnapshot -notmatch 'MASTER UPDATE COMPLETE' -or
     $statusSnapshot -notmatch 'MASTER CONTEXT PASS') {
     throw 'LLM project-status snapshot must define the versioned team-lead handoff and local recognition handshake.'
+}
+function Test-SnapshotCloseoutConflict {
+    param(
+        [Parameter(Mandatory = $true)][string]$Snapshot,
+        [Parameter(Mandatory = $true)][string]$Closeout
+    )
+
+    $snapshotHeader = ($Snapshot -split '(?m)^##\s', 2)[0]
+    $closeoutHeader = ($Closeout -split '(?m)^##\s', 2)[0]
+    $currentBasisMatch = [regex]::Match(
+        $Snapshot,
+        '(?ms)^## 현재 기준[^\r\n]*\r?\n(?<body>.*?)(?=^##\s|\z)'
+    )
+    $currentBasis = if ($currentBasisMatch.Success) { $currentBasisMatch.Groups['body'].Value } else { '' }
+
+    $closeoutIsOpen = $closeoutHeader -match '(?m)^> 상태: `OPEN`\r?$'
+    $snapshotClaimsCurrentDone =
+        $snapshotHeader -match '(?m)^> Snapshot-Version:\s*`[^`\r\n]*closeout-done[^`\r\n]*`\s*\r?$' -or
+        $currentBasis -match '(?m)^- 현재 상태:[^\r\n]*DONE'
+    return $closeoutIsOpen -and $snapshotClaimsCurrentDone
+}
+$syntheticOpenCloseout = "# Closeout`r`n`r`n> 상태: ``OPEN```r`n"
+$syntheticDoneCloseout = "# Closeout`r`n`r`n> 상태: ``DONE```r`n"
+$syntheticCurrentDoneSnapshot = "# Snapshot`r`n`r`n> Snapshot-Version: ``v-test-closeout-done```r`n`r`n## 현재 기준`r`n`r`n- 현재 상태: DONE`r`n"
+$syntheticPastDoneCitationSnapshot = "# Snapshot`r`n`r`n> Snapshot-Version: ``v-test-closeout-open```r`n`r`n## 현재 기준`r`n`r`n- 현재 상태: OPEN`r`n`r`n## 과거 기록`r`n`r`n> Snapshot-Version: ``v-old-closeout-done```r`n`r`n``29 / 29 DONE```r`n"
+if (-not (Test-SnapshotCloseoutConflict -Snapshot $syntheticCurrentDoneSnapshot -Closeout $syntheticOpenCloseout) -or
+    (Test-SnapshotCloseoutConflict -Snapshot $syntheticPastDoneCitationSnapshot -Closeout $syntheticOpenCloseout) -or
+    (Test-SnapshotCloseoutConflict -Snapshot $syntheticCurrentDoneSnapshot -Closeout $syntheticDoneCloseout) -or
+    (Test-SnapshotCloseoutConflict -Snapshot $statusSnapshot -Closeout $releaseCloseout)) {
+    throw 'Snapshot and Closeout must not claim current DONE while Closeout remains OPEN.'
+}
+$docsIndex = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/README.md')
+$rootReadme = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'README.md')
+$setupPrompt = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/onboarding/TEAMMATE_LLM_LOCAL_SETUP_PROMPT_v0.1.md')
+$workPrompt = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/onboarding/TEAMMATE_LLM_WORK_START_PROMPT_v0.1.md')
+$techStack = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/architecture/TECH_STACK_AND_RATIONALE_v0.1.md')
+$futureConsiderations = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/product/AI_CORE_FUTURE_CONSIDERATIONS_v0.1.md')
+if ($docsIndex -notmatch 'AI_CORE_RELEASE_CLOSEOUT\.md' -or
+    $docsIndex -notmatch 'validate-master-scaffold\.ps1 -PublicOnly -BackendSourceRoot' -or
+    $rootReadme -notmatch 'Profile Runtime,Database,Git' -or
+    $setupPrompt -notmatch 'load-task-context\.ps1' -or
+    $setupPrompt -notmatch 'Profile Product,Git,Runtime,Master' -or
+    $setupPrompt -notmatch 'Database -BackendSourceRoot' -or
+    $workPrompt -notmatch 'Runtime.+Database.+Git' -or
+    $workPrompt -notmatch 'BackendSourceRoot' -or
+    $techStack -notmatch 'Windows PowerShell 5\.1·PowerShell 7' -or
+    $techStack -notmatch '## MCP Server' -or
+    $futureConsiderations -notmatch '현재 완료 상태가 아니다') {
+    throw 'Public routing links and current-state labels must remain reachable without loading personal AI documents.'
 }
 $teamLeadProtocol = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/team/TEAM_LEAD_PROTOCOL_v0.1.md')
 $structureContract = Get-Content -Raw -Encoding UTF8 -LiteralPath (Join-Path $masterRoot 'docs/product/ai-core/AI_CORE_DOCUMENT_STRUCTURE_CONTRACT_v0.1.md')
@@ -866,8 +1564,14 @@ foreach ($forbiddenDirectory in @(
 Write-Host "PASS: $($required.Count) required files"
 Write-Host 'PASS: manifest and both workspace JSON files parsed'
 Write-Host 'PASS: bounded full/checkpoint context with conditional AGENTS refresh after direct/functions.exec Git pull'
+Write-Host 'PASS: bounded fail-closed task-context Profiles with ordered Chunk bodies and bundle integrity'
+Write-Host "PASS: $($requiredProfileRules.Count) owner-scoped Profile rules reject deletion, weakening, and owner omission"
+if ($PublicOnly) {
+    Write-Host 'PASS: public-only validation uses synthetic AI 2~6 documents and does not read assigned personal document bodies'
+}
 Write-Host 'PASS: enforced pre-work Pull and pre-PR fetch gates with read-only pre-push receipt validation'
 Write-Host 'PASS: managed local-LLM policy, dev-only PR policy, and Claude routing'
+Write-Host "PASS: reduced Master AGENTS preserves $($requiredMasterRules.Count) inline invariants within 10240 bytes"
 Write-Host 'PASS: five canonical repository remotes'
 Write-Host 'PASS: all PowerShell scripts parsed'
 Write-Host 'PASS: no forbidden destructive command patterns'

@@ -6,18 +6,17 @@
 나는 AX Module Studio 팀원이다.
 
 이름/GitHub ID: <작업자>
-Slice ID 또는 Work Slug: <지정값>
+Work ID / Work Slug: <지정값>
 Task Version: <지정값 또는 N/A>
 Snapshot Version: <현재 값>
-변경 Repository: <Frontend/Backend/Orchestrator>
+변경 Repository: <Master/Frontend/Backend/Orchestrator/MCP Server>
 이번 완료 결과: <최소 CMS 기능 한 묶음>
 
-작업 전에 다음만 읽어라.
-1. Master AGENTS.md
-2. CMS 로컬 데모 최소 범위 문서
-3. 현재 상태 Snapshot
-4. 변경 Repository의 AGENTS.md
-5. DB 변경 시 Flyway 예약표
+작업 전에 Master AGENTS.md로 Trigger를 분류하고 `scripts/load-task-context.ps1`에 일치하는 Profile을
+입력 순서대로 한 번 전달해 중복 없는 모든 Chunk를 읽어라. Source 작업은 해당 Repository의 AGENTS.md도 읽는다.
+제품·Source 작업은 `Product,Git`, DB·Schema·Flyway는 `Database,Git`을 사용하고
+`Database`에는 활성 Backend Worktree의 절대 경로를 `-BackendSourceRoot`로 전달한다.
+로컬 `full`에서 Flyway를 실행하면 `-Profile Runtime,Database,Git` 한 호출을 사용한다.
 
 인식한 작업자, 범위, Repository, origin/dev와 로컬 변경 보존 상태를 짧게 보고하고
 MASTER CONTEXT PASS 또는 정확한 MASTER CONTEXT BLOCKED를 선언하라.

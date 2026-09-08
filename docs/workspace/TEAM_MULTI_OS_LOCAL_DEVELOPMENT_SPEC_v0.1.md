@@ -63,3 +63,45 @@ reinstalled PC, the local LLM must:
 
 The teammate should not manually translate commands between operating systems; the local LLM selects
 the correct executable and reports any unavoidable human boundary.
+
+## 6. 작업별 Runtime·Flyway 판단
+
+- `RUNTIME-CHANGE-SCOPE`: 실행 모드는 현재 Work ID의 활성 Source Worktree에 있는 staged·unstaged·untracked 파일과
+  `origin/dev`에 아직 없는 현재 Work ID Commit을 함께 보고 정한다. 다른 Work ID의 보존 Worktree는 범위에 넣지 않는다.
+  자연어 요청은 이 근거로 확정한 Profile·Service·SourceRoot만 Script에 전달하며, 안전한 실행 모드가 달라지는
+  모호함이 남으면 추측하지 않고 한 번 질문한다.
+- `RUNTIME-HMR-BAN`: Frontend `package.json`, Lockfile, Dockerfile, Vite·Nginx 설정이 바뀌었거나 Backend·Orchestrator·
+  MCP Server 변경이 함께 있으면 HMR을 사용하지 않고 `full` 재빌드·재기동을 사용한다.
+- `RUNTIME-FULL-REBUILD`: 직전 전체 동기화에서 Source가 하나라도 갱신됐거나 사용자가 전체·로컬 재기동을
+  명시하면 `full -Rebuild -ApproveNetwork`와 네 활성 SourceRoot를 사용한다. Rebuild 없는 기존 Image 기동으로 약화하지 않는다.
+  여러 Source 변경, 전체 재빌드 요청, DB·Flyway·Compose·Network·Secret 영향 또는 Frontend 비-Live 변경을
+  Image에 반영할 때도 같은 옵션과 활성 `BackendSourceRoot`, `FrontendSourceRoot`, `OrchestratorSourceRoot`,
+  `McpSourceRoot` 조합을 모두 전달한다.
+- `RUNTIME-ISOLATED-HEALTH`: 건강한 Profile의 단일 Service만 격리 갱신할 수 있으며, 갱신 뒤에는 해당
+  Service만이 아니라 선택한 Profile 전체 Health를 확인한다. `coding-runtime`과 `mcp-server` 격리 갱신은
+  `full`에서만 허용하고 DB·Flyway·Volume Service는 대상에서 제외하며 DB·Volume을 변경하지 않는다.
+- `RUNTIME-FAIL-CLOSEOUT`: 범위 밖 Service·선행 작업·공유 Volume·Secret이 원인이거나 같은 원인이 두 번 실패하면
+  추가 보완·세 번째 재시도를 중단하고 `PARTIAL` 또는 `NOT VERIFIED`와 정확한 재현 명령을 보고한다.
+- `RUNTIME-SERIAL-INTEGRATION`: 독립 Worktree의 Source 구현·단위 테스트는 병렬로 할 수 있지만 공유 DB·Volume을
+  사용하는 `full`·Flyway 통합 검증은 한 번에 하나만 직렬 실행한다.
+- `DATABASE-FLYWAY-LIMIT`: Flyway는 Migration·Schema 변경 검증 또는 공식 `full` 통합 흐름에 필요할 때만 실행한다.
+  후보 SHA 조합을 고정하기 전에는 단위·계약·정적 검증을 우선하고 코드 수정마다 `full`·Flyway를 반복하지 않는다.
+  후보 SHA 조합에서 기본 한 번, 현재 범위 Source 결함 수정 뒤 한 번만 재검증하며 세 번째 실행은 팀장 승인이 필요하다.
+  관련 없는 변경의 중간 검증으로 단독 실행하거나 Repair/Clean, DB 초기화, History 수정, Volume 삭제로 통과시키지 않는다.
+
+### 로컬 Wrapper 보존 조건
+
+- `RUNTIME-LOCAL-WRAPPER`: 명시적인 로컬 실행 요청은 `scripts/start-local-cms.ps1`과
+  `-ApproveLocalMutation`을 사용한다. CMS-only는 `spring-core`, 전체·로컬 재기동은 MCP Server를 포함한 `full`이다.
+  요청 Profile이 이미 정상이고 반영할 Source 변경이 없으면 기존 Container를 재사용하고 즉시 종료한다.
+  중지 상태는 기존 Image로 기동하되 최초 실행처럼 Image가 없으면 Network 승인 뒤 `-ApproveNetwork`를 추가한다.
+  `spring-core`는 Coding Runtime과 MCP Server를 성공 조건에서 제외한다. 공통 Script의 정확한 차단 원인만
+  수정하며 전체 실행 실패를 임의 Docker 명령으로 우회하지 않는다.
+
+### Frontend Live 보존 조건
+
+- `RUNTIME-FRONTEND-LIVE`: 사용자가 Frontend-only 반영을 명시하고 변경이 `src`, `public`, `index.html`에만
+  있으며 CMS가 건강할 때만 `scripts/start-frontend-live.ps1`을 사용한다. 한 번에 하나의 활성 Work ID·
+  Frontend Worktree만 Watch하고 Worktree 전환 전에 기존 Watch를 종료한다. Git·Secret·`node_modules`는
+  동기화하지 않는다. Watch 종료 뒤 `-RestoreImageOnly`로 Image-only Frontend를 복원하며, PR 전에는 Watch를
+  종료하고 실제 Image Build, Frontend 테스트·타입 검사와 전체 Health를 통과한다.

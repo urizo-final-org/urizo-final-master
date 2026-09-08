@@ -54,6 +54,10 @@ The agent-executed wrapper is:
 
 Planning remains available through `-WhatIf`. A teammate should not be asked to copy routine commands manually when the agent can run them.
 
+After setup, task-specific authority is loaded through `scripts/load-task-context.ps1`; Source work begins
+through `scripts/start-feature-work.ps1`, and `scripts/prepare-dev-pr.ps1` is required immediately before
+Push or PR. The detailed Git lifecycle remains owned by `MASTER_SOURCE_NOTION_OPERATING_POLICY_v0.1.md`.
+
 축소 CMS의 일상적인 로컬 실행은 전체 Bootstrap을 반복하지 않고 다음 health-first Wrapper를 사용한다.
 
 ```powershell
@@ -61,7 +65,7 @@ Planning remains available through `-WhatIf`. A teammate should not be asked to 
 ```
 
 이미 정상인 `spring-core`는 즉시 재사용한다. 최초 Image 준비에는 `-ApproveNetwork`, Source 변경을
-Image에 반영할 때는 `-Rebuild -ApproveNetwork`를 추가한다. Coding Runtime은 CMS 실행 성공 조건이 아니다.
+Image에 반영할 때는 `-Rebuild -ApproveNetwork`를 추가한다. Coding Runtime과 MCP Server는 CMS 실행 성공 조건이 아니다.
 전체 시스템은 같은 Wrapper의 `-Profile full`을 사용한다. 재빌드 시 LLM은 현재 Work ID의 활성
 Backend·Frontend·Orchestrator·MCP SourceRoot를 전달한다. Frontend-only Live 변경과 단일 Service
 격리 변경은 각각 `start-frontend-live.ps1`, `rebuild-local-service.ps1`을 사용한다.
@@ -102,7 +106,8 @@ The LLM reports `SETUP PASS` only when:
 - the parent is not Git;
 - the generated multi-root workspace exists;
 - required local-full services and Flyway are healthy;
+- the `full` Profile includes the configured MCP Server and its health gate;
 - service URLs and any optional warning are reported;
 - no Secret value or full digest appears.
 
-Work assignment begins only after setup passes. The Integration/Contract owner then provides a single Slice ID and the teammate uses the work-start prompt.
+Work assignment begins only after setup passes. The owner then provides a single Work ID/work slug and the teammate uses the work-start prompt.
