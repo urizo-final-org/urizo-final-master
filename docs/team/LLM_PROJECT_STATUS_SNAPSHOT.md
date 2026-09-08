@@ -59,7 +59,7 @@ Snapshot-Version: v1.6-release-closeout-open
 Slice/Work-Slug: <assigned value>
 Task-Version: <assigned value or N/A>
 Worker: <name / GitHub ID>
-Repositories: <Frontend, Backend, Orchestrator 중 해당 항목>
+Repositories: <Master, Frontend, Backend, Orchestrator, MCP Server 중 해당 항목>
 Scope: <최소 CMS 완료 결과>
 Master-Commit: <checked-in commit>
 ```
