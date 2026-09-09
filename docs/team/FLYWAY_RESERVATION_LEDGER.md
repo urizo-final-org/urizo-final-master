@@ -57,7 +57,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260907072549518` | `RESERVED` | `axms-ai04-012-rework-attempt-workspace` | `relax_pipeline_attempt_workspace_unique` | `jcy644542` | `2026-10-07T07:25:49Z` | pending | `20260830111238338` |
 | `20260907084859068` | `MERGED` | `AI06-037` | `create_ai_job_monitoring_read_model` | `tmdwns0531` | `2026-10-07T08:48:59Z` | [#74](https://github.com/urizo-final-org/urizo-final-backend/pull/74) | `20260830025553074`, `20260830162029912`, `20260903023350023` |
 | `20260908161528042` | `RESERVED` | `AI04-016` | `allow_system_pr_repositories` | `tmdwns0531` | `2026-10-08T16:15:28Z` | pending | `20260903065222608` |
-| `20260909025316995` | `RESERVED` | `AI02-008` | `add_source_document_event_dates` | `tmdwns0531` | `2026-10-09T02:53:16Z` | pending | `20260908161528042` |
+| `20260909025316995` | `PR_OPEN` | `AI02-008` | `add_source_document_event_dates` | `tmdwns0531` | `2026-10-09T02:53:16Z` | [Backend #82](https://github.com/urizo-final-org/urizo-final-backend/pull/82) | `20260908161528042` |
 
 ## Reservation template
 
