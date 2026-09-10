@@ -61,7 +61,7 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 <!-- AI02-008 backend_merged_at_utc: 2026-09-09T04:59:19Z; backend_merge_sha: f8b967780a1406af6f22739cfeef6e8b6054a759 -->
 
 | `20260909091111803` | `MERGED` | `AI04-019` | `route_pr_completion_by_deployment_capability` | `tmdwns0531` | `2026-10-09T09:11:11Z` | [Backend #88](https://github.com/urizo-final-org/urizo-final-backend/pull/88) | `20260903145703043` |
-| `20260910025913767` | `RESERVED` | `AI04-021` | `allow_frontend_deployment_handlers` | `jcy644542` | `2026-10-10T02:59:13Z` | pending | `20260908161528042` |
+| `20260910025913767` | `PR_OPEN` | `AI04-021` | `allow_frontend_deployment_handlers` | `jcy644542` | `2026-10-10T02:59:13Z` | [Backend #90](https://github.com/urizo-final-org/urizo-final-backend/pull/90) | `20260908161528042` |
 
 ## Reservation template
 
