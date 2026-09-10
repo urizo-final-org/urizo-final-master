@@ -63,6 +63,11 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260909091111803` | `MERGED` | `AI04-019` | `route_pr_completion_by_deployment_capability` | `tmdwns0531` | `2026-10-09T09:11:11Z` | [Backend #88](https://github.com/urizo-final-org/urizo-final-backend/pull/88) | `20260903145703043` |
 | `20260910025913767` | `PR_OPEN` | `AI04-021` | `allow_frontend_deployment_handlers` | `jcy644542` | `2026-10-10T02:59:13Z` | [Backend #90](https://github.com/urizo-final-org/urizo-final-backend/pull/90) | `20260908161528042` |
 
+| Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
+|---|---|---|---|---|---|---|---|
+| `20260910053029976` | `ABANDONED` | `axms-governance-history` | `create_cms_change_history; superseded before application by 20260910061558461` | `tmdwns0531` | `2026-10-10T05:30:29Z` | [Backend #93](https://github.com/urizo-final-org/urizo-final-backend/pull/93) | `20260819150845` |
+| `20260910061558461` | `MERGED` | `axms-cms-governance-integration` | `create_cms_change_history` | `tmdwns0531` | `2026-10-10T06:15:58Z` | [Backend #93](https://github.com/urizo-final-org/urizo-final-backend/pull/93) | `20260910053356398` |
+
 ## Reservation template
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
