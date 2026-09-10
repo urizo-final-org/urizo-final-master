@@ -308,6 +308,17 @@ urizo-final-mcp-server
 
 ## 현재 하위 작업 기록
 
+### `AI06-041` · 사용량·평가 Job 검색·페이지 이동
+
+- 상태: 2026-09-10 사용자 승인 후 Source 구현·독립 검토·최신 `dev` 통합 검증과 Backend·Frontend `dev` 병합을 완료했다. UI Runtime 반영은 별도 승인 전이다. Work slug는 `axms-ai06-041-observability-job-pagination`이다.
+- 범위: 전체 Job UUID 정확 검색과 기존 UTC 기간 조건, Node·Provider Observation의 서버 측 필터와 커서 기반 이전/다음 페이지 이동을 제공한다. 조건·하위 Tab 변경 시 첫 페이지로 돌아가며 Provider 집계에도 같은 Job 조건을 적용한다. 집계는 현재 페이지가 아닌 선택 기간 전체 기준이다.
+- 저장소: Backend·Frontend 및 이 작업 기록만 포함한다. 각 저장소의 최신 `origin/dev` 기반 `feature/tmdwns0531_axms-ai06-041-observability-job-pagination_v0.1` 독립 Worktree를 사용했다. AI06-040·AI04-019는 `dev` 병합 후 통합했으며 미커밋 변경을 가져오지 않았다.
+- 보존: `environment=local`, 최고관리자 전용 읽기, 닫힌 metadata·응답 Allowlist, bounded Cache와 원문 차단을 유지한다. DB·Flyway·Job 실행·상태·Runner·품질 평가·Score 생성과 Runtime 재시작은 제외한다.
+- 검증 범위: Job·기간·관측 종류·커서별 조회/Cache 격리, 잘못된 입력·권한 거부, 페이지 마지막·역순 응답·조건 초기화, 기존 회귀와 타입 검사·빌드를 확인했다. Push·PR·Merge Gate는 승인 범위로 통과했으며 새 UI Runtime 반영은 미실행이다.
+- 검증 결과: 초기 Backend 관련 5개 Test Class 30/30 및 Frontend 389/389 PASS, 독립 Backend 4개 Class 28/28 PASS다. 최종 최신 `dev` 통합 후 Backend 전체 869건 중 864 PASS·DB/live opt-in 5 SKIP·실패/오류 0, Frontend 전체 35개 파일 406/406 PASS 및 TypeScript·Vite Build PASS다. Frontend 최초 타입 검사에서 새 테스트의 잘못된 `exact` 옵션을 제거한 뒤 재검증했다. 기존 VersionTable key 경고와 Bundle 크기 경고는 이 범위에서 수정하지 않았다.
+- 병합 근거: [Backend #89](https://github.com/urizo-final-org/urizo-final-backend/pull/89) (`258f46f777561b7c64b73bab90e99dc5410a4f63`), [Frontend #59](https://github.com/urizo-final-org/urizo-final-frontend/pull/59) (`7ab4c2cbee29023afff80ebedcf165901eb491d6`)가 `dev`에 MERGED이며 각 PR Head의 `origin/dev` ancestry를 확인했다. 필수 리뷰 예외 admin Merge는 현재 사용자 승인으로 수행했다.
+- 실측 경계: 승인된 Japan Observations 읽기에서 기존 Job의 동일 UTC 기간·Node 종류 필터를 유지한 2건씩 두 페이지가 HTTP 200, Job 일치·중복 없음·마지막 커서 없음으로 확인됐다. 새 Source를 Runtime에 바인딩한 검증은 아니다. 앞선 인증서 조치 이후 기존 Backend의 선택 occurrence 조회는 AVAILABLE·오류 없음이며 Job은 WAITING_APPROVAL로 보존했다.
+
 | Work ID | 작업 | 저장소·Branch | 현재 상태 |
 |---|---|---|---|
 | `AI06-022` | Node Canvas 시각 Mock | Frontend · `feature/tmdwns0531_axms-ai06-022-node-canvas-visual-mock_v0.1` | Frontend PR #23으로 `dev` 병합 완료 (`9122880b36fad7f8a44a54f240883909f09350da`) |
