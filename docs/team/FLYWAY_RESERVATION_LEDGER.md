@@ -49,19 +49,19 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260831030833217` | `RESERVED` | `axms-ai02-001-knowledge-vector-1024` | `widen_document_chunk_embedding_to_1024` | `emilyjjang-jpg` | `2026-09-30T03:08:33Z` | pending | none |
 | `20260903023350023` | `RESERVED` | `AI06-025` | `create_ai_profile_editor_layout` | `tmdwns0531` | `2026-10-03T02:33:50Z` | pending | `20260901080407912` |
 | `20260903055920035` | `MERGED` | `axms-ai05-010-natural-cms-resource-db-contract` | `allow_natural_cms_resource_types` | `tmdwns0531` | `2026-10-03T05:59:20Z` | [Backend #47](https://github.com/urizo-final-org/urizo-final-backend/pull/47) | `20260830162029912` |
-| `20260903065222608` | `RESERVED` | `AI04-009` | `extend_pr_deploy_handler_contracts` | `jcy644542` | `2026-10-03T06:52:22Z` | pending | `20260903023350023` |
+| `20260903065222608` | `MERGED` | `AI04-009` | `extend_pr_deploy_handler_contracts` | `jcy644542` | `2026-10-03T06:52:22Z` | [Backend #51](https://github.com/urizo-final-org/urizo-final-backend/pull/51) | `20260903023350023` |
 <!-- AI04-009 reserved_at_utc: 2026-09-03T06:52:22Z; expires_at_utc remains 30 days later per ledger policy. -->
 | `20260903065547140` | `MERGED` | `AI05-011` | `grant_natural_cms_outbox_conflict_read` | `tmdwns0531` | `2026-10-03T06:55:47Z` | [Backend #49](https://github.com/urizo-final-org/urizo-final-backend/pull/49) | `20260811211500` |
 | `20260903145703043` | `MERGED` | `AI06-028` | `create_ai_profile_default_template` | `tmdwns0531` | `2026-10-03T14:57:03Z` | [Backend #54](https://github.com/urizo-final-org/urizo-final-backend/pull/54) | `20260903065547140` |
 | `20260903234407711` | `MERGED` | `AI06-030` | `update_default_template_model_bindings` | `tmdwns0531` | `2026-10-03T23:44:07Z` | [Backend #57](https://github.com/urizo-final-org/urizo-final-backend/pull/57) | `20260903145703043` |
-| `20260907072549518` | `RESERVED` | `axms-ai04-012-rework-attempt-workspace` | `relax_pipeline_attempt_workspace_unique` | `jcy644542` | `2026-10-07T07:25:49Z` | pending | `20260830111238338` |
+| `20260907072549518` | `MERGED` | `axms-ai04-012-rework-attempt-workspace` | `relax_pipeline_attempt_workspace_unique` | `jcy644542` | `2026-10-07T07:25:49Z` | [Backend #69](https://github.com/urizo-final-org/urizo-final-backend/pull/69) | `20260830111238338` |
 | `20260907084859068` | `MERGED` | `AI06-037` | `create_ai_job_monitoring_read_model` | `tmdwns0531` | `2026-10-07T08:48:59Z` | [#74](https://github.com/urizo-final-org/urizo-final-backend/pull/74) | `20260830025553074`, `20260830162029912`, `20260903023350023` |
 | `20260908161528042` | `RESERVED` | `AI04-016` | `allow_system_pr_repositories` | `tmdwns0531` | `2026-10-08T16:15:28Z` | pending | `20260903065222608` |
 | `20260909025316995` | `MERGED` | `AI02-008` | `add_source_document_event_dates` | `tmdwns0531` | `2026-10-09T02:53:16Z` | [Backend #82](https://github.com/urizo-final-org/urizo-final-backend/pull/82) | `20260908161528042` |
 <!-- AI02-008 backend_merged_at_utc: 2026-09-09T04:59:19Z; backend_merge_sha: f8b967780a1406af6f22739cfeef6e8b6054a759 -->
 
 | `20260909091111803` | `MERGED` | `AI04-019` | `route_pr_completion_by_deployment_capability` | `tmdwns0531` | `2026-10-09T09:11:11Z` | [Backend #88](https://github.com/urizo-final-org/urizo-final-backend/pull/88) | `20260903145703043` |
-| `20260910025913767` | `PR_OPEN` | `AI04-021` | `allow_frontend_deployment_handlers` | `jcy644542` | `2026-10-10T02:59:13Z` | [Backend #90](https://github.com/urizo-final-org/urizo-final-backend/pull/90) | `20260908161528042` |
+| `20260910025913767` | `MERGED` | `AI04-021` | `allow_frontend_deployment_handlers` | `jcy644542` | `2026-10-10T02:59:13Z` | [Backend #90](https://github.com/urizo-final-org/urizo-final-backend/pull/90) | `20260908161528042` |
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
 |---|---|---|---|---|---|---|---|
