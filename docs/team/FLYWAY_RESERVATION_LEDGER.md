@@ -68,6 +68,8 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260910053029976` | `ABANDONED` | `axms-governance-history` | `create_cms_change_history; superseded before application by 20260910061558461` | `tmdwns0531` | `2026-10-10T05:30:29Z` | [Backend #93](https://github.com/urizo-final-org/urizo-final-backend/pull/93) | `20260819150845` |
 | `20260910061558461` | `MERGED` | `axms-cms-governance-integration` | `create_cms_change_history` | `tmdwns0531` | `2026-10-10T06:15:58Z` | [Backend #93](https://github.com/urizo-final-org/urizo-final-backend/pull/93) | `20260910053356398` |
 
+| `20260911060503254` | `MERGED` | `AI05-019` | `add_cms_board_codes_and_post_images` | `tmdwns0531` | `2026-10-11T06:05:03Z` | [Backend #95](https://github.com/urizo-final-org/urizo-final-backend/pull/95) | `20260910061558461` |
+
 ## Reservation template
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
