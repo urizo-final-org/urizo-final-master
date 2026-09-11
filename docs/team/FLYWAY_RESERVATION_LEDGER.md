@@ -70,6 +70,10 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 
 | `20260911060503254` | `MERGED` | `AI05-019` | `add_cms_board_codes_and_post_images` | `tmdwns0531` | `2026-10-11T06:05:03Z` | [Backend #95](https://github.com/urizo-final-org/urizo-final-backend/pull/95) | `20260910061558461` |
 
+| `20260911095234061` | `MERGED` | `axms-template-banner-layouts` | `add_cms_template_hero_images` | `tmdwns0531` | `2026-10-11T09:52:34Z` | [Backend #97](https://github.com/urizo-final-org/urizo-final-backend/pull/97) | `20260819165652` |
+
+| `20260911104548836` | `MERGED` | `axms-template-banner-layouts` | `add_cms_template_image_captions` | `tmdwns0531` | `2026-10-11T10:45:48Z` | [Backend #97](https://github.com/urizo-final-org/urizo-final-backend/pull/97) | `20260911095234061` |
+
 ## Reservation template
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
