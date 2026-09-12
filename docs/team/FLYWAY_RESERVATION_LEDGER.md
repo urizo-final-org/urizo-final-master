@@ -69,6 +69,11 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 | `20260910061558461` | `MERGED` | `axms-cms-governance-integration` | `create_cms_change_history` | `tmdwns0531` | `2026-10-10T06:15:58Z` | [Backend #93](https://github.com/urizo-final-org/urizo-final-backend/pull/93) | `20260910053356398` |
 | `20260911052249613` | `RESERVED` | `AI05-019` | `create_natural_cms_field_selection` | `LEEJAEWOOK1` | `2026-10-11T05:22:49Z` | pending | `20260910061558461` |
 | `20260911052301375` | `RESERVED` | `AI05-019` | `create_natural_cms_rule` | `LEEJAEWOOK1` | `2026-10-11T05:23:01Z` | pending | `20260911052249613` |
+| `20260912090830717` | `RESERVED` | `AI05-019` | `create_natural_cms_operation_selection` | `LEEJAEWOOK1` | `2026-10-12T09:08:30Z` | pending | `20260911052301375` |
+<!-- AI05-019: 설정 단위를 필드에서 관리별 동작으로 바꾸면서 20260911052249613이 만든 표가
+     쓰이지 않게 됐다. 그 리비전은 이미 적용돼 파일을 고칠 수 없으므로(체크섬) 이 리비전에서
+     동작 표를 만들고 필드 표를 DROP한다. 적용된 행은 없었다. -->
+
 
 ## Reservation template
 
