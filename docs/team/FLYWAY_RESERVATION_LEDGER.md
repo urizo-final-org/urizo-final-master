@@ -81,6 +81,8 @@ The baseline is present in the preserved local Backend/Core DB, but at the 2026-
 
 | `20260911104548836` | `MERGED` | `axms-template-banner-layouts` | `add_cms_template_image_captions` | `tmdwns0531` | `2026-10-11T10:45:48Z` | [Backend #97](https://github.com/urizo-final-org/urizo-final-backend/pull/97) | `20260911095234061` |
 
+| `20260913145252641` | `MERGED` | `AI05-022` | `allow_template_update_guardrail` | `tmdwns0531` | `2026-10-13T14:52:52Z` | [Backend #103](https://github.com/urizo-final-org/urizo-final-backend/pull/103) | `20260912090830717` |
+
 ## Reservation template
 
 | Revision | State | Slice | Description | Owner | Expires (UTC) | Backend PR | Dependencies |
