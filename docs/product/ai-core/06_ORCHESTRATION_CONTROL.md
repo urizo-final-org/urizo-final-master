@@ -308,6 +308,21 @@ urizo-final-mcp-server
 
 ## 현재 하위 작업 기록
 
+### `AI06-046` · Langfuse 조회 호출 제어
+
+- 담당: Min Seungjun(`tmdwns0531`). 사용자 승인 범위는 조회 호출 제어 구현과 회귀 검증이다.
+- 저장소: Frontend, Backend 및 이 작업 기록. 최신 `origin/dev` 기반 독립 Worktree와 `feature/tmdwns0531_axms-ai06-046-langfuse-read-control_v0.1` Branch를 사용한다. 기존 canonical Master의 미커밋 변경은 보존한다.
+- Frontend: 인증 세션 교체를 계측 재조회 조건에서 제외하고 다음 조회에 최신 API를 사용한다. 숨겨진 화면의 조회를 취소·보류하며 Node 탭의 불필요한 Metrics 조회를 제거한다. Home의 집계 기간은 분 단위로 맞춘다.
+- 실행 모니터링: 선택 occurrence의 변경만 P 재조회 대상으로 삼고 다회차 변경을 최대 30초 간격으로 합친다. 새 선택의 이전 P 응답은 폐기하고 최신 occurrence를 조회한다. N 상태와 실제 모델 호출 이력은 기존 경로를 유지한다.
+- Backend: 같은 읽기 자원 내 동시 조회가 기존 캐시를 공유하도록 처리한다. Metrics와 일반 조회의 `429` 대기는 분리하며 `Retry-After` 초·HTTP 날짜를 적용한다. 헤더가 없거나 잘못되면 60초 대기한다. 실행 중 occurrence의 시각 변경은 기존 30초 캐시를 우회하지 않는다.
+- 제한: 캐시와 대기 상태는 Backend 프로세스별 메모리에 있다. 팀원 PC 전체의 quota를 통합 관리하거나 조직 한도를 늘리지는 않는다. 공개 응답 계약, trace 수집, LLM 실행, 승인 전이, DB, Secret 설정은 변경하지 않는다.
+- 소스 검증: Frontend 회귀 7개 파일 118개 테스트, Backend 계측·수집·Controller 회귀 5개 클래스 40개 테스트 통과. 최신 dev의 AI05-025 통합 후 CMS 메뉴 회귀를 포함한 9개 파일 133개 테스트, TypeScript 빌드 검사와 Vite 빌드가 통과했다. Backend는 로컬 Maven 캐시를 사용하는 오프라인 실행이다.
+- 로컬 검증(2026-09-15): 사용자 승인으로 공식 `full -Rebuild`를 1회 실행해 AI06-046 Backend·Frontend 및 최신 dev Orchestrator·MCP를 18080에 반영했다. 9개 서비스 healthy, Flyway `20260914035606830`·pending 0, Runner 첫 인증 poll 통과. Job 50건·Task 299건의 ID 집합과 네 named Volume을 보존했고, 변경 Source 16개 파일의 재빌드 전후 지문이 일치했다.
+- 실제 화면·API: Node 계측은 연결됨·관측 조회 AVAILABLE. Node 탭 진입 동안 Metrics·Token Usage 호출 증가 0건. analyze→code→review 빠른 전환에서 N은 즉시 바뀌고 P는 analyze 조회 후 30초 뒤 최종 review만 조회했다. 429 대기 중 재호출 차단의 외부 호출 건수 증거는 단위 테스트이며, 실제 집계 API는 UNAVAILABLE였다.
+- 후속 실제 조회(2026-09-15 17:01–17:05 KST): 집계 API HTTP 200 회복을 확인했다. 과거 종료 Job의 모델 관측 15건·입력 55,849·출력 2,436·전체 58,285토큰이 원본 API, 앱 API 및 통합 대시보드에서 일치했다. P는 부모 `axms.node` 관측이 조회되지 않아 UNCONNECTED이며 그 기록이 없는 과거 원인은 미확정이다. 토큰 추이 집계에는 영향을 주지 않는다. 과거 캐시 적중 수치는 없어 UNKNOWN으로 유지한다.
+- 남은 검증: 과거 노드 관측 누락의 근본 원인, 재기동 후 새 LLM 실행의 trace 적재는 미확인이다. 별도 18081 preview는 재기동 대상에 포함하지 않았다. 이전 Live Worktree의 NodeModelActivity 미커밋 변경은 보존했다.
+- Source PR: [Frontend #91](https://github.com/urizo-final-org/urizo-final-frontend/pull/91), Head `b2d15f6456d85c7433a0364dec56c1df7f380a40`; [Backend #110](https://github.com/urizo-final-org/urizo-final-backend/pull/110), Head `d2591866a559b316304269fe3d670fdc9e78d1d0`. 두 PR은 `dev` 대상이며 생성 시점에는 병합 전이다. Frontend·Backend 공식 최신 dev Gate를 통과했다.
+
 ### `AI06-041` · 사용량·평가 Job 검색·페이지 이동
 
 - 상태: 2026-09-10 사용자 승인 후 Source 구현·독립 검토·최신 `dev` 통합 검증과 Backend·Frontend `dev` 병합을 완료했다. UI Runtime 반영은 별도 승인 전이다. Work slug는 `axms-ai06-041-observability-job-pagination`이다.
